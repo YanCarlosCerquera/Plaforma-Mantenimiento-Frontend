@@ -1,7 +1,7 @@
 <script setup>
-import { onBeforeMount, onMounted, onBeforeUnmount } from "vue";
+import { ref, onBeforeMount, onMounted, onBeforeUnmount } from "vue";
 import { useStore } from "vuex";
-
+import apiService from "../service/apiservice";
 import setNavPills from "@/assets/js/nav-pills.js";
 import setTooltip from "@/assets/js/tooltip.js";
 import ProfileCard from "./components/ProfileCard.vue";
@@ -9,8 +9,9 @@ import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonButton from "@/components/ArgonButton.vue";
 
 const body = document.getElementsByTagName("body")[0];
-
 const store = useStore();
+const users = ref([]); // Define 'ref'
+const errorMessage = ref(""); // Define 'ref'
 
 onMounted(() => {
   store.state.isAbsolute = true;
@@ -32,7 +33,18 @@ onBeforeUnmount(() => {
   store.state.hideConfigButton = false;
   body.classList.remove("profile-overview");
 });
+
+async function Lista() {
+  try {
+    const data = await apiService.get("/users");
+    users.value = data; // Bind the fetched data
+  } catch (error) {
+    console.error("Error al obtener la lista de usuarios:", error);
+    errorMessage.value = "Failed to fetch users.";
+  }
+}
 </script>
+
 <template>
   <main>
     <div class="container-fluid">
@@ -62,6 +74,7 @@ onBeforeUnmount(() => {
               <div class="h-100">
                 <h5 class="mb-1">Sayo Kravits</h5>
                 <p class="mb-0 font-weight-bold text-sm">Public Relations</p>
+                <button @click="Lista()" >sdasdasdasddasdasd</button>
               </div>
             </div>
             <div
