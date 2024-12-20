@@ -9,6 +9,8 @@ import Signup from "../views/Signup.vue";
 import Signin from "../views/Signin.vue";
 import password from "../views/password.vue";
 import Resetpassword from "../views/resetpassword.vue";
+import Save_Category from "../views/Category/Save_Category.vue";
+import Save_User from "../views/Save_User.vue";
 
 
 const routes = [
@@ -38,9 +40,20 @@ name:"ResetPassword",
     component: Users,
   },
   {
+    path: "/users_agregar",
+    name: "Gestion de usuarios",
+    component: Save_User,
+  },
+  {
     path: "/maquinariayequipos",
     name: "Maquinaria y Equipos",
     component: Machineandteams,
+    
+  },
+  {
+path:"/Agregar_Category",
+name: "Consultar Category",
+component : Save_Category,
   },
   {
     path: "/virtual-reality",

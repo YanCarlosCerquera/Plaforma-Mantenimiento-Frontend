@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
@@ -9,12 +9,19 @@ import SidenavCard from "./SidenavCard.vue";
 const store = useStore();
 const isRTL = computed(() => store.state.isRTL);
 
-const getRoute = () => {
-  const route = useRoute();
+const route = useRoute();
+const getRoute = computed(() => {
   const routeArr = route.path.split("/");
   return routeArr[1];
+});
+
+const isEquiposOpen = ref(false);
+
+const toggleEquipos = () => {
+  isEquiposOpen.value = !isEquiposOpen.value;
 };
 </script>
+
 <template>
   <div
     class="collapse navbar-collapse w-auto h-auto h-100"
@@ -24,7 +31,7 @@ const getRoute = () => {
       <li class="nav-item">
         <sidenav-item
           to="/dashboard-default"
-          :class="getRoute() === 'dashboard-default' ? 'active' : ''"
+          :class="getRoute === 'dashboard-default' ? 'active' : ''"
           :navText="'Tablero Principal'"
         >
           <template v-slot:icon>
@@ -36,33 +43,69 @@ const getRoute = () => {
       <li class="nav-item">
         <sidenav-item
           to="/users"
-          :class="getRoute() === 'tables' ? 'active' : ''"
+          :class="getRoute === 'users' ? 'active' : ''"
           :navText="isRTL ? 'الجداول' : 'Usuarios'"
         >
           <template v-slot:icon>
-            <i
-              class="ni ni-calendar-grid-58 text-warning text-sm opacity-10"
-            ></i>
+            <i class="ni ni-calendar-grid-58 text-warning text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
 
       <li class="nav-item">
-        <sidenav-item
-          to="/machineandteams"
-          :class="getRoute() === 'billing' ? 'active' : ''"
-          :navText="isRTL ? 'الفواتیر' : 'Maquinaria y equipos'"
+        <div 
+          @click="toggleEquipos"
+          class="nav-link"
+          :class="{ 'active': getRoute === 'machineandteams' || isEquiposOpen }"
         >
-          <template v-slot:icon>
+          <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
             <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
-          </template>
-        </sidenav-item>
+          </div>
+          <span class="nav-link-text ms-1">Maquinaria y equipos</span>
+          <ChevronDown v-if="!isEquiposOpen" class="ml-auto" />
+          <ChevronUp v-else class="ml-auto" />
+        </div>
+        <ul v-if="isEquiposOpen" class="nav-item-dropdown">
+          <li>
+            <sidenav-item
+              to="/machineandteams/list"
+              :class="route.path === '/machineandteams/list' ? 'active' : ''"
+              :navText="'Agregar Categoria'"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-bullet-list-67 text-success text-sm opacity-10"></i>
+              </template>
+            </sidenav-item>
+          </li>
+          <li>
+            <sidenav-item
+              to="/machineandteams/add"
+              :class="route.path === '/machineandteams/add' ? 'active' : ''"
+              :navText="'Categorias'"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-fat-add text-success text-sm opacity-10"></i>
+              </template>
+            </sidenav-item>
+          </li>
+          <li>
+            <sidenav-item
+              to="/machineandteams/add"
+              :class="route.path === '/machineandteams/add' ? 'active' : ''"
+              :navText="'Bienes '"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-fat-add text-success text-sm opacity-10"></i>
+              </template>
+            </sidenav-item>
+          </li>
+        </ul>
       </li>
 
       <li class="nav-item">
         <sidenav-item
           to="/virtual-reality"
-          :class="getRoute() === 'virtual-reality' ? 'active' : ''"
+          :class="getRoute === 'virtual-reality' ? 'active' : ''"
           :navText="isRTL ? 'الواقع الافتراضي' : 'Mantenimientos'"
         >
           <template v-slot:icon>
@@ -71,13 +114,8 @@ const getRoute = () => {
         </sidenav-item>
       </li>
 
-    
-
       <li class="mt-12 nav-item">
-       
-
         <h6
-         
           class="text-xs ps-4 text-uppercase font-weight-bolder opacity-6"
           :class="isRTL ? 'me-4' : 'ms-2'"
         >
@@ -88,7 +126,7 @@ const getRoute = () => {
       <li class="nav-item">
         <sidenav-item
           to="/profile"
-          :class="getRoute() === 'profile' ? 'active' : ''"
+          :class="getRoute === 'profile' ? 'active' : ''"
           :navText="isRTL ? 'حساب تعريفي' : 'Perfil'"
         >
           <template v-slot:icon>
@@ -100,7 +138,7 @@ const getRoute = () => {
       <li class="nav-item">
         <sidenav-item
           to="/signin"
-          :class="getRoute() === 'signin' ? 'active' : ''"
+          :class="getRoute === 'signin' ? 'active' : ''"
           :navText="isRTL ? 'تسجيل الدخول' : 'Configuraciones'"
         >
           <template v-slot:icon>
@@ -112,7 +150,7 @@ const getRoute = () => {
       <li class="nav-item">
         <sidenav-item
           to="/signup"
-          :class="getRoute() === 'signup' ? 'active' : ''"
+          :class="getRoute === 'signup' ? 'active' : ''"
           :navText="isRTL ? 'اشتراك' : 'Cerrar sesión'"
         >
           <template v-slot:icon>
@@ -131,14 +169,12 @@ const getRoute = () => {
         links: [
           {
             label: 'Documentation',
-            route:
-              'https://www.creative-tim.com/learning-lab/vue/overview/argon-dashboard/',
+            route: 'https://www.creative-tim.com/learning-lab/vue/overview/argon-dashboard/',
             color: 'dark',
           },
           {
             label: 'Buy now',
-            route:
-              'https://www.creative-tim.com/product/vue-argon-dashboard-pro?ref=vadp',
+            route: 'https://www.creative-tim.com/product/vue-argon-dashboard-pro?ref=vadp',
             color: 'success',
           },
         ],
@@ -146,3 +182,31 @@ const getRoute = () => {
     />
   </div>
 </template>
+
+<style scoped>
+.nav-item-dropdown {
+  padding-left: 2rem;
+  list-style-type: none;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  color: #67748e;
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-link:hover {
+  background-color: rgba(199, 199, 199, 0.2);
+  border-radius: 0.5rem;
+}
+
+.nav-link.active {
+  background-color: #f6f9fc;
+  color: #344767;
+  font-weight: 600;
+  box-shadow: 0 0 2rem 0 rgba(136, 152, 170, 0.15);
+  border-radius: 0.5rem;
+}
+</style>
