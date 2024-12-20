@@ -1,10 +1,11 @@
 <script setup>
 const documentTypes = [
   { value: "", label: "Selecciona tu tipo de documento" },
-  { value: "cc", label: "Cédula de Ciudadanía" },
-  { value: "ce", label: "Cédula de Extranjería" },
-  { value: "ti", label: "Tarjeta de Identidad" },
+  { value: "Cédula de Ciudadanía", label: "Cédula de Ciudadanía" },
+  { value: "Cédula de Extranjería", label: "Cédula de Extranjería" },
+  { value: "Tarjeta de Identidad", label: "Tarjeta de Identidad" },
 ];
+import { ref } from "vue";
 import { onBeforeUnmount, onBeforeMount } from "vue";
 import { useStore } from "vuex";
 import ArgonInput from "@/components/ArgonInput.vue";
@@ -12,9 +13,14 @@ import ArgonSwitch from "@/components/ArgonSwitch.vue";
 import ArgonButton from "@/components/ArgonButton.vue";
 import ArgonSelect from "@/components/ArgonSelect.vue";
 import logo from "@/assets/img/sena-logo.png";
+import apiService from "../service/apiService";
 const body = document.getElementsByTagName("body")[0];
 
-
+const formData = ref( {
+  typeDocument: "",
+  document: "",
+  password: "",
+})
 
 const store = useStore();
 onBeforeMount(() => {
@@ -31,7 +37,22 @@ onBeforeUnmount(() => {
   store.state.showFooter = true;
   body.classList.add("bg-gray-100");
 });
+
+const handleLogin = async (event) => {
+  event.preventDefault();
+  try{
+    await apiService.post('auth/login', formData.value)
+  
+    alert("registrado")
+  }catch(error){
+    alert("mal")
+  }
+
+};
+
+
 </script>
+
 <template>
   <div class="container top-0 position-sticky z-index-sticky">
     <div class="row">
@@ -56,22 +77,25 @@ onBeforeUnmount(() => {
                 </div>
                 <div class="card-body">
                   <form role="form">
-                    <div class="mb-3">
+                    <div class="mb-3">  
                       <argon-select id="documentType" placeholder="" name="documentType" size="lg"
-                        v-model="selectedDocumentType" :options="documentTypes" />
+                        v-model="formData.typeDocument" :options="documentTypes" />
 
                     </div>
                     <div class="mb-3">
-                      <argon-input id="email" type="email" placeholder="Número de documento" name="email" size="lg" />
+                      <argon-input id="email" type="email" placeholder="Número de documento" name="email" size="lg" v-model="formData.document" />
                     </div>
                     <div class="mb-3">
-                      <argon-input id="password" type="password" placeholder="Contraseña" name="password" size="lg" />
+                      <argon-input id="password" type="password" placeholder="Contraseña" name="password" size="lg" v-model="formData.password"/>
                     </div>
                     <argon-switch id="rememberMe" name="remember-me">Recordar</argon-switch>
-
+                    
+                    <div class="text-center">
+                      <a href="javascript:;" class="text-sm text-success text-gradient font-weight-bold">Olvidaste tu contraseña?</a>
+                    </div>
                     <div class="text-center">
                       <argon-button class="mt-4" variant="gradient" color="success" fullWidth
-                        size="lg">Ingresar</argon-button>
+                        size="lg" @click="handleLogin($event)">Ingresar</argon-button>
                     </div>
                   </form>
                 </div>

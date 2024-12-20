@@ -1,12 +1,12 @@
 <script setup>
 import { ref, onBeforeMount, onMounted, onBeforeUnmount } from "vue";
 import { useStore } from "vuex";
-import apiService from "../service/apiservice";
 import setNavPills from "@/assets/js/nav-pills.js";
 import setTooltip from "@/assets/js/tooltip.js";
 import ProfileCard from "./components/ProfileCard.vue";
 import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonButton from "@/components/ArgonButton.vue";
+import apiService from "../service/apiService";
 
 const body = document.getElementsByTagName("body")[0];
 const store = useStore();

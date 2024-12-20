@@ -7,6 +7,8 @@ import VirtualReality from "../views/VirtualReality.vue";
 import Profile from "../views/Profile.vue";
 import Signup from "../views/Signup.vue";
 import Signin from "../views/Signin.vue";
+import password from "../views/password.vue";
+import Resetpassword from "../views/resetpassword.vue";
 
 
 const routes = [
@@ -14,6 +16,16 @@ const routes = [
     path: "/",
     name: "/",
     redirect: "/dashboard-default",
+  },
+  {
+    path:"/RecuperarContrase",
+    name: "RecuperarContrase",
+    component: password,
+  },
+  {
+path:"/ResetPassword",
+name:"ResetPassword",
+    component: Resetpassword,
   },
   {
     path: "/dashboard-default",
