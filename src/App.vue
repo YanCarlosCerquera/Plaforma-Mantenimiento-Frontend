@@ -1,4 +1,8 @@
-
+<style>
+.swal-title-white {
+  color: white;
+}
+</style>
 <script setup>
 import { computed } from "vue";
 import { useStore } from "vuex";

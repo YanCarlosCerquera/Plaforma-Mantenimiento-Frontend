@@ -12,7 +12,6 @@ import Resetpassword from "../views/resetpassword.vue";
 import Save_Category from "../views/Category/Save_Category.vue";
 import Save_User from "../views/Save_User.vue";
 
-
 const routes = [
   {
     path: "/",
@@ -20,13 +19,13 @@ const routes = [
     redirect: "/dashboard-default",
   },
   {
-    path:"/RecuperarContrase",
+    path: "/RecuperarContrase",
     name: "RecuperarContrase",
     component: password,
   },
   {
-path:"/ResetPassword",
-name:"ResetPassword",
+    path: "/ResetPassword",
+    name: "ResetPassword",
     component: Resetpassword,
   },
   {
@@ -36,7 +35,7 @@ name:"ResetPassword",
   },
   {
     path: "/users",
-    name: "Gestion de usuarios",
+    name: "Gestionusuarios",
     component: Users,
   },
   {
@@ -44,16 +43,15 @@ name:"ResetPassword",
     name: "Gestion de usuarios",
     component: Save_User,
   },
-  {
+  { 
     path: "/maquinariayequipos",
     name: "Maquinaria y Equipos",
     component: Machineandteams,
-    
   },
   {
-path:"/Agregar_Category",
-name: "Consultar Category",
-component : Save_Category,
+    path: "/Agregar_Category",
+    name: "Consultar Category",
+    component: Save_Category,
   },
   {
     path: "/virtual-reality",
