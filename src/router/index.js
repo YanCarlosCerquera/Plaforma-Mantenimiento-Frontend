@@ -11,6 +11,8 @@ import password from "../views/password.vue";
 import Resetpassword from "../views/resetpassword.vue";
 import Save_Category from "../views/Category/Save_Category.vue";
 import Save_User from "../views/Save_User.vue";
+import Category from "../views/Category/Category.vue";
+import Assers from "../views/Assets/Assers.vue";
 
 const routes = [
   {
@@ -49,14 +51,24 @@ const routes = [
     component: Machineandteams,
   },
   {
-    path: "/Agregar_Category",
-    name: "Consultar Category",
+    path: "/machineandteams/list",
+    name: "Consultar_Category",
     component: Save_Category,
+  },
+  {
+path:"/machineandteams/add",
+name:"Consultar_Category",
+    component: Category,
   },
   {
     path: "/virtual-reality",
     name: "Virtual Reality",
     component: VirtualReality,
+  },
+  {
+    path: "/Asserts",
+    name: "Bienes",
+    component: Assers,
   },
   {
     path: "/profile",

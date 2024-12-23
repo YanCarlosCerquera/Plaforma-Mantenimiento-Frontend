@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import AuthorsTable from "./components/AuthorsTable.vue";
 import apiService from "../service/apiService";
+import { useDisplay } from "vuetify";
 
 const headers = ref([
   "Nombre de usuario",
@@ -11,7 +12,6 @@ const headers = ref([
   "Fecha de registro"
 ]);
 
-// Definición de campos y cómo mapearlos
 const fields = ref({
   usuario: {
     showAvatar: true,
@@ -42,28 +42,84 @@ const fields = ref({
 });
 
 const rows = ref([]);
+const dialog = ref(false);
+const editedItem = ref({});
+const { mobile } = useDisplay();
+const availableRoles = ref([]);
+const isLoading = ref(false);
 
 const fetchData = async () => {
   try {
     const response = await apiService.get("/users");
-    const data = response.data || response;
-
-    rows.value = data.filter(user => user.state === false);
+    rows.value = (response.data || response).filter(user => !user.state);
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error("Error fetching users:", error);
+    alert("Error al cargar los usuarios");
+  }
+};
+
+const fetchRoles = async () => {
+  try {
+    const response = await apiService.get("/rol");
+    availableRoles.value = response.data || response;
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    alert("Error al cargar los roles");
+  }
+};
+
+const handleEdit = (row) => {
+  editedItem.value = { ...row, assignedRol: '' };
+  dialog.value = true;
+};
+
+const handleDelete = async (id) => {
+  if (!confirm("¿Estás seguro de que quieres eliminar este usuario?")) return;
+
+  try {
+    await apiService.delete(`users/${id}`);
+    alert("Usuario eliminado correctamente");
+    await fetchData();
+  } catch (error) {
+    alert("Error al eliminar usuario: " + (error.response?.data?.message || "Algo salió mal"));
+  }
+};
+
+const acceptUser = async (Userid, assignedRol) => {
+  try {
+    if (!Userid || !assignedRol) {
+      throw new Error("Datos insuficientes para autorizar al usuario.");
+    }
+
+    isLoading.value = true;
+
+    const response = await apiService.patch(
+      `users/${Userid}`,
+      {
+        state: true,
+        assignedRol: assignedRol,
+      }
+    );
+console.log(response);
+
+    dialog.value = false;
+    await fetchData();
+  } catch (error) {
+    console.error("Error updating user:", error);
+    alert(
+      "Error al autorizar usuario: " + 
+      (error.response?.data?.message || "Algo salió mal")
+    );
+  } finally {
+    isLoading.value = false; 
   }
 };
 
 
-const handleEdit = (row) => {
-  console.log("Edit:", row);
-};
-
-const handleDelete = (id) => {
-  console.log("Delete:", id);
-};
-
-onMounted(fetchData);
+onMounted(() => {
+  fetchData();
+  fetchRoles();
+});
 </script>
 
 <template>
@@ -79,5 +135,67 @@ onMounted(fetchData);
         />
       </div>
     </div>
+    <v-dialog v-model="dialog" :fullscreen="mobile" max-width="500px">
+      <v-card class="bg-white">
+        <v-card-title class="text-h5 bg-light">
+          Autorizar Usuario
+        </v-card-title>
+
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-select
+                  v-model="editedItem.assignedRol"
+                  :items="availableRoles"
+                  item-title="name"
+                  item-value="_id"
+                  label="Asignar rol"
+                  variant="outlined"
+                  required
+                  :loading="!availableRoles.length"
+                  :disabled="!availableRoles.length || isLoading"
+                  class="bg-white"
+                ></v-select>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+
+        <v-card-actions class="bg-light">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="blue-darken-1"
+            variant="text"
+            @click="dialog = false"
+            :disabled="isLoading"
+          >
+            Cancelar
+          </v-btn>
+          <v-btn
+  color="blue-darken-1"
+  variant="text"
+  @click="acceptUser(editedItem._id, editedItem.assignedRol)"
+  :disabled="!editedItem.assignedRol || isLoading"
+  :loading="isLoading"
+>
+  Autorizar y Asignar Rol
+</v-btn>
+
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
+
+<style scoped>
+.v-card {
+  color: rgba(0, 0, 0, 0.87);
+}
+.v-card-title {
+  color: rgba(0, 0, 0, 0.87);
+}
+.v-card-text {
+  color: rgba(0, 0, 0, 0.6);
+}
+</style>

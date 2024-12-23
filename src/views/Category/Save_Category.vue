@@ -20,6 +20,7 @@
                 v-model="spec"
                 placeholder="Especificación..."
                 class="input"
+                type="area"
               />
               <button @click="addSpec" class="button">Agregar</button>
             </div>
