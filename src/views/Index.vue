@@ -69,64 +69,70 @@ const backgroundStyle = computed(() => ({
         </div>
 
         <div class="page-header align-items-start pt-5 border-radius-lg">
-            <div class="container row justify-end mr-5">
-                <ArgonButton color="success" class="w-50 mr-16 fixed"><i
-                        class="fa fa-database fa-4x position-static my-3 mr-10" aria-hidden="true"></i>
-                    <p class="text-3xl font-weight-bold"> Consulta de bienes registrados</p>
+            <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 text-center">
+                <ArgonButton color="success" class="w-100 mb-3">
+                    <i class="fa fa-database fa-4x position-static my-3 mr-10" aria-hidden="true"></i>
+                    <p class="text-3xl font-weight-bold">Consulta de bienes registrados</p>
                 </ArgonButton>
-                <div class="row justify-content-center mt-16">
-                    <div class="col-lg-12 text-left mx-auto mt-16">
-                    </div>
-
+                </div>
+                <div class="col-md-6 text-center">
+                <ArgonButton color="success" class="w-100 mb-3">
+                    <i class="fa fa-database fa-4x position-static my-3 mr-10" aria-hidden="true"></i>
+                    <p class="text-3xl font-weight-bold">Consulta el estado de tu solicitud</p>
+                </ArgonButton>
                 </div>
             </div>
-            <div class="container row d-flex justify-content-start">
-                <ArgonButton color="success" class="w-50 ml-16 fixed"><i
-                        class="fa fa-database fa-4x position-static my-3 mr-10" aria-hidden="true"></i>
-                    <p class="text-3xl font-weight-bold"> Consulta el estado de tu solicitud</p>
-                </ArgonButton>
             </div>
         </div>
 
-        <div class="container-fluid w-90">
-            <div class="card card-bg-gradient p-5 row-3 mx-auto">
-                <h1 class="text-left text-green text-4xl font-weight-bold mb-7">Realiza tu solicitud de mantenimiento
-                </h1>
-                <form class="row">
-                    <div class="form-group col-md-4">
-                        <p class="text-left text-black text-xl font-weight-bold">Nombre del solicitante</p>
-                        <ArgonInput id="email" type="email" placeholder="Nombre del solicitante" aria-label="Correo" />
-                    </div>
-                    <div class="form-group col-md-4">
-                        <p class="text-left text-black text-xl font-weight-bold">Número de teléfono</p>
-                        <ArgonInput id="name" type="text" placeholder="Número de teléfono" aria-label="Nombre" />
-                    </div>
-                    <div class="form-group col-md-4">
-                        <p class="text-left text-black text-xl font-weight-bold">Número de serie</p>
-                        <ArgonInput id="name" type="text" placeholder="Número de serie" aria-label="Nombre" />
-                    </div>
-                    <div class="form-group col-md-12">
-                        <p class="text-left text-black text-xl font-weight-bold ">Descripción falla presentada</p>
-                        <ArgonInput class="height-input" id="numberDocument" type="text"
-                            placeholder="Descripción falla presentada" aria-label="Numero de documento" />
-                    </div>
-                    <div class="form-group col-md-6">
-                        <p class="text-left text-black text-xl font-weight-bold">Código inventario</p>
-                        <ArgonInput class="" id="numberDocument" type="text" placeholder="Descripción falla presentada"
-                            style="height: 20px;" aria-label="Numero de documento" />
-                    </div>
-                    <div class="form-group col-md-6">
-                        <p class="text-left text-black text-xl font-weight-bold">Tipo de documento</p>
-                        <argon-select id="documentType" placeholder="Selecciona el tipo de documento"
-                            name="documentType" size="lg" :options="documentTypes" />
-                    </div>
-                    <div class="text-center">
-                        <argon-button type="submit" color="success" class="my-4 mb-2"
-                            @clik="handleRegister">
-                            Enviar solicitud
-                        </argon-button>
-                    </div>
-                </form>
+        <div class="container">
+            <div class="row justify-content-center">
+            <div class="card p-3 border-radius-xl" style="max-width: 1300px;"> <!-- 👈 Modify this max-width value to change card size -->
+            <div class="card shadow-lg p-5 bg-white">
+            <h1 class="text-left text-success text-4xl font-weight-bold mb-4">
+                Realiza tu solicitud de mantenimiento
+            </h1>
+            <form class="row g-4">
+                <div class="form-group col-md-4">
+                <p class="text-left text-dark mb-2 font-weight-bold">Nombre del solicitante</p>
+                <ArgonInput id="email" type="email" placeholder="Nombre del solicitante" aria-label="Correo" />
+                </div>
+                <div class="form-group col-md-4">
+                <p class="text-left text-dark mb-2 font-weight-bold">Número de teléfono</p>
+                <ArgonInput id="phone" type="text" placeholder="Número de teléfono" aria-label="Teléfono" />
+                </div>
+                <div class="form-group col-md-4">
+                <p class="text-left text-dark mb-2 font-weight-bold">Número de serie</p>
+                <ArgonInput id="serial" type="text" placeholder="Número de serie" aria-label="Serie" />
+                </div>
+                <div class="form-group col-md-12">
+                <p class="text-left text-dark mb-2 font-weight-bold">Descripción falla presentada</p>
+                <textarea 
+                class="form-control" 
+                id="description" 
+                rows="4"
+                placeholder="Descripción falla presentada"
+                style="border: 1px solid #d2d6da; border-radius: 0.5rem; padding: 0.5rem;"
+                ></textarea>
+                </div>
+                <div class="form-group col-md-6">
+                <p class="text-left text-dark mb-2 font-weight-bold">Código inventario</p>
+                <ArgonInput id="inventory" type="text" placeholder="Código de inventario" aria-label="Inventario" />
+                </div>
+                <div class="form-group col-md-6">
+                <p class="text-left text-dark mb-2 font-weight-bold">Tipo de documento</p>
+                <argon-select id="documentType" placeholder="Selecciona el tipo de documento" name="documentType" size="lg" :options="documentTypes" />
+                </div>
+                <div class="text-center mt-4">
+                <argon-button type="submit" color="success" class="w-auto px-6" @click="handleRegister">
+                Enviar solicitud
+                </argon-button>
+                </div>
+            </form>
+            </div>
+            </div>
             </div>
         </div>
 

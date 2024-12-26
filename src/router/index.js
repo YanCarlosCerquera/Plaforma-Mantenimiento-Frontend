@@ -14,12 +14,12 @@ import Save_User from "../views/Save_User.vue";
 import Category from "../views/Category/Category.vue";
 import Assers from "../views/Assets/Assers.vue";
 import Table from "../views/Assets/Table.vue";
-import Home from "../views/Home/Home.vue";
+import Home from "../views/Home.vue";
 
 const routes = [
   {
-    path: "/s",
-    name: "/s",
+    path: "/",
+    name: "/",
     redirect: "/dashboard-default",
   },
   {
@@ -98,7 +98,7 @@ const routes = [
   //pRUEBABLE
 
   {
-path: "/",
+path: "/a",
 name: "Home",
 component:Home
   },
