@@ -48,10 +48,28 @@ const { mobile } = useDisplay();
 const availableRoles = ref([]);
 const isLoading = ref(false);
 
+const formatPhone = (phone) => {
+  if (!phone) return '';
+  const prefijo = phone.slice(0, phone.indexOf('-') + 1);
+  const numero = phone.slice(phone.indexOf('-') + 1);
+  return prefijo.startsWith('+') ? `${prefijo} ${numero}` : `+${prefijo} ${numero}`;
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  return new Date(dateString).toLocaleDateString('es-ES', options).replace('.', '');
+};
+
+
 const fetchData = async () => {
   try {
     const response = await apiService.get("/users");
-    rows.value = (response.data || response).filter(user => !user.state);
+    rows.value = (response.data || response).filter(user => !user.state).map(user => ({
+      ...user,
+      phone: formatPhone(user.phone),
+      createdAt: formatDate(user.createdAt)
+    }));
   } catch (error) {
     console.error("Error fetching users:", error);
     alert("Error al cargar los usuarios");

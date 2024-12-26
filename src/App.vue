@@ -1,6 +1,30 @@
 <style>
 .swal-title-white {
-  color: white;
+  color: white !important;
+}
+
+.text-succes {
+  color: #39a900 !important;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.btn-danger {
+  background-color: red !important;
+  color: white !important;
+}
+
+.btn-success {
+  background-color: #39a900 !important;
+  color: white !important;
+}
+
+.modal-footer {
+  gap: 10px;
 }
 </style>
 <script setup>
