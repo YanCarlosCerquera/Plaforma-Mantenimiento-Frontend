@@ -3,7 +3,7 @@ import Dashboard from "../views/Dashboard.vue";
 import Users from "../views/Users.vue";
 import Machineandteams from "../views/Billing.vue";
 import VirtualReality from "../views/VirtualReality.vue";
-
+import Index from "../views/Index.vue";
 import Profile from "../views/Profile.vue";
 import Signup from "../views/Signup.vue";
 import Signin from "../views/Signin.vue";
@@ -19,6 +19,11 @@ const routes = [
     path: "/",
     name: "/",
     redirect: "/dashboard-default",
+  },
+  {
+    path: "/index",
+    name: "Index",
+    component: Index,
   },
   {
     path: "/RecuperarContrase",
