@@ -182,8 +182,8 @@ const toggleUsers = () => {
 
       <li class="nav-item">
         <sidenav-item
-          to="/signin"
-          :class="getRoute === 'signin' ? 'active' : ''"
+          to="/configuration"
+          :class="getRoute === 'configuration' ? 'active' : ''"
           :navText="isRTL ? 'تسجيل الدخول' : 'Configuraciones'"
         >
           <template v-slot:icon>

@@ -13,6 +13,7 @@ import Save_Category from "../views/Category/Save_Category.vue";
 import Save_User from "../views/Save_User.vue";
 import Category from "../views/Category/Category.vue";
 import Assers from "../views/Assets/Assers.vue";
+import Configuration from "../views/Configuration.vue";
 
 const routes = [
   {
@@ -84,6 +85,11 @@ const routes = [
     path: "/signup",
     name: "Signup",
     component: Signup,
+  },
+  {
+    path: "/configuration",
+    name: "Configuration",
+    component: Configuration,
   },
 ];
 
