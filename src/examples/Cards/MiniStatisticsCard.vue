@@ -79,7 +79,7 @@ defineProps({
           ]"
         >
           <i
-            class="text-lg opacity-10"
+            class="text-lg "
             :class="typeof icon === 'string' ? icon : icon.component"
             aria-hidden="true"
           ></i>

@@ -34,7 +34,7 @@ defineProps({
         :class="`icon icon-shape icon-lg shadow text-center border-radius-lg ${icon.background}`"
       >
         <i
-          class="opacity-10"
+          class=""
           :class="typeof icon === 'string' ? icon : icon.component"
           aria-hidden="true"
         ></i>

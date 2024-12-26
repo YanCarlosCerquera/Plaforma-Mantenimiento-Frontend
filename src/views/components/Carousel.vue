@@ -20,7 +20,7 @@
             <div
               class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3"
             >
-              <i class="ni ni-camera-compact text-dark opacity-10"></i>
+              <i class="ni ni-camera-compact text-dark "></i>
             </div>
             <h5 class="text-white mb-1">Get started with Argon</h5>
             <p>
@@ -43,7 +43,7 @@
             <div
               class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3"
             >
-              <i class="ni ni-bulb-61 text-dark opacity-10"></i>
+              <i class="ni ni-bulb-61 text-dark "></i>
             </div>
             <h5 class="text-white mb-1">Faster way to create web pages</h5>
             <p>
@@ -66,7 +66,7 @@
             <div
               class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3"
             >
-              <i class="ni ni-trophy text-dark opacity-10"></i>
+              <i class="ni ni-trophy text-dark "></i>
             </div>
             <h5 class="text-white mb-1">Share with us your design tips!</h5>
             <p>

@@ -6,6 +6,7 @@ import { useStore } from "vuex";
 import SidenavItem from "./SidenavItem.vue";
 import SidenavCard from "./SidenavCard.vue";
 
+
 const store = useStore();
 const isRTL = computed(() => store.state.isRTL);
 
@@ -16,11 +17,17 @@ const getRoute = computed(() => {
 });
 
 const isEquiposOpen = ref(false);
+const isUsersOpen = ref(false);
 
 const toggleEquipos = () => {
   isEquiposOpen.value = !isEquiposOpen.value;
 };
+
+const toggleUsers = () => {
+  isUsersOpen.value = !isUsersOpen.value;
+};
 </script>
+
 
 <template>
   <div
@@ -35,21 +42,59 @@ const toggleEquipos = () => {
           :navText="'Tablero Principal'"
         >
           <template v-slot:icon>
-            <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+            <i class="ni ni-tv-2 text-primary text-sm "></i>
           </template>
         </sidenav-item>
       </li>
 
       <li class="nav-item">
-        <sidenav-item
-          to="/users"
-          :class="getRoute === 'users' ? 'active' : ''"
-          :navText="isRTL ? 'الجداول' : 'Usuarios'"
+        <div 
+          @click="toggleUsers"
+          class="nav-link"
+          :class="{ 'active': getRoute === 'users' || isUsersOpen }"
         >
-          <template v-slot:icon>
-            <i class="ni ni-calendar-grid-58 text-warning text-sm opacity-10"></i>
-          </template>
-        </sidenav-item>
+          <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="fa fa-users text-success text-sm "></i>
+          </div>
+          <span class="nav-link-text ms-1">Usuarios</span>
+          <ChevronDown v-if="!isUsersOpen" class="ml-auto" />
+          <ChevronUp v-else class="ml-auto" />
+        </div>
+        <ul v-if="isUsersOpen" class="nav-item-dropdown">
+          <li>
+            <sidenav-item
+              to="/users/access"
+              :class="route.path === '/users/access' ? 'active' : ''"
+              :navText="'Control de acceso'"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+              </template>
+            </sidenav-item>
+          </li>
+          <li>
+            <sidenav-item
+              to="/users/add"
+              :class="route.path === '/users/add' ? 'active' : ''"
+              :navText="'Agregar usuarios'"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-fat-add text-success text-sm "></i>
+              </template>
+            </sidenav-item>
+          </li>
+          <li>
+            <sidenav-item
+              to="/users/control"
+              :class="route.path === '/machineandteams/add' ? 'active' : ''"
+              :navText="'Gestión de usuarios'"
+            >
+              <template v-slot:icon>
+                <i class="fa fa-user text-success text-sm "></i>
+              </template>
+            </sidenav-item>
+          </li>
+        </ul>
       </li>
 
       <li class="nav-item">
@@ -59,7 +104,7 @@ const toggleEquipos = () => {
           :class="{ 'active': getRoute === 'machineandteams' || isEquiposOpen }"
         >
           <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-            <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
+            <i class="ni ni-credit-card text-success text-sm "></i>
           </div>
           <span class="nav-link-text ms-1">Maquinaria y equipos</span>
           <ChevronDown v-if="!isEquiposOpen" class="ml-auto" />
@@ -73,7 +118,7 @@ const toggleEquipos = () => {
               :navText="'Agregar Categoria'"
             >
               <template v-slot:icon>
-                <i class="ni ni-bullet-list-67 text-success text-sm opacity-10"></i>
+                <i class="ni ni-bullet-list-67 text-success text-sm "></i>
               </template>
             </sidenav-item>
           </li>
@@ -84,7 +129,7 @@ const toggleEquipos = () => {
               :navText="'Categorias'"
             >
               <template v-slot:icon>
-                <i class="ni ni-fat-add text-success text-sm opacity-10"></i>
+                <i class="ni ni-fat-add text-success text-sm "></i>
               </template>
             </sidenav-item>
           </li>
@@ -95,7 +140,7 @@ const toggleEquipos = () => {
               :navText="'Bienes '"
             >
               <template v-slot:icon>
-                <i class="ni ni-fat-add text-success text-sm opacity-10"></i>
+                <i class="ni ni-fat-add text-success text-sm "></i>
               </template>
             </sidenav-item>
           </li>
@@ -106,10 +151,10 @@ const toggleEquipos = () => {
         <sidenav-item
           to="/virtual-reality"
           :class="getRoute === 'virtual-reality' ? 'active' : ''"
-          :navText="isRTL ? 'الواقع الافتراضي' : 'Mantenimientos'"
+          :navText= "'Mantenimientos'"
         >
           <template v-slot:icon>
-            <i class="ni ni-app text-info text-sm opacity-10"></i>
+            <i class="ni ni-app text-info text-sm "></i>
           </template>
         </sidenav-item>
       </li>
@@ -117,7 +162,7 @@ const toggleEquipos = () => {
       <li class="mt-12 nav-item">
         <h6
           class="text-xs ps-4 text-uppercase font-weight-bolder opacity-6"
-          :class="isRTL ? 'me-4' : 'ms-2'"
+          :class="isRTL ? 'me-5' : 'ms-2'"
         >
           PERFIL Y CONFIGURACIONES
         </h6>
@@ -127,10 +172,10 @@ const toggleEquipos = () => {
         <sidenav-item
           to="/profile"
           :class="getRoute === 'profile' ? 'active' : ''"
-          :navText="isRTL ? 'حساب تعريفي' : 'Perfil'"
+          :navText="'Perfil'"
         >
           <template v-slot:icon>
-            <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
+            <i class="ni ni-single-02 text-dark text-sm "></i>
           </template>
         </sidenav-item>
       </li>
@@ -142,7 +187,7 @@ const toggleEquipos = () => {
           :navText="isRTL ? 'تسجيل الدخول' : 'Configuraciones'"
         >
           <template v-slot:icon>
-            <i class="ni ni-single-copy-04 text-danger text-sm opacity-10"></i>
+            <i class="ni ni-single-copy-04 text-danger text-sm "></i>
           </template>
         </sidenav-item>
       </li>
@@ -151,10 +196,10 @@ const toggleEquipos = () => {
         <sidenav-item
           to="/signup"
           :class="getRoute === 'signup' ? 'active' : ''"
-          :navText="isRTL ? 'اشتراك' : 'Cerrar sesión'"
+          :navText="'Cerrar sesión'"
         >
           <template v-slot:icon>
-            <i class="ni ni-collection text-info text-sm opacity-10"></i>
+            <i class="ni ni-collection text-info text-sm "></i>
           </template>
         </sidenav-item>
       </li>

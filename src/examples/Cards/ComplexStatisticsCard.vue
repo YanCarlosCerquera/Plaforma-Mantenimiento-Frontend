@@ -66,7 +66,7 @@ defineProps({
             :class="typeof icon === 'object' ? icon.background : 'bg-white'"
           >
             <i
-              class="text-dark text-gradient text-lg opacity-10"
+              class="text-dark text-gradient text-lg "
               :class="typeof icon === 'string' ? icon : icon.component"
               aria-hidden="true"
             ></i>
