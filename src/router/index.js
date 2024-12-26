@@ -13,11 +13,13 @@ import Save_Category from "../views/Category/Save_Category.vue";
 import Save_User from "../views/Save_User.vue";
 import Category from "../views/Category/Category.vue";
 import Assers from "../views/Assets/Assers.vue";
+import Table from "../views/Assets/Table.vue";
+import Home from "../views/Home/Home.vue";
 
 const routes = [
   {
-    path: "/",
-    name: "/",
+    path: "/s",
+    name: "/s",
     redirect: "/dashboard-default",
   },
   {
@@ -85,6 +87,21 @@ name:"Consultar_Category",
     name: "Signup",
     component: Signup,
   },
+
+
+
+  //pRUEBABLE
+
+  {
+path: "/",
+name: "Home",
+component:Home
+  },
+  {
+    path: "/catch",
+    name: "NotFound",
+    component: Table,
+  }
 ];
 
 const router = createRouter({
@@ -94,3 +111,4 @@ const router = createRouter({
 });
 
 export default router;
+

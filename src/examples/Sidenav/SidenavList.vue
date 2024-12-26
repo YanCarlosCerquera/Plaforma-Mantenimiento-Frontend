@@ -16,9 +16,15 @@ const getRoute = computed(() => {
 });
 
 const isEquiposOpen = ref(false);
+const IsMaterialOpen = ref(false);
 
 const toggleEquipos = () => {
   isEquiposOpen.value = !isEquiposOpen.value;
+  
+};
+
+const toggleMaterial = () => {
+  IsMaterialOpen.value =!IsMaterialOpen.value;
 };
 </script>
 
@@ -90,8 +96,8 @@ const toggleEquipos = () => {
           </li>
           <li>
             <sidenav-item
-              to="/machineandteams/add"
-              :class="route.path === '/machineandteams/add' ? 'active' : ''"
+              to="/Asserts"
+              :class="route.path === '/Bienes' ? 'active' : ''"
               :navText="'Bienes '"
             >
               <template v-slot:icon>
@@ -103,15 +109,53 @@ const toggleEquipos = () => {
       </li>
 
       <li class="nav-item">
-        <sidenav-item
-          to="/virtual-reality"
-          :class="getRoute === 'virtual-reality' ? 'active' : ''"
-          :navText="isRTL ? 'الواقع الافتراضي' : 'Mantenimientos'"
+        <div 
+          @click="toggleMaterial"
+          class="nav-link"
+          :class="{ 'active': getRoute === 'matenimeito' || IsMaterialOpen }"
         >
-          <template v-slot:icon>
-            <i class="ni ni-app text-info text-sm opacity-10"></i>
-          </template>
-        </sidenav-item>
+        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+          <i class="ni ni-settings text-info text-sm opacity-10"></i>
+        </div>
+          <span class="nav-link-text ms-1">Matenimiento</span>
+          <ChevronDown v-if="!IsMaterialOpen" class="ml-auto" />
+          <ChevronUp v-else class="ml-auto" />
+        </div>
+        <ul v-if="IsMaterialOpen" class="nav-item-dropdown">
+          <li>
+            <sidenav-item
+              to="/matenimeito/list"
+              :class="route.path === '/matenimeito/list' ? 'active' : ''"
+              :navText="'Agregar Categoria'"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-bullet-list-67 text-success text-sm opacity-10"></i>
+              </template>
+            </sidenav-item>
+          </li>
+          <li>
+            <sidenav-item
+              to="/matenimeito/add"
+              :class="route.path === '/matenimeito/add' ? 'active' : ''"
+              :navText="'Categorias'"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-fat-add text-success text-sm opacity-10"></i>
+              </template>
+            </sidenav-item>
+          </li>
+          <li>
+            <sidenav-item
+              to="/Asserts"
+              :class="route.path === '/Bienes' ? 'active' : ''"
+              :navText="'Bienes '"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-fat-add text-success text-sm opacity-10"></i>
+              </template>
+            </sidenav-item>
+          </li>
+        </ul>
       </li>
 
       <li class="mt-12 nav-item">

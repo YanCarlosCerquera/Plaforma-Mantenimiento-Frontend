@@ -1,27 +1,62 @@
 <script setup>
-import { computed } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useStore } from "vuex";
+import apiService from '../../service/apiService';
 
 const store = useStore();
 const isRTL = computed(() => store.state.isRTL);
 
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     default: "Categorias",
   },
   categories: {
     type: Array,
-    required: true,
-    icon: {
-      component: String,
-      background: String,
-    },
-    label: String,
-    description: String,
+    default: () => [],
   },
 });
+
+const mergedCategories = ref([]);
+
+const iconMap = {
+  'equipo de computa': 'ni ni-mobile-button',
+  'Equipos especiales': 'ni ni-tag',
+  'Maquinaria amarilla': 'ni ni-box-2',
+  'CNC': 'ni ni-satisfied',
+};
+
+const backgroundColors = ['primary', 'info', 'success', 'warning', 'danger'];
+
+const fetchCategories = async () => {
+  try {
+    const response = await apiService.get('/assets/count-by-category');
+    
+    if (response && Array.isArray(response)) {
+      const apiCategories = response.map((item, index) => ({
+        icon: {
+          component: iconMap[item.category] || 'ni ni-building',
+          background: backgroundColors[index % backgroundColors.length],
+        },
+        label: item.category,
+        description: `${item.count} ${item.count === 1 ? 'Equipo' : 'Equipos'}`,
+      }));
+      
+      mergedCategories.value = [...props.categories, ...apiCategories];
+    } else {
+      console.error('Respuesta inválida:', response);
+      mergedCategories.value = [...props.categories];
+    }
+  } catch (error) {
+    console.error('Error al obtener las categorías:', error);
+    mergedCategories.value = [...props.categories];
+  }
+};
+
+onMounted(fetchCategories);
+watch(() => props.categories, fetchCategories);
 </script>
+
 <template>
   <div class="card">
     <div class="p-3 pb-0 card-header">
@@ -30,9 +65,7 @@ defineProps({
     <div class="p-3 card-body">
       <ul :class="`list-group ${isRTL ? 'pe-0' : ''}`">
         <li
-          v-for="(
-            { icon: { component, background }, label, description }, index
-          ) of categories"
+          v-for="({ icon: { component, background }, label, description }, index) in mergedCategories"
           :key="index"
           :class="`mb-2 border-0 list-group-item d-flex justify-content-between border-radius-lg
           ${isRTL ? 'pe-0' : 'ps-0'}`"
@@ -47,8 +80,7 @@ defineProps({
             </div>
             <div class="d-flex flex-column">
               <h6 class="mb-1 text-sm text-dark">{{ label }}</h6>
-              <!-- eslint-disable-next-line vue/no-v-html -->
-              <span class="text-xs" v-html="description"> </span>
+              <span class="text-xs">{{ description }}</span>
             </div>
           </div>
           <div class="d-flex">
