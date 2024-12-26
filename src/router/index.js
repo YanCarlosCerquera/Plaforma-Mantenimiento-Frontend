@@ -3,7 +3,7 @@ import Dashboard from "../views/Dashboard.vue";
 import Users from "../views/Users.vue";
 import Machineandteams from "../views/Billing.vue";
 import VirtualReality from "../views/VirtualReality.vue";
-
+import Index from "../views/Index.vue";
 import Profile from "../views/Profile.vue";
 import Signup from "../views/Signup.vue";
 import Signin from "../views/Signin.vue";
@@ -20,6 +20,11 @@ const routes = [
     path: "/",
     name: "/",
     redirect: "/dashboard-default",
+  },
+  {
+    path: "/index",
+    name: "Index",
+    component: Index,
   },
   {
     path: "/RecuperarContrase",
@@ -86,11 +91,29 @@ const routes = [
     name: "Signup",
     component: Signup,
   },
+<<<<<<< HEAD
   {
     path: "/configuration",
     name: "Configuration",
     component: Configuration,
   },
+=======
+
+
+
+  //pRUEBABLE
+
+  {
+path: "/a",
+name: "Home",
+component:Home
+  },
+  {
+    path: "/catch",
+    name: "NotFound",
+    component: Table,
+  }
+>>>>>>> 7eac0359fca667ab55769b091ce6abcb39a30dcc
 ];
 
 const router = createRouter({
@@ -100,3 +123,4 @@ const router = createRouter({
 });
 
 export default router;
+
