@@ -201,7 +201,7 @@ const handleLogin = async (event) => {
                   <p class="mx-auto mb-4 text-sm">
                     No tienes una cuenta?
                     <a
-                      href="javascript:;"
+                      href="signup"
                       class="text-success text-gradient font-weight-bold"
                       >Crea tu cuenta</a
                     >

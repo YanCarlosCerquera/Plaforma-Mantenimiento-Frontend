@@ -56,8 +56,8 @@ const routes = [
     component: Save_Category,
   },
   {
-path:"/machineandteams/add",
-name:"Consultar_Category",
+    path:"/machineandteams/add",
+    name:"Consultar_Category",
     component: Category,
   },
   {
