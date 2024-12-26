@@ -76,7 +76,7 @@ watch(() => props.categories, fetchCategories);
                 isRTL ? 'ms-3' : 'me-3'
               }`"
             >
-              <i :class="`${component} text-white opacity-10`"></i>
+              <i :class="`${component} text-white `"></i>
             </div>
             <div class="d-flex flex-column">
               <h6 class="mb-1 text-sm text-dark">{{ label }}</h6>

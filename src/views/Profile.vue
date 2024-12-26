@@ -1,32 +1,3 @@
-<style>
-.swal-title-white {
-  color: white;
-}
-
-.text-succes {
-  color: #39a900 !important;
-}
-
-.modal-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  text-align: center;
-}
-
-.btn-danger {
-  background-color: red;
-  color: white !important;
-}
-
-.btn-success {
-  background-color: #39a900;
-  color: white !important;
-}
-
-.modal-footer {
-  gap: 10px;
-}
-</style>
 <script setup>
 import { onBeforeMount, onMounted, onBeforeUnmount } from "vue";
 import { useStore } from "vuex";
@@ -131,7 +102,7 @@ async function getUser() {
       iconColor: "white",
       showConfirmButton: false,
       customClass: {
-        title: "swal-title-white",
+        title: "text-succes",
       },
     });
   }
@@ -185,6 +156,25 @@ function handleImageChange(event) {
 
 const updateUser = async () => {
   try {
+    const result = await Swal.fire({
+      title: "¿Actualizar perfil?",
+      text: "Está seguro de actualizar el perfil.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Confirmar",
+      cancelButtonText: "Cancelar",
+      reverseButtons: true,
+      customClass: {
+        title: "swal-title-white",
+        confirmButton: "btn-success",
+        cancelButton: "btn-danger"
+      },
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
     const data = {
       name: userData.value.name,
       email: userData.value.email,
@@ -201,7 +191,7 @@ const updateUser = async () => {
     });
 
     Swal.fire({
-      title: "perfil actualzido",
+      title: "perfil actualizado",
       text: "Se actualizo el perfil correctamente.",
       icon: "success",
       position: "bottom-right",
@@ -220,7 +210,7 @@ const updateUser = async () => {
       title: "Error",
       text:
         error.response?.data?.message ||
-        "Hubo un problema al actualziar el perfil.",
+        "Hubo un problema al actualizar el perfil.",
       icon: "error",
       position: "bottom-right",
       toast: true,
@@ -266,7 +256,7 @@ const updatePassword = async () => {
     });
 
     Swal.fire({
-      title: "Contraseña actualzida",
+      title: "Contraseña actualizada",
       text: "Se actualizo la contraseña correctamente.",
       icon: "success",
       position: "bottom-right",
@@ -280,16 +270,14 @@ const updatePassword = async () => {
         title: "swal-title-white",
       },
     });
-    currentPassword.value = "";
-    newPassword.value = "";
-    confirmPassword.value = "";
-    dialogVisible.value = false;
+
+    closeDialog()
   } catch (error) {
     Swal.fire({
       title: "Error",
       text:
         error.response?.data?.message ||
-        "Hubo un problema al actualziar la contraseña.",
+        "Hubo un problema al actualizar la contraseña.",
       icon: "error",
       position: "bottom-right",
       toast: true,
@@ -304,6 +292,13 @@ const updatePassword = async () => {
     });
   }
 };
+
+function closeDialog() {
+  currentPassword.value = "";
+  newPassword.value = "";
+  confirmPassword.value = "";
+  dialogVisible.value = false;
+}
 
 onMounted(() => {
   store.state.isAbsolute = true;
@@ -331,84 +326,44 @@ onBeforeUnmount(() => {
 <template>
   <main>
     <div class="container-fluid">
-      <div
-        class="page-header min-height-300"
-        style="
+      <div class="page-header min-height-300" style="
           background-image: url(&quot;https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80&quot;);
           margin-right: -24px;
           margin-left: -34%;
-        "
-      >
+        ">
         <span class="mask bg-gradient-success opacity-6"></span>
       </div>
       <h3 class="mb-1 text-succes">Configuraciones</h3>
       <h5 class="mb-1">Perfil de {{ userRole }}</h5>
-      <div
-        class="card shadow-lg mt-2"
-        style="margin-top: -50px; margin-right: 24px"
-      >
+      <div class="card shadow-lg mt-2" style="margin-top: -50px; margin-right: 24px">
         <div class="card-body p-3">
           <div class="row">
             <div class="col-md-2 d-flex align-items-center">
-              <div
-                class="avatar avatar-xxl position-relative"
-                style="min-width: 150px; min-height: 150px"
-              >
-                <img
-                  :src="
-                    userData.image ? userData.image : '../assets/img/team-1.jpg'
-                  "
-                  alt="profile_image"
-                  class="shadow-sm w-100 border-radius-lg"
-                  style="max-width: 200px; height: auto"
-                />
-                <button
-                  class="btn btn-success btn-circle"
-                  style="position: absolute; bottom: 2px; right: 2px; margin: 0"
-                  @click="$refs.fileInput.click()"
-                >
+              <div class="avatar avatar-xxl position-relative" style="min-width: 150px; min-height: 150px">
+                <img :src="userData.image ? userData.image : '../assets/img/team-1.jpg'
+                  " alt="profile_image" class="shadow-sm w-100 border-radius-lg"
+                  style="max-width: 200px; height: auto" />
+                <button class="btn btn-success btn-circle"
+                  style="position: absolute; bottom: 2px; right: 2px; margin: 0" @click="$refs.fileInput.click()">
                   <i class="fas fa-edit"></i>
                 </button>
-                <input
-                  ref="fileInput"
-                  type="file"
-                  accept="image/*"
-                  @change="handleImageChange"
-                  style="display: none"
-                />
+                <input ref="fileInput" type="file" accept="image/*" @change="handleImageChange" style="display: none" />
               </div>
             </div>
             <div class="col-md-3">
               <div class="row">
                 <p class="text-sm">Información del usuario</p>
                 <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Nombre de usuario</label
-                  >
-                  <argon-input
-                    id="name"
-                    type="text"
-                    value="lucky.jesse"
-                    v-model="userData.name"
-                  />
+                  <label for="example-text-input" class="form-control-label">Nombre de usuario</label>
+                  <argon-input id="name" type="text" value="lucky.jesse" v-model="userData.name" />
                 </div>
                 <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Tipo de documento</label
-                  >
-                  <argon-select
-                    :options="documentTypes"
-                    v-model="userData.documentType"
-                  />
+                  <label for="example-text-input" class="form-control-label">Tipo de documento</label>
+                  <argon-select :options="documentTypes" v-model="userData.documentType" />
                 </div>
                 <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Número de documento</label
-                  >
-                  <argon-input
-                    type="number"
-                    v-model="userData.documentNumber"
-                  />
+                  <label for="example-text-input" class="form-control-label">Número de documento</label>
+                  <argon-input type="number" v-model="userData.documentNumber" />
                 </div>
               </div>
             </div>
@@ -416,30 +371,16 @@ onBeforeUnmount(() => {
               <p class="text-sm">Contactos</p>
               <div class="row">
                 <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Correo electrónico</label
-                  >
-                  <argon-input
-                    id="email"
-                    type="email"
-                    value="jesse@example.com"
-                    v-model="userData.email"
-                  />
+                  <label for="example-text-input" class="form-control-label">Correo electrónico</label>
+                  <argon-input id="email" type="email" value="jesse@example.com" v-model="userData.email" />
                 </div>
                 <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Número de telefóno</label
-                  >
-                  <argon-input type="number" v-model="userData.phone" />
+                  <label for="example-text-input" class="form-control-label">Número de telefóno</label>
+                  <argon-input prefix="+57 " type="number" v-model="userData.phone" />
                 </div>
                 <div>
-                  <argon-button
-                    color="success"
-                    size="sm"
-                    class="ms-auto"
-                    @click="updateUser"
-                    >Actualizar perfil</argon-button
-                  >
+                  <argon-button color="success" size="sm" class="ms-auto" @click="updateUser">Actualizar
+                    perfil</argon-button>
                 </div>
               </div>
             </div>
@@ -447,33 +388,16 @@ onBeforeUnmount(() => {
               <p class="text-sm">Cargos</p>
               <div class="row">
                 <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Cargo desempeñado</label
-                  >
-                  <argon-select
-                    id="position"
-                    :options="positions"
-                    v-model="userData.position"
-                  />
+                  <label for="example-text-input" class="form-control-label">Cargo desempeñado</label>
+                  <argon-select id="position" :options="positions" v-model="userData.position" />
                 </div>
                 <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Rol asignado</label
-                  >
-                  <ArgonAutocomplete
-                    type="text"
-                    v-model="userData.role"
-                    :items="roles"
-                  />
+                  <label for="example-text-input" class="form-control-label">Rol asignado</label>
+                  <ArgonAutocomplete type="text" v-model="userData.role" :items="roles" />
                 </div>
                 <div>
-                  <argon-button
-                    color="success"
-                    size="sm"
-                    class="ms-auto"
-                    @click="dialogVisible = true"
-                    >Cambiar contraseña</argon-button
-                  >
+                  <argon-button color="success" size="sm" class="ms-auto" @click="dialogVisible = true">Cambiar
+                    contraseña</argon-button>
                 </div>
               </div>
             </div>
@@ -491,46 +415,24 @@ onBeforeUnmount(() => {
         <v-card-text>
           <form>
             <div class="mb-3">
-              <label for="currentPassword" class="form-label"
-                >Contraseña anterior</label
-              >
-              <ArgonInput 
-                type="password"
-                id="currentPassword"
-                placeholder="Ingrese su actual contraseña"
-                v-model="currentPassword"
-              />
+              <label for="currentPassword" class="form-label">Contraseña anterior</label>
+              <ArgonInput type="password" id="currentPassword" placeholder="Ingrese su actual contraseña"
+                v-model="currentPassword" />
             </div>
             <div class="mb-3">
-              <label for="newPassword" class="form-label"
-                >Nueva contraseña</label
-              >
-              <ArgonInput
-                type="password"
-                id="newPassword"
-                placeholder="Ingrese su nueva contraseña"
-                v-model="newPassword"
-              />
+              <label for="newPassword" class="form-label">Nueva contraseña</label>
+              <ArgonInput type="password" id="newPassword" placeholder="Ingrese su nueva contraseña"
+                v-model="newPassword" />
             </div>
             <div class="mb-3">
-              <label for="confirmPassword" class="form-label"
-                >Confirmar nueva contraseña</label
-              >
-              <ArgonInput
-                type="password"
-                id="confirmPassword"
-                placeholder="Confirme su contraseña"
-                v-model="confirmPassword"
-              />
+              <label for="confirmPassword" class="form-label">Confirmar nueva contraseña</label>
+              <ArgonInput type="password" id="confirmPassword" placeholder="Confirme su contraseña"
+                v-model="confirmPassword" />
             </div>
           </form>
         </v-card-text>
         <v-card-actions class="d-flex justify-content-center gap-5">
-          <button
-            type="button"
-            class="btn btn-danger"
-            @click="dialogVisible = false"
-          >
+          <button type="button" class="btn btn-danger" @click="closeDialog">
             Cancelar
           </button>
           <button type="button" class="btn btn-success" @click="updatePassword">

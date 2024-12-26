@@ -4,6 +4,7 @@ const apiClient = axios.create({
     baseURL: process.env.Url || "http://localhost:3001",
     headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
 });
 
@@ -14,10 +15,23 @@ const apiService = {
             const response = await apiClient.get(route, config);
             return response.data;
         } catch (error) {
-            console.error("Error en GET:", error.response?.data || error.message);
-            throw error;
+            if (error.response) {
+                // Error específico de respuesta
+                console.error(`Error en GET: ${error.response.status} ${error.response.statusText}`);
+                console.error("Detalles:", error.response.data);
+                throw new Error(`Error al obtener datos: ${error.response.data.message || 'Error desconocido'}`);
+            } else if (error.request) {
+                // No hubo respuesta del servidor
+                console.error("Error en la solicitud, sin respuesta:", error.request);
+                throw new Error("No se recibió respuesta del servidor");
+            } else {
+                // Otro tipo de error
+                console.error("Error en la configuración de la solicitud:", error.message);
+                throw new Error(error.message);
+            }
         }
     },
+    
 
     post: async (route, data = {}, headers = {}) => {
         try {

@@ -3,7 +3,7 @@ import Dashboard from "../views/Dashboard.vue";
 import Users from "../views/Users.vue";
 import Machineandteams from "../views/Billing.vue";
 import VirtualReality from "../views/VirtualReality.vue";
-
+import Index from "../views/Index.vue";
 import Profile from "../views/Profile.vue";
 import Signup from "../views/Signup.vue";
 import Signin from "../views/Signin.vue";
@@ -21,6 +21,11 @@ const routes = [
     path: "/s",
     name: "/s",
     redirect: "/dashboard-default",
+  },
+  {
+    path: "/index",
+    name: "Index",
+    component: Index,
   },
   {
     path: "/RecuperarContrase",
@@ -58,8 +63,8 @@ const routes = [
     component: Save_Category,
   },
   {
-path:"/machineandteams/add",
-name:"Consultar_Category",
+    path:"/machineandteams/add",
+    name:"Consultar_Category",
     component: Category,
   },
   {
