@@ -78,8 +78,8 @@ app.use(vuetify);
               <v-icon  style="color: black;" icon="fa-solid fa-chevron-right"></v-icon>
             </v-btn>
           </v-col>
-          <v-col cols="12" md="6" lg="6">
-            <v-btn outlined block class="pa-4 text-body-1" style="border: 1px solid black;">
+          <v-col cols="12" md="6" lg="6" >
+            <v-btn outlined block class="pa-4 text-body-1 ml-0 ml-md-0 custom-margin" style="border: 1px solid black;">
                 Gestión de rutas
               <v-icon  style="color: black;" icon="fa-solid fa-chevron-right"></v-icon>
             </v-btn>
@@ -93,9 +93,9 @@ app.use(vuetify);
           </v-col>
   
           <v-col cols="12" md="12" lg="12">
-            <v-btn outlined block class="pa-4 text-body-1" style="border: 1px solid black;">
-                Eventos del sistema
-              <v-icon left style="color: black;" icon="fa-solid fa-chevron-right"></v-icon>
+            <v-btn outlined block class="pa-4 text-body-1 justify-start" style="border: 1px solid black;" >
+              Eventos del sistema
+              <v-icon class="justify-end "  style="color: black;  " icon="fa-solid fa-chevron-right"></v-icon>
             </v-btn>
           </v-col>
         </v-row>
@@ -117,4 +117,10 @@ app.use(vuetify);
     background-color: #f5f5f5; /* Fondo general para destacar el contenedor */
     padding: 24px;
   }
+
+  @media (min-width: 1280px) { /* Media query for large screens (lg) */
+  .custom-margin {
+    margin-left: 50% !important;
+  }
+}
   </style>
