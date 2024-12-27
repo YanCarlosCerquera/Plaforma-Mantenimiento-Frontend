@@ -14,6 +14,7 @@ import Save_User from "../views/Save_User.vue";
 import Category from "../views/Category/Category.vue";
 import Assers from "../views/Assets/Assers.vue";
 import Configuration from "../views/Configuration.vue";
+import PlanearMantenimiento from "../views/PlanearMantenimiento.vue";
 
 const routes = [
   {
@@ -43,7 +44,7 @@ const routes = [
   },
   {
     path: "/users",
-    name: "Gestionusuarios",
+    name: "users",
     component: Users,
   },
   {
@@ -91,29 +92,20 @@ const routes = [
     name: "Signup",
     component: Signup,
   },
-<<<<<<< HEAD
   {
     path: "/configuration",
     name: "Configuration",
     component: Configuration,
   },
-=======
-
-
-
-  //pRUEBABLE
-
   {
-path: "/a",
-name: "Home",
-component:Home
+    path: "/mantenimientos",
+    redirect: "/mantenimientos/planear-mantenimiento",
   },
   {
-    path: "/catch",
-    name: "NotFound",
-    component: Table,
-  }
->>>>>>> 7eac0359fca667ab55769b091ce6abcb39a30dcc
+    path: "/mantenimientos/planear-mantenimiento",
+    name: "mantenimientos.planear-mantenimiento",
+    component: PlanearMantenimiento,
+  },
 ];
 
 const router = createRouter({
