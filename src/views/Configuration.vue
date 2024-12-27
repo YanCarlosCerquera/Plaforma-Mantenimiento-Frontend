@@ -53,35 +53,33 @@ app.use(vuetify);
           <v-col cols="12">
             <h3 class="text-h6 font-weight-bold">Parametrización</h3>
           </v-col>
-  
           <!-- Botones de parametrización con iconos -->
-          <v-col cols="12" md="6" lg="4">
-            <v-btn  block class="pa-4 text-body-1">
+          <v-col cols="12" md="6" lg="6">
+            <v-btn outlined block class="pa-4 text-body-1" style="border: 1px solid black;">
                 Gestión de centro de formación
                 <v-icon  style="color: black;" icon="fa-solid fa-chevron-right" ></v-icon>
             </v-btn>
-            
           </v-col>
-          <v-col cols="12" md="6" lg="4">
-            <v-btn outlined block class="pa-4 text-body-1">
+          <v-col cols="12" md="6" lg="6">
+            <v-btn outlined block class="pa-4 text-body-1" style="border: 1px solid black;">
                 Gestión de roles
               <v-icon right style="color: black;" icon="fa-solid fa-chevron-right"></v-icon>
             </v-btn>
           </v-col>
-          <v-col cols="12" md="6" lg="4">
-            <v-btn outlined block class="pa-4 text-body-1">
+          <v-col cols="12" md="6" lg="6">
+            <v-btn outlined block class="pa-4 text-body-1" style="border: 1px solid black;">
                 Gestión de dependencias
               <v-icon  style="color: black;" icon="fa-solid fa-chevron-right"></v-icon>
             </v-btn>
           </v-col>
-          <v-col cols="12" md="6" lg="4">
-            <v-btn outlined block class="pa-4 text-body-1">
+          <v-col cols="12" md="6" lg="6">
+            <v-btn outlined block class="pa-4 text-body-1" style="border: 1px solid black;">
                 Asignación de permisos
               <v-icon  style="color: black;" icon="fa-solid fa-chevron-right"></v-icon>
             </v-btn>
           </v-col>
-          <v-col cols="12" md="6" lg="4">
-            <v-btn outlined block class="pa-4 text-body-1">
+          <v-col cols="12" md="6" lg="6">
+            <v-btn outlined block class="pa-4 text-body-1" style="border: 1px solid black;">
                 Gestión de rutas
               <v-icon  style="color: black;" icon="fa-solid fa-chevron-right"></v-icon>
             </v-btn>
@@ -94,8 +92,8 @@ app.use(vuetify);
             <h3 class="text-h6 font-weight-bold">Registros del sistema</h3>
           </v-col>
   
-          <v-col cols="12" md="6" lg="4">
-            <v-btn outlined block class="pa-4 text-body-1">
+          <v-col cols="12" md="12" lg="12">
+            <v-btn outlined block class="pa-4 text-body-1" style="border: 1px solid black;">
                 Eventos del sistema
               <v-icon left style="color: black;" icon="fa-solid fa-chevron-right"></v-icon>
             </v-btn>
