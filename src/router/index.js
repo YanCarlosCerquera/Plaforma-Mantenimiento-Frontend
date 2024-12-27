@@ -91,29 +91,11 @@ const routes = [
     name: "Signup",
     component: Signup,
   },
-<<<<<<< HEAD
   {
     path: "/configuration",
     name: "Configuration",
     component: Configuration,
   },
-=======
-
-
-
-  //pRUEBABLE
-
-  {
-path: "/a",
-name: "Home",
-component:Home
-  },
-  {
-    path: "/catch",
-    name: "NotFound",
-    component: Table,
-  }
->>>>>>> 7eac0359fca667ab55769b091ce6abcb39a30dcc
 ];
 
 const router = createRouter({
