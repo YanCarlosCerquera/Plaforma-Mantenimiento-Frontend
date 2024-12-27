@@ -207,8 +207,8 @@ const acceptUser = async (Userid, assignedRol) => {
   }
 };
 
-onMounted(() => {
-  fetchData();
+onMounted(async () => {
+  await fetchData();
   fetchRoles();
 });
 </script>

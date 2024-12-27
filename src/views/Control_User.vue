@@ -294,8 +294,8 @@ const handleSubmit = async () => {
   }
 };
 
-onMounted(() => {
-  fetchData();
+onMounted(async () => {
+  await fetchData();
   fetchRoles();
 });
 </script>

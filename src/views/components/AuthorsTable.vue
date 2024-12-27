@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, computed } from "vue";
+import { defineProps, defineEmits, ref, computed, watch} from "vue";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
@@ -30,6 +30,11 @@ const { headers, rows, title, icons, fields } = defineProps({
 const emit = defineEmits(["edit", "delete"]);
 const itemsPerPage = ref(5);
 const page = ref(1);
+const rowsData = computed(() => rows);
+
+watch(rows, (newRows) => {
+  console.log('Rows updated', newRows);
+});
 
 const handleEdit = (row) => {
   emit("edit", row);
@@ -40,9 +45,6 @@ const handleDelete = (row) => {
 };
 
 const getFieldValue = (obj, path) => {
-  console.log("onj: " + obj)
-  console.dir(obj);
-  console.log("path: " + path)
   return path.split(".").reduce((prev, curr) => {
     return prev ? prev[curr] : null;
   }, obj);
@@ -64,117 +66,114 @@ const allHeaders = computed(() => [
 
 const exportToPDF = () => {
   const doc = new jsPDF();
+
   const tableColumn = headers.map((header) => header.text || header);
-  const tableRows = rows.map((row) =>
-    Object.keys(fields).map((key) => getFieldValue(row, fields[key].value))
+
+  const tableRows = rowsData.value.map((row) =>
+    Object.keys(fields).map((field) => {
+      const fieldConfig = fields[field];
+      if (fieldConfig.showAvatar) {
+        return getFieldValue(row, fieldConfig.main);
+      }
+      if (fieldConfig.sub) {
+        return getFieldValue(row, fieldConfig.sub);
+      }
+      return getFieldValue(row, fieldConfig.value);
+    })
   );
 
-  doc.text(title || "Exportación de Datos", 20, 10);
+  doc.text(title || "Exportación de Tabla", 14, 15);
+
   doc.autoTable({
     head: [tableColumn],
     body: tableRows,
     startY: 20,
-    theme: "grid",
   });
 
   doc.save(`${title || "tabla"}.pdf`);
 };
 
-const exportToExcel = () => {
-  const worksheetData = [
-    headers.map((header) => header.text || header),
-    ...rows.map((row) =>
-      Object.keys(fields).map((key) => getFieldValue(row, fields[key].value))
-    ),
-  ];
 
-  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+const exportToExcel = () => {
+  const tableHeaders = headers.map((header) => header.text || header);
+
+  const tableRows = rowsData.value.map((row) =>
+    Object.keys(fields).map((field) => {
+      const fieldConfig = fields[field];
+      if (fieldConfig.showAvatar) {
+        return getFieldValue(row, fieldConfig.main);
+      }
+      if (fieldConfig.sub) {
+        return getFieldValue(row, fieldConfig.sub);
+      }
+      return getFieldValue(row, fieldConfig.value);
+    })
+  );
+
+  const worksheet = XLSX.utils.aoa_to_sheet([tableHeaders, ...tableRows]);
   const workbook = XLSX.utils.book_new();
+
   XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
 
   XLSX.writeFile(workbook, `${title || "tabla"}.xlsx`);
 };
+
+
+
 </script>
 
 <template>
   <div class="card bg-white rounded-lg shadow-sm">
-    <div v-if="title" class="card-header">
-      <h5 class="text-xl font-semibold">{{ title }}</h5>
+    <div class="card-header">
+      <h5 v-if="title" class="text-xl font-semibold">{{ title }}</h5>
       <div class="align-middle text-sm">
-        <button
-          class="btn btn-sm btn-icon btn-bg-light btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
-          style="width: auto; padding-right: 1rem; padding-left: 1rem;"
-           @click="exportToPDF"
-        >
-          <i class="fas fa-file-pdf" style="color: red;"></i>
+        <button class="btn btn-sm btn-icon btn-bg-light btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
+          style="width: auto; padding-right: 1rem; padding-left: 1rem;" @click="exportToPDF">
+          <i class="fas fa-file-pdf" style="color: red; font-size: 1.5rem;"></i>
         </button>
-        <button
-          class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2"
-          style="width: auto; padding-right: 1rem; padding-left: 1rem;"
-          @click="exportToExcel"
-        >
-          <i class="fas fa-file-excel" style="color: green;"></i>
+        <button class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2"
+          style="width: auto; padding-right: 1rem; padding-left: 1rem;" @click="exportToExcel">
+          <i class="fas fa-file-excel" style="color: green; font-size: 1.5rem;"></i>
         </button>
       </div>
     </div>
     <div class="card-body px-0 pt-0 pb-2">
       <div class="table-responsive p-0">
-        <v-data-table
-          v-model:items-per-page="itemsPerPage"
-          v-model:page="page"
-          :headers="allHeaders"
-          :items="rows"
-          :items-per-page-options="[5, 10, 25]"
-          class="elevation-1"
-        >
+        <v-data-table v-model:items-per-page="itemsPerPage" v-model:page="page" :headers="allHeaders" :items="rows"
+          :items-per-page-options="[5, 10, 25]" class="elevation-1">
           <!-- Custom item slot -->
           <template v-slot:item="{ item }">
             <tr class="hover:bg-gray-50">
               <td v-for="(field, index) in Object.keys(fields)" :key="field">
                 <div v-if="index === 0" class="d-flex px-2 py-1">
                   <div v-if="fields[field].showAvatar">
-                    <img
-                      :src="
-                        getFieldValue(item, fields[field].avatar) ||
-                        '../../assets/img/team-2.jpg'
-                      "
-                      class="avatar avatar-sm me-3 rounded-circle"
-                      alt="user"
-                    />
+                    <img :src="getFieldValue(item, fields[field].avatar) ||
+                      '../../assets/img/team-2.jpg'
+                      " class="avatar avatar-sm me-3 rounded-circle" alt="user" />
                   </div>
                   <div class="d-flex flex-column justify-content-center">
                     <h6 class="mb-0 text-sm">
                       {{ getFieldValue(item, fields[field].main) }}
                     </h6>
-                    <p
-                      v-if="fields[field].sub"
-                      class="text-xs text-secondary mb-0"
-                    >
+                    <p v-if="fields[field].sub" class="text-xs text-secondary mb-0">
                       {{ getFieldValue(item, fields[field].sub) }}
                     </p>
                   </div>
                 </div>
                 <div v-else :class="fields[field].class || 'px-2 py-1'">
-                  <span
-                    :class="
-                      fields[field].textClass || 'text-xs font-weight-bold'
-                    "
-                  >
+                  <span :class="fields[field].textClass || 'text-xs font-weight-bold'
+                    ">
                     {{ getFieldValue(item, fields[field].value) }}
                   </span>
                 </div>
               </td>
               <td class="align-middle text-center text-sm">
-                <button
-                  @click="handleEdit(item)"
-                  class="btn btn-sm btn-icon btn-bg-light btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
-                >
+                <button @click="handleEdit(item)"
+                  class="btn btn-sm btn-icon btn-bg-light btn-active-color-green btn-active-bg-warning mx-lg-2 my-2">
                   <i :class="icons.firstIcon || 'fas fa-check'"></i>
                 </button>
-                <button
-                  @click="handleDelete(item)"
-                  class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2"
-                >
+                <button @click="handleDelete(item)"
+                  class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2">
                   <i :class="icons.secondIcon || 'fas fa-trash'"></i>
                 </button>
               </td>
