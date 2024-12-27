@@ -11,7 +11,6 @@ const token = Cookies.get("authToken");
 const headers = ref([
   "Nombre de usuario",
   "Teléfono",
-  "Correo electrónico",
   "Tipo de documento",
   "Número de documento",
   "Fecha de registro",
@@ -32,11 +31,6 @@ const fields = ref({
     value: "phone",
     class: "align-middle",
     textClass: "text-xs font-weight-bold mb-0",
-  },
-  email: {
-    value: "email",
-    class: "align-middle",
-    textClass: "text-xs font-weight-bold",
   },
   tipoDocumento: {
     value: "typeDocument",

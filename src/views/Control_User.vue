@@ -17,17 +17,17 @@ const user = ref({
   numberDocument: "",
   photoUrl: "",
 });
+const userId = ref("");
 const headers = ref([
-  "Nombre de usuario",
-  "Rol asignado",
-  "Cargo",
-  "Fecha de creación",
+  { text: "Nombre de usuario", value: "usuario.name" },
+  { text: "Rol asignado", value: "rol.value" },
+  { text: "Cargo", value: "position.value" },
+  { text: "Fecha de creación", value: "fecha.value" },
 ]);
 const icons = ref({
   firstIcon: "fas fa-pen",
   secondIcon: "fas fa-trash",
 });
-const userId = ref("");
 
 const documentTypes = [
   { value: "", label: "Selecciona tu tipo de documento" },

@@ -1,5 +1,8 @@
 <script setup>
 import { defineProps, defineEmits, ref, computed } from "vue";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const { headers, rows, title, icons, fields } = defineProps({
   headers: {
@@ -37,6 +40,9 @@ const handleDelete = (row) => {
 };
 
 const getFieldValue = (obj, path) => {
+  console.log("onj: " + obj)
+  console.dir(obj);
+  console.log("path: " + path)
   return path.split(".").reduce((prev, curr) => {
     return prev ? prev[curr] : null;
   }, obj);
@@ -44,10 +50,10 @@ const getFieldValue = (obj, path) => {
 
 const tableHeaders = computed(() => {
   return headers.map((header, index) => ({
-    title: header,
+    title: header.text || header,
     key: Object.keys(fields)[index] || "actions",
-    sortable: true,
-    align: index === 0 ? "start" : "center",
+    value: header.value || null,
+    align: "start",
   }));
 });
 
@@ -56,12 +62,60 @@ const allHeaders = computed(() => [
   { title: "Acciones", key: "actions", sortable: false, align: "center" },
 ]);
 
+const exportToPDF = () => {
+  const doc = new jsPDF();
+  const tableColumn = headers.map((header) => header.text || header);
+  const tableRows = rows.map((row) =>
+    Object.keys(fields).map((key) => getFieldValue(row, fields[key].value))
+  );
+
+  doc.text(title || "Exportación de Datos", 20, 10);
+  doc.autoTable({
+    head: [tableColumn],
+    body: tableRows,
+    startY: 20,
+    theme: "grid",
+  });
+
+  doc.save(`${title || "tabla"}.pdf`);
+};
+
+const exportToExcel = () => {
+  const worksheetData = [
+    headers.map((header) => header.text || header),
+    ...rows.map((row) =>
+      Object.keys(fields).map((key) => getFieldValue(row, fields[key].value))
+    ),
+  ];
+
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+
+  XLSX.writeFile(workbook, `${title || "tabla"}.xlsx`);
+};
 </script>
 
 <template>
   <div class="card bg-white rounded-lg shadow-sm">
     <div v-if="title" class="card-header">
-      <h6 class="text-xl font-semibold">{{ title }}</h6>
+      <h5 class="text-xl font-semibold">{{ title }}</h5>
+      <div class="align-middle text-sm">
+        <button
+          class="btn btn-sm btn-icon btn-bg-light btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
+          style="width: auto; padding-right: 1rem; padding-left: 1rem;"
+           @click="exportToPDF"
+        >
+          <i class="fas fa-file-pdf" style="color: red;"></i>
+        </button>
+        <button
+          class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2"
+          style="width: auto; padding-right: 1rem; padding-left: 1rem;"
+          @click="exportToExcel"
+        >
+          <i class="fas fa-file-excel" style="color: green;"></i>
+        </button>
+      </div>
     </div>
     <div class="card-body px-0 pt-0 pb-2">
       <div class="table-responsive p-0">
@@ -71,23 +125,8 @@ const allHeaders = computed(() => [
           :headers="allHeaders"
           :items="rows"
           :items-per-page-options="[5, 10, 25]"
+          class="elevation-1"
         >
-          <!-- Custom header slot -->
-          <template v-slot:header="{ props }">
-            <thead>
-              <tr>
-                <th
-                  v-for="header in props.headers"
-                  :key="header.key"
-                  class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 border-b"
-                  :class="{ 'ps-2': header.key !== Object.keys(fields)[0] }"
-                >
-                  {{ header.title }}
-                </th>
-              </tr>
-            </thead>
-          </template>
-
           <!-- Custom item slot -->
           <template v-slot:item="{ item }">
             <tr class="hover:bg-gray-50">
@@ -128,13 +167,13 @@ const allHeaders = computed(() => [
               <td class="align-middle text-center text-sm">
                 <button
                   @click="handleEdit(item)"
-                  class="btn btn-sm btn-icon btn-bg-light btn-active-color-green btn-active-bg-warning mx-lg-2"
+                  class="btn btn-sm btn-icon btn-bg-light btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
                 >
                   <i :class="icons.firstIcon || 'fas fa-check'"></i>
                 </button>
                 <button
                   @click="handleDelete(item)"
-                  class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning"
+                  class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2"
                 >
                   <i :class="icons.secondIcon || 'fas fa-trash'"></i>
                 </button>
