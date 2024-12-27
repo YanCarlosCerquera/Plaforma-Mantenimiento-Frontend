@@ -3,42 +3,56 @@ import { ref, onMounted } from "vue";
 import AuthorsTable from "./components/AuthorsTable.vue";
 import apiService from "../service/apiService";
 import { useDisplay } from "vuetify";
+import Swal from "sweetalert2";
+import Cookies from "js-cookie";
+
+const token = Cookies.get("authToken");
 
 const headers = ref([
   "Nombre de usuario",
   "Teléfono",
+  "Correo electrónico",
   "Tipo de documento",
   "Número de documento",
-  "Fecha de registro"
+  "Fecha de registro",
 ]);
+const icons = ref({
+  firstIcon: "fas fa-check",
+  secondIcon: "fas fa-trash",
+});
 
 const fields = ref({
   usuario: {
     showAvatar: true,
-    avatar: 'avatar',
-    main: 'name',
-    sub: 'email'
+    avatar: "photoUrl",
+    main: "name",
+    sub: "email",
   },
   telefono: {
-    value: 'phone',
-    class: 'px-2 py-1',
-    textClass: 'text-xs font-weight-bold mb-0'
+    value: "phone",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold mb-0",
+  },
+  email: {
+    value: "email",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold",
   },
   tipoDocumento: {
-    value: 'typeDocument',
-    class: 'align-middle text-center',
-    textClass: 'text-secondary text-xs font-weight-bold'
+    value: "typeDocument",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold",
   },
   numeroDocumento: {
-    value: 'numberDocument',
-    class: 'align-middle text-center',
-    textClass: 'text-secondary text-xs font-weight-bold'
+    value: "numberDocument",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold",
   },
   fecha: {
-    value: 'createdAt',
-    class: 'align-middle text-center',
-    textClass: 'text-secondary text-xs font-weight-bold'
-  }
+    value: "createdAt",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold",
+  },
 });
 
 const rows = ref([]);
@@ -49,27 +63,39 @@ const availableRoles = ref([]);
 const isLoading = ref(false);
 
 const formatPhone = (phone) => {
-  if (!phone) return '';
-  const prefijo = phone.slice(0, phone.indexOf('-') + 1);
-  const numero = phone.slice(phone.indexOf('-') + 1);
-  return prefijo.startsWith('+') ? `${prefijo} ${numero}` : `+${prefijo} ${numero}`;
+  if (!phone) return "";
+  const prefijo = phone.slice(0, phone.indexOf("-") + 1);
+  const numero = phone.slice(phone.indexOf("-") + 1);
+  return prefijo.startsWith("+")
+    ? `${prefijo} ${numero}`
+    : `+${prefijo} ${numero}`;
 };
 
 const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const options = { day: '2-digit', month: 'short', year: 'numeric' };
-  return new Date(dateString).toLocaleDateString('es-ES', options).replace('.', '');
+  if (!dateString) return "";
+  const options = { day: "2-digit", month: "short", year: "numeric" };
+  return new Date(dateString)
+    .toLocaleDateString("es-ES", options)
+    .replace(".", "");
 };
-
 
 const fetchData = async () => {
   try {
-    const response = await apiService.get("/users");
-    rows.value = (response.data || response).filter(user => !user.state).map(user => ({
-      ...user,
-      phone: formatPhone(user.phone),
-      createdAt: formatDate(user.createdAt)
-    }));
+    const response = await apiService.get(
+      "/users",
+      {},
+      { Authorization: `Bearer ${token}` }
+    );
+    rows.value = (response.data || response)
+      .filter((user) => !user.state)
+      .map((user) => ({
+        ...user,
+        phone: formatPhone(user.phone),
+        createdAt: formatDate(user.createdAt),
+        photoUrl: user.photoUrl
+          ? user.photoUrl.replace("http://localhost:3000", "")
+          : user.photoUrl,
+      }));
   } catch (error) {
     console.error("Error fetching users:", error);
     alert("Error al cargar los usuarios");
@@ -78,7 +104,11 @@ const fetchData = async () => {
 
 const fetchRoles = async () => {
   try {
-    const response = await apiService.get("/rol");
+    const response = await apiService.get(
+      "/rol",
+      {},
+      { Authorization: `Bearer ${token}` }
+    );
     availableRoles.value = response.data || response;
   } catch (error) {
     console.error("Error fetching roles:", error);
@@ -87,19 +117,62 @@ const fetchRoles = async () => {
 };
 
 const handleEdit = (row) => {
-  editedItem.value = { ...row, assignedRol: '' };
+  editedItem.value = { ...row, assignedRol: "" };
   dialog.value = true;
 };
 
 const handleDelete = async (id) => {
-  if (!confirm("¿Estás seguro de que quieres eliminar este usuario?")) return;
+  const result = await Swal.fire({
+    title: "¿Estás seguro de que quieres eliminar este usuario?",
+    text: "Esta acción no puede deshacerse.",
+    showCancelButton: true,
+    confirmButtonText: "Confirmar",
+    cancelButtonText: "Cancelar",
+    reverseButtons: true,
+    customClass: {
+      title: "text-succes",
+      confirmButton: "btn-success",
+      cancelButton: "btn-danger",
+    },
+  });
+
+  if (!result.isConfirmed) {
+    return;
+  }
 
   try {
     await apiService.delete(`users/${id}`);
-    alert("Usuario eliminado correctamente");
+    Swal.fire({
+      title: "Usuario eliminado correctamente",
+      icon: "success",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#28a745",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
+    });
     await fetchData();
   } catch (error) {
-    alert("Error al eliminar usuario: " + (error.response?.data?.message || "Algo salió mal"));
+    Swal.fire({
+      title: "Error al eliminar usuario",
+      text: error.response?.data?.message || "Algo salió mal.",
+      icon: "error",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
+    });
   }
 };
 
@@ -111,28 +184,34 @@ const acceptUser = async (Userid, assignedRol) => {
 
     isLoading.value = true;
 
-    const response = await apiService.patch(
-      `users/${Userid}`,
-      {
-        state: true,
-        assignedRol: assignedRol,
-      }
-    );
-console.log(response);
+    const response = await apiService.patch(`users/${Userid}`, {
+      state: true,
+      assignedRol: assignedRol,
+    });
+    console.log(response);
 
     dialog.value = false;
     await fetchData();
   } catch (error) {
-    console.error("Error updating user:", error);
-    alert(
-      "Error al autorizar usuario: " + 
-      (error.response?.data?.message || "Algo salió mal")
-    );
+    Swal.fire({
+      title: "Error al autorizar usuario: ",
+      text: error.response?.data?.message || "Algo salió mal.",
+      icon: "error",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
+    });
   } finally {
-    isLoading.value = false; 
+    isLoading.value = false;
   }
 };
-
 
 onMounted(() => {
   fetchData();
@@ -145,15 +224,17 @@ onMounted(() => {
     <div class="row">
       <div class="col-12">
         <AuthorsTable
+          :title="'Control de acceso'"
           :headers="headers"
           :rows="rows"
           :fields="fields"
+          :icons="icons"
           @edit="handleEdit"
           @delete="handleDelete"
         />
       </div>
     </div>
-    <v-dialog v-model="dialog" :fullscreen="mobile" max-width="500px">
+    <v-dialog v-model="dialog" scrollable :fullscreen="mobile" max-width="500px">
       <v-card class="bg-white">
         <v-card-title class="text-h5 bg-light">
           Autorizar Usuario
@@ -191,15 +272,14 @@ onMounted(() => {
             Cancelar
           </v-btn>
           <v-btn
-  color="blue-darken-1"
-  variant="text"
-  @click="acceptUser(editedItem._id, editedItem.assignedRol)"
-  :disabled="!editedItem.assignedRol || isLoading"
-  :loading="isLoading"
->
-  Autorizar y Asignar Rol
-</v-btn>
-
+            color="blue-darken-1"
+            variant="text"
+            @click="acceptUser(editedItem._id, editedItem.assignedRol)"
+            :disabled="!editedItem.assignedRol || isLoading"
+            :loading="isLoading"
+          >
+            Autorizar y Asignar Rol
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

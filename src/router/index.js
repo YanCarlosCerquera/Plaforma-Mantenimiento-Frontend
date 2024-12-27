@@ -14,6 +14,7 @@ import Save_User from "../views/Save_User.vue";
 import Category from "../views/Category/Category.vue";
 import Assers from "../views/Assets/Assers.vue";
 import Configuration from "../views/Configuration.vue";
+import Control_User from "../views/Control_User.vue";
 
 const routes = [
   {
@@ -42,13 +43,18 @@ const routes = [
     component: Dashboard,
   },
   {
-    path: "/users",
-    name: "Gestionusuarios",
+    path: "/users/access",
+    name: "Control de accesso",
     component: Users,
   },
   {
-    path: "/users_agregar",
+    path: "/users/control",
     name: "Gestion de usuarios",
+    component: Control_User,
+  },
+  {
+    path: "/users/add",
+    name: "Agregar de usuarios",
     component: Save_User,
   },
   { 
@@ -91,29 +97,11 @@ const routes = [
     name: "Signup",
     component: Signup,
   },
-<<<<<<< HEAD
   {
     path: "/configuration",
     name: "Configuration",
     component: Configuration,
   },
-=======
-
-
-
-  //pRUEBABLE
-
-  {
-path: "/a",
-name: "Home",
-component:Home
-  },
-  {
-    path: "/catch",
-    name: "NotFound",
-    component: Table,
-  }
->>>>>>> 7eac0359fca667ab55769b091ce6abcb39a30dcc
 ];
 
 const router = createRouter({

@@ -1,0 +1,473 @@
+<script setup>
+import { ref, onMounted } from "vue";
+import AuthorsTable from "./components/AuthorsTable.vue";
+import apiService from "../service/apiService";
+import Swal from "sweetalert2";
+import Cookies from "js-cookie";
+import ArgonInput from "@/components/ArgonInput.vue";
+import ArgonSelect from "@/components/ArgonSelect.vue";
+
+const token = Cookies.get("authToken");
+const user = ref({
+  name: "",
+  phone: "",
+  assignedRol: "",
+  assignedPosition: "",
+  typeDocument: "",
+  numberDocument: "",
+  photoUrl: "",
+});
+const headers = ref([
+  "Nombre de usuario",
+  "Rol asignado",
+  "Cargo",
+  "Fecha de creación",
+]);
+const icons = ref({
+  firstIcon: "fas fa-pen",
+  secondIcon: "fas fa-trash",
+});
+const userId = ref("");
+
+const documentTypes = [
+  { value: "", label: "Selecciona tu tipo de documento" },
+  { value: "Cédula de Ciudadanía", label: "Cédula de Ciudadanía" },
+  { value: "Cédula de Extranjería", label: "Cédula de Extranjería" },
+  { value: "Tarjeta de Identidad", label: "Tarjeta de Identidad" },
+];
+const assignedPosition = [
+  { value: "", label: "Selecciona cargo desempeñado" },
+  { value: "Planta", label: "Planta" },
+  { value: "Contratista", label: "Contratista" },
+];
+
+const fields = ref({
+  usuario: {
+    showAvatar: true,
+    avatar: "photoUrl",
+    main: "name",
+    sub: "email",
+  },
+  rol: {
+    value: "assignedRol.name",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold mb-0",
+  },
+  position: {
+    value: "assignedPosition",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold",
+  },
+  fecha: {
+    value: "createdAt",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold",
+  },
+});
+
+const rows = ref([]);
+const dialog = ref(false);
+const availableRoles = ref([]);
+const isLoading = ref(false);
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const options = { day: "2-digit", month: "short", year: "numeric" };
+  return new Date(dateString)
+    .toLocaleDateString("es-ES", options)
+    .replace(".", "");
+};
+
+const fetchData = async () => {
+  try {
+    const response = await apiService.get(
+      "/users?state=true",
+      {},
+      { Authorization: `Bearer ${token}` }
+    );
+    rows.value = (response.data || response).map((user) => ({
+      ...user,
+      createdAt: formatDate(user.createdAt),
+      assignedPosition: user.assignedPosition
+        ? user.assignedPosition
+        : "Sin cargo asignado",
+      photoUrl: user.photoUrl
+        ? user.photoUrl.replace("http://localhost:3000", "")
+        : user.photoUrl,
+      phone: user.phone ? user.phone.replace(/^\+?\d{1,2}/, "") : user.phone,
+    }));
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    alert("Error al cargar los usuarios");
+  }
+};
+
+const fetchRoles = async () => {
+  try {
+    const response = await apiService.get(
+      "/rol",
+      {},
+      { Authorization: `Bearer ${token}` }
+    );
+    availableRoles.value = response.map((assignedRol) => ({
+      value: assignedRol._id,
+      label: assignedRol.name,
+    }));
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    alert("Error al cargar los roles");
+  }
+};
+
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const maxWidth = 800;
+        const maxHeight = 800;
+
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedImage = canvas.toDataURL("image/jpeg", 0.8);
+
+        user.value.photoUrl = compressedImage;
+      };
+
+      img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+  }
+};
+
+const handleEdit = (row) => {
+  user.value = { ...row };
+  user.value.assignedRol = row.assignedRol._id;
+  userId.value = row._id;
+  dialog.value = true;
+};
+const handleCancel = () => {
+  Object.keys(user.value).forEach((key) => (user.value[key] = ""));
+  user.value.photoUrl = null;
+  userId.value = "";
+  dialog.value = false;
+};
+
+const handleDelete = async (id) => {
+  const result = await Swal.fire({
+    title: "¿Estás seguro de que quieres eliminar este usuario?",
+    text: "Esta acción no puede deshacerse.",
+    showCancelButton: true,
+    confirmButtonText: "Confirmar",
+    cancelButtonText: "Cancelar",
+    reverseButtons: true,
+    customClass: {
+      title: "text-succes",
+      confirmButton: "btn-success",
+      cancelButton: "btn-danger",
+    },
+  });
+
+  if (!result.isConfirmed) {
+    return;
+  }
+
+  try {
+    await apiService.delete(`users/${id}`);
+    Swal.fire({
+      title: "Usuario eliminado correctamente",
+      icon: "success",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#28a745",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
+    });
+    await fetchData();
+  } catch (error) {
+    Swal.fire({
+      title: "Error al eliminar usuario",
+      text: error.response?.data?.message || "Algo salió mal.",
+      icon: "error",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
+    });
+  }
+};
+
+const handleSubmit = async () => {
+  try {
+    if (!userId.value) {
+      throw new Error("Datos insuficientes para editar al usuario.");
+    }
+
+    isLoading.value = true;
+
+    const data = {
+      name: user.value.name,
+      phone: `57${user.value.phone}`,
+      typeDocument: user.value.typeDocument,
+      numberDocument: user.value.numberDocument,
+      assignedRol: user.value.assignedRol,
+      assignedPosition: user.value.assignedPosition,
+      photoUrl: user.value.photoUrl,
+    };
+
+    await apiService.patch(`users/${userId.value}`, data, {
+      Authorization: `Bearer ${token}`,
+    });
+
+    Swal.fire({
+      title: "Usuario editado exitosamente",
+      icon: "success",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#28a745",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
+    });
+
+    handleCancel();
+
+    await fetchData();
+  } catch (error) {
+    Swal.fire({
+      title: "Error al editar usuario: ",
+      text: error.response?.data?.message || "Algo salió mal.",
+      icon: "error",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchData();
+  fetchRoles();
+});
+</script>
+
+<template>
+  <div class="py-5 container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <AuthorsTable
+          :title="'Gestion de usuarios'"
+          :headers="headers"
+          :rows="rows"
+          :fields="fields"
+          :icons="icons"
+          @edit="handleEdit"
+          @delete="handleDelete"
+        />
+      </div>
+    </div>
+    <v-dialog
+      v-model="dialog"
+      :fullscreen="mobile"
+      scrollable
+      persistent
+      max-width="800px"
+    >
+      <v-card class="bg-white">
+        <v-card-title
+          class="card-title d-flex align-items-center justify-content-center text-h4 text-succes"
+          style="margin: 1rem"
+        >
+          Editar usuario
+        </v-card-title>
+        <v-card-text class="card-body p-3">
+          <v-container>
+            <form @submit.prevent="handleSubmit">
+              <div class="row">
+                <div class="col-md-6 d-flex align-items-center">
+                  <div class="row" style="width: 100%">
+                    <div
+                      class="d-flex align-items-center justify-content-center mb-4"
+                      style="height: calc(3 * 70px)"
+                    >
+                      <div class="text-center">
+                        <div
+                          class="image-upload"
+                          style="position: relative; display: inline-block"
+                        >
+                          <img
+                            :src="
+                              user.photoUrl || 'https://via.placeholder.com/150'
+                            "
+                            alt="Imagen de usuario"
+                            class="rounded-circle"
+                            style="
+                              width: 150px;
+                              height: 150px;
+                              object-fit: cover;
+                              border: 2px solid #ddd;
+                            "
+                          />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            @change="handleImageUpload"
+                            style="
+                              position: absolute;
+                              top: 0;
+                              left: 0;
+                              width: 100%;
+                              height: 100%;
+                              opacity: 0;
+                              cursor: pointer;
+                            "
+                          />
+                        </div>
+                        <h4 class="mt-2">Cargar imagen</h4>
+                      </div>
+                    </div>
+                    <div>
+                      <label for="example-text-input" class="form-control-label"
+                        >Asignar rol</label
+                      >
+                      <argon-select
+                        id="assignedRol"
+                        :options="availableRoles"
+                        v-model="user.assignedRol"
+                      />
+                    </div>
+                    <div>
+                      <label for="example-text-input" class="form-control-label"
+                        >Asignar cargo</label
+                      >
+                      <argon-select
+                        id="assignedPosition"
+                        :options="assignedPosition"
+                        v-model="user.assignedPosition"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 d-flex align-items-center">
+                  <div class="row" style="width: 100%">
+                    <div>
+                      <label for="example-text-input" class="form-control-label"
+                        >Nombre completo</label
+                      >
+                      <argon-input id="name" type="text" v-model="user.name" />
+                    </div>
+                    <div>
+                      <label for="example-text-input" class="form-control-label"
+                        >Número de telefóno</label
+                      >
+                      <argon-input
+                        id="phone"
+                        prefix="+57"
+                        type="number"
+                        v-model="user.phone"
+                      />
+                    </div>
+                    <div>
+                      <label for="example-text-input" class="form-control-label"
+                        >Tipo de documento</label
+                      >
+                      <argon-select
+                        id="typeDocument"
+                        :options="documentTypes"
+                        v-model="user.typeDocument"
+                      />
+                    </div>
+                    <div>
+                      <label for="example-text-input" class="form-control-label"
+                        >Número de documento</label
+                      >
+                      <argon-input
+                        id="numberDocument"
+                        type="number"
+                        v-model="user.numberDocument"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <v-card-actions
+                class="d-flex justify-content-center mt-4"
+                style="gap: 60px; padding-top: 20px"
+              >
+                <button
+                  class="btn btn-danger"
+                  type="button"
+                  @click="handleCancel"
+                >
+                  Cancelar
+                </button>
+                <button class="btn btn-success" type="submit">Registrar</button>
+              </v-card-actions>
+            </form>
+          </v-container>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+  </div>
+</template>
+
+<style scoped>
+.v-card {
+  color: rgba(0, 0, 0, 0.87);
+}
+.v-card-title {
+  color: rgba(0, 0, 0, 0.87);
+}
+.v-card-text {
+  color: rgba(0, 0, 0, 0.6);
+}
+</style>
