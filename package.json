@@ -20,6 +20,7 @@
     "prettify": "prettier --write ."
   },
   "dependencies": {
+    "@mdi/font": "^7.4.47",
     "@mdi/js": "^7.4.47",
     "@popperjs/core": "2.11.8",
     "axios": "^1.7.9",
@@ -32,6 +33,8 @@
     "flowbite": "^2.5.2",
     "flowbite-vue": "^0.1.6",
     "js-cookie": "^3.0.5",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "jwt-decode": "^4.0.0",
     "particles.js": "^2.0.0",
     "quill": "1.3.7",
@@ -43,7 +46,8 @@
     "vue-router": "4.3.0",
     "vuesax": "^4.0.1-alpha.25",
     "vuetify": "^3.7.6",
-    "vuex": "4.1.0"
+    "vuex": "4.1.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.23.10",

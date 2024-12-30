@@ -51,11 +51,18 @@ const routes = [
   {
     path: "/users",
     name: "users",
+    path: "/users/access",
+    name: "Control de accesso",
     component: Users,
   },
   {
-    path: "/users_agregar",
+    path: "/users/control",
     name: "Gestion de usuarios",
+    component: Control_User,
+  },
+  {
+    path: "/users/add",
+    name: "Agregar de usuarios",
     component: Save_User,
   },
   { 
@@ -107,6 +114,11 @@ const routes = [
     path: "/mantenimientos/planear-mantenimiento",
     name: "mantenimientos.planear-mantenimiento",
     component: PlanearMantenimiento,
+  },
+  {
+    path: "/configuration",
+    name: "Configuration",
+    component: Configuration,
   },
 ];
 
