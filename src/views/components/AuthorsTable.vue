@@ -23,8 +23,9 @@ const { headers, rows, title, icons, fields } = defineProps({
     required: false,
   },
   icons: {
-    type: { firstIcon: "", secondIcon: "" },
+    type: Object,
     required: false,
+    default: () => ({ firstIcon: "", secondIcon: "" }),
   },
 });
 
@@ -47,10 +48,6 @@ const getFieldValue = (obj, path) => {
 };
 
 const tableHeaders = computed(() => {
-  console.log("header", headers)
-  console.log("rows", rows)
-  console.log("fields", fields)
-  console.log("icons", icons)
   return headers.map((header, index) => ({
     title: header.text || header,
     key: Object.keys(fields)[index] || "actions",
@@ -123,17 +120,35 @@ const exportToExcel = (rows) => {
 
 <template>
   <h2 v-if="title" class="text-xl font-semibold" style="color: white;">{{ title }}</h2>
-  <div class="row align-middle text-sm">
-    <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
-      style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
-      @click="exportToPDF(rows)">
-      <i class="fas fa-file-pdf" style="color: red; font-size: 1.5rem;"></i>
-    </button>
-    <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-alert btn-active-bg-warning my-2"
-      style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
-      @click="exportToExcel(rows)">
-      <i class="fas fa-file-excel" style="color: green; font-size: 1.5rem;"></i>
-    </button>
+  <div class="row py-2" style="justify-content: space-between;">
+    <div class="col-4">
+      <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
+        style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
+        @click="exportToPDF(rows)">
+        <i class="fas fa-file-pdf" style="color: red; font-size: 1.5rem;"></i>
+      </button>
+      <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-alert btn-active-bg-warning my-2"
+        style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
+        @click="exportToExcel(rows)">
+        <i class="fas fa-file-excel" style="color: green; font-size: 1.5rem;"></i>
+      </button>
+    </div>
+    <div v-if="filters" class="col-5 d-flex align-items-center">
+      <!-- filtros -->
+      <div class="bg-white rounded-lg d-flex shadow-sm" style="width: 100%">
+        <div
+          style="border-right: 1px solid grey; padding:0px 10px; display: flex; flex-direction: row; align-items: center;">
+          <button class="btn-icon btn-bg-white" style="margin-bottom: 0rem !important; padding: 10px;">
+            <i class="fas fa-arrow-up"></i>
+            <i class="fas fa-arrow-down"></i>
+          </button>
+          <button class="btn-icon btn-bg-white" style="margin-bottom: 0rem !important; padding: 10px;">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+          <p style="margin-bottom: 0rem !important; padding: 10px;">Filtrar por</p>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="card bg-white rounded-lg shadow-sm">
     <div class="card-body px-0 pt-0 pb-2">
@@ -144,13 +159,13 @@ const exportToExcel = (rows) => {
           <template v-slot:item="{ item }">
             <tr class="hover:bg-gray-50">
               <td v-for="(field, index) in Object.keys(fields)" :key="field">
-                <div v-if="index === 0" class="d-flex px-2 py-1">
+                <div v-if="index === 0 && fields[field].main" class="d-flex px-2 py-1">
                   <div v-if="fields[field].showAvatar">
                     <img :src="getFieldValue(item, fields[field].avatar) ||
                       '../../assets/img/team-2.jpg'
                       " class="avatar avatar-sm me-3 rounded-circle" alt="user" />
                   </div>
-                  <div class="d-flex flex-column justify-content-center">
+                  <div v-if="fields[field].main" class="d-flex flex-column justify-content-center">
                     <h6 class="mb-0 text-sm">
                       {{ getFieldValue(item, fields[field].main) }}
                     </h6>
@@ -185,7 +200,8 @@ const exportToExcel = (rows) => {
           </template>
 
           <template v-slot:bottom="bottomProps">
-            <Pagination class="py-2" :totalPages="bottomProps.pageCount" :currentPage="bottomProps.page" @page-change="page = $event"/>
+            <Pagination class="py-2" :totalPages="bottomProps.pageCount" :currentPage="bottomProps.page"
+              @page-change="page = $event" />
           </template>
         </v-data-table>
       </div>
