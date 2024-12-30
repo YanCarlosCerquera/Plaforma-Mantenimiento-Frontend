@@ -1,8 +1,9 @@
 <script setup>
-import { defineProps, defineEmits, ref, computed, watch} from "vue";
+import { defineProps, defineEmits, ref, computed } from "vue";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
+import Pagination from "./Pagination.vue";
 
 const { headers, rows, title, icons, fields } = defineProps({
   headers: {
@@ -28,13 +29,8 @@ const { headers, rows, title, icons, fields } = defineProps({
 });
 
 const emit = defineEmits(["edit", "delete"]);
-const itemsPerPage = ref(5);
+const itemsPerPage = ref(10);
 const page = ref(1);
-const rowsData = computed(() => rows);
-
-watch(rows, (newRows) => {
-  console.log('Rows updated', newRows);
-});
 
 const handleEdit = (row) => {
   emit("edit", row);
@@ -51,6 +47,10 @@ const getFieldValue = (obj, path) => {
 };
 
 const tableHeaders = computed(() => {
+  console.log("header", headers)
+  console.log("rows", rows)
+  console.log("fields", fields)
+  console.log("icons", icons)
   return headers.map((header, index) => ({
     title: header.text || header,
     key: Object.keys(fields)[index] || "actions",
@@ -64,12 +64,12 @@ const allHeaders = computed(() => [
   { title: "Acciones", key: "actions", sortable: false, align: "center" },
 ]);
 
-const exportToPDF = () => {
+const exportToPDF = (rows) => {
   const doc = new jsPDF();
 
   const tableColumn = headers.map((header) => header.text || header);
 
-  const tableRows = rowsData.value.map((row) =>
+  const tableRows = rows.map((row) =>
     Object.keys(fields).map((field) => {
       const fieldConfig = fields[field];
       if (fieldConfig.showAvatar) {
@@ -94,10 +94,10 @@ const exportToPDF = () => {
 };
 
 
-const exportToExcel = () => {
+const exportToExcel = (rows) => {
   const tableHeaders = headers.map((header) => header.text || header);
 
-  const tableRows = rowsData.value.map((row) =>
+  const tableRows = rows.map((row) =>
     Object.keys(fields).map((field) => {
       const fieldConfig = fields[field];
       if (fieldConfig.showAvatar) {
@@ -116,27 +116,26 @@ const exportToExcel = () => {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
 
   XLSX.writeFile(workbook, `${title || "tabla"}.xlsx`);
+
 };
-
-
 
 </script>
 
 <template>
+  <h2 v-if="title" class="text-xl font-semibold" style="color: white;">{{ title }}</h2>
+  <div class="row align-middle text-sm">
+    <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
+      style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
+      @click="exportToPDF(rows)">
+      <i class="fas fa-file-pdf" style="color: red; font-size: 1.5rem;"></i>
+    </button>
+    <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-alert btn-active-bg-warning my-2"
+      style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
+      @click="exportToExcel(rows)">
+      <i class="fas fa-file-excel" style="color: green; font-size: 1.5rem;"></i>
+    </button>
+  </div>
   <div class="card bg-white rounded-lg shadow-sm">
-    <div class="card-header">
-      <h5 v-if="title" class="text-xl font-semibold">{{ title }}</h5>
-      <div class="align-middle text-sm">
-        <button class="btn btn-sm btn-icon btn-bg-light btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
-          style="width: auto; padding-right: 1rem; padding-left: 1rem;" @click="exportToPDF">
-          <i class="fas fa-file-pdf" style="color: red; font-size: 1.5rem;"></i>
-        </button>
-        <button class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2"
-          style="width: auto; padding-right: 1rem; padding-left: 1rem;" @click="exportToExcel">
-          <i class="fas fa-file-excel" style="color: green; font-size: 1.5rem;"></i>
-        </button>
-      </div>
-    </div>
     <div class="card-body px-0 pt-0 pb-2">
       <div class="table-responsive p-0">
         <v-data-table v-model:items-per-page="itemsPerPage" v-model:page="page" :headers="allHeaders" :items="rows"
@@ -183,6 +182,10 @@ const exportToExcel = () => {
           <!-- Empty state -->
           <template v-slot:no-data>
             <p class="text-center p-3">La tabla no tiene datos para mostrar</p>
+          </template>
+
+          <template v-slot:bottom="bottomProps">
+            <Pagination class="py-2" :totalPages="bottomProps.pageCount" :currentPage="bottomProps.page" @page-change="page = $event"/>
           </template>
         </v-data-table>
       </div>
