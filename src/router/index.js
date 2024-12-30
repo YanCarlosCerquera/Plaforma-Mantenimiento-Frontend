@@ -13,8 +13,8 @@ import Save_Category from "../views/Category/Save_Category.vue";
 import Save_User from "../views/Save_User.vue";
 import Category from "../views/Category/Category.vue";
 import Assers from "../views/Assets/Assers.vue";
-import Configuration from "../views/Configuration.vue";
 import PlanearMantenimiento from "../views/PlanearMantenimiento.vue";
+import Bienes from "../views/Home/Bienes/Bienes.vue";
 
 const routes = [
   {
@@ -26,6 +26,12 @@ const routes = [
     path: "/index",
     name: "Index",
     component: Index,
+    
+  },
+  {
+    path: '/child',
+    name: 'child',
+    component: Bienes
   },
   {
     path: "/RecuperarContrase",
@@ -59,7 +65,7 @@ const routes = [
   },
   {
     path: "/machineandteams/list",
-    name: "Consultar_Category",
+    name: "Guardar_Campos",
     component: Save_Category,
   },
   {
@@ -92,11 +98,7 @@ const routes = [
     name: "Signup",
     component: Signup,
   },
-  {
-    path: "/configuration",
-    name: "Configuration",
-    component: Configuration,
-  },
+  
   {
     path: "/mantenimientos",
     redirect: "/mantenimientos/planear-mantenimiento",

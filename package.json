@@ -26,6 +26,8 @@
     "bootstrap": "5.3.3",
     "chart.js": "4.4.1",
     "core-js": "3.36.0",
+    "datatables.net-dt": "^2.1.8",
+    "datatables.net-vue3": "^3.0.3",
     "dropzone": "6.0.0-beta.2",
     "flowbite": "^2.5.2",
     "flowbite-vue": "^0.1.6",
