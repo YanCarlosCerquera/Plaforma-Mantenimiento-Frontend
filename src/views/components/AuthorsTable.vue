@@ -119,6 +119,7 @@ const exportToExcel = (rows) => {
 <template>
   <h2 v-if="title" class="text-xl font-semibold" style="color: white;">{{ title }}</h2>
   <div class="row justify-content-space-between py-2">
+  <div class="row py-2" style="justify-content: space-between;">
     <div class="col-4">
       <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
         style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
@@ -133,7 +134,25 @@ const exportToExcel = (rows) => {
     </div>
     <div class="col-4">
       <!-- filtros -->
+    <div v-if="filters" class="col-5 d-flex align-items-center">
+      <!-- filtros -->
+      <div class="bg-white rounded-lg d-flex shadow-sm" style="width: 100%">
+        <div
+          style="border-right: 1px solid grey; padding:0px 10px; display: flex; flex-direction: row; align-items: center;">
+          <button class="btn-icon btn-bg-white" style="margin-bottom: 0rem !important; padding: 10px;">
+            <i class="fas fa-arrow-up"></i>
+            <i class="fas fa-arrow-down"></i>
+          </button>
+          <button class="btn-icon btn-bg-white" style="margin-bottom: 0rem !important; padding: 10px;">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+          <p style="margin-bottom: 0rem !important; padding: 10px;">Filtrar por</p>
+        </div>
+      </div>
+      </div>
+      </div>
     </div>
+    
   </div>
   <div class="card bg-white rounded-lg shadow-sm">
     <div class="card-body px-0 pt-0 pb-2">

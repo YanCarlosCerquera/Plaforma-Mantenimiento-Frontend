@@ -1,33 +1,26 @@
 <template>
     <div class="pagination">
-        <!-- Botón Anterior -->
         <button class="arrow" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
             &lt;
         </button>
 
-        <!-- Botón para la primera página -->
         <button v-if="currentPage > 3" class="page-number" @click="goToPage(1)">
             1
         </button>
 
-        <!-- Indicador de omisión si es necesario -->
         <span v-if="currentPage > 3" class="dots">...</span>
 
-        <!-- Botones dinámicos alrededor de la página actual -->
         <button v-for="page in dynamicPages" :key="page" :class="{ 'page-number': true, active: page === currentPage }"
             @click="goToPage(page)">
             {{ page }}
         </button>
 
-        <!-- Indicador de omisión después de la página central -->
         <span v-if="currentPage < totalPages - 2" class="dots">...</span>
 
-        <!-- Botón para la última página -->
         <button v-if="currentPage < totalPages - 2" class="page-number" @click="goToPage(totalPages)">
             {{ totalPages }}
         </button>
 
-        <!-- Botón Siguiente -->
         <button class="arrow" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">
             &gt;
         </button>
@@ -50,17 +43,15 @@ export default {
         dynamicPages() {
             const pages = [];
             if (this.currentPage <= 3) {
-                // Mostrar las primeras páginas si estamos al principio
                 for (let i = 1; i <= Math.min(3, this.totalPages); i++) {
                     pages.push(i);
                 }
             } else if (this.currentPage >= this.totalPages - 2) {
-                // Mostrar las últimas páginas si estamos cerca del final
                 for (let i = Math.max(1, this.totalPages - 2); i <= this.totalPages; i++) {
                     pages.push(i);
                 }
             } else {
-                pages.push(this.currentPage);     // Página actual
+                pages.push(this.currentPage);     
             }
             return pages;
         },
@@ -95,8 +86,8 @@ export default {
 }
 
 .page-number.active {
-    background: #1976d2;
-    color: #fff;
+    border-color: #39a900;
+    color: #39a900;
     font-weight: bold;
 }
 
@@ -107,7 +98,8 @@ export default {
 
 .arrow:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
+    cursor: not-allowed;    
+    background: rgb(129, 129, 129);
 }
 
 .dots {
