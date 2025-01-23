@@ -7,41 +7,41 @@ import Index from "../views/Index.vue";
 import Profile from "../views/Profile.vue";
 import Signup from "../views/Signup.vue";
 import Signin from "../views/Signin.vue";
-import password from "../views/password.vue";
-import Resetpassword from "../views/resetpassword.vue";
-import Save_Category from "../views/Category/Save_Category.vue";
-import Save_User from "../views/Save_User.vue";
+import Password from "../views/password.vue";
+import ResetPassword from "../views/resetpassword.vue";
+import SaveCategory from "../views/Category/Save_Category.vue";
+import SaveUser from "../views/Save_User.vue";
 import Category from "../views/Category/Category.vue";
-import Assers from "../views/Assets/Assers.vue";
+import Assets from "../views/Assets/Assers.vue";
 import PlanearMantenimiento from "../views/PlanearMantenimiento.vue";
 import Bienes from "../views/Home/Bienes/Bienes.vue";
+import Configuration from "../views/Configuration.vue";
 
 const routes = [
   {
     path: "/",
-    name: "/",
+    name: "Home",
     redirect: "/dashboard-default",
   },
   {
     path: "/index",
     name: "Index",
     component: Index,
-    
   },
   {
-    path: '/child',
-    name: 'child',
-    component: Bienes
+    path: "/child",
+    name: "Child",
+    component: Bienes,
   },
   {
     path: "/RecuperarContrase",
-    name: "RecuperarContrase",
-    component: password,
+    name: "RecuperarContraseña",
+    component: Password,
   },
   {
     path: "/ResetPassword",
     name: "ResetPassword",
-    component: Resetpassword,
+    component: ResetPassword,
   },
   {
     path: "/dashboard-default",
@@ -50,34 +50,32 @@ const routes = [
   },
   {
     path: "/users",
-    name: "users",
-    path: "/users/access",
-    name: "Control de accesso",
+    name: "Users",
     component: Users,
   },
   {
     path: "/users/control",
-    name: "Gestion de usuarios",
-    component: Control_User,
+    name: "Gestión de Usuarios",
+    component: SaveUser,
   },
   {
     path: "/users/add",
-    name: "Agregar de usuarios",
-    component: Save_User,
+    name: "Agregar Usuarios",
+    component: SaveUser,
   },
-  { 
+  {
     path: "/maquinariayequipos",
     name: "Maquinaria y Equipos",
     component: Machineandteams,
   },
   {
     path: "/machineandteams/list",
-    name: "Guardar_Campos",
-    component: Save_Category,
+    name: "Guardar Campos",
+    component: SaveCategory,
   },
   {
-    path:"/machineandteams/add",
-    name:"Consultar_Category",
+    path: "/machineandteams/add",
+    name: "Consultar Categoría",
     component: Category,
   },
   {
@@ -86,9 +84,9 @@ const routes = [
     component: VirtualReality,
   },
   {
-    path: "/Asserts",
+    path: "/assets",
     name: "Bienes",
-    component: Assers,
+    component: Assets,
   },
   {
     path: "/profile",
@@ -105,14 +103,13 @@ const routes = [
     name: "Signup",
     component: Signup,
   },
-  
   {
     path: "/mantenimientos",
     redirect: "/mantenimientos/planear-mantenimiento",
   },
   {
     path: "/mantenimientos/planear-mantenimiento",
-    name: "mantenimientos.planear-mantenimiento",
+    name: "Planear Mantenimiento",
     component: PlanearMantenimiento,
   },
   {
@@ -129,4 +126,3 @@ const router = createRouter({
 });
 
 export default router;
-
