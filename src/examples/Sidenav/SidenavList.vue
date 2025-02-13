@@ -6,6 +6,8 @@ import { useStore } from "vuex";
 import SidenavItem from "./SidenavItem.vue";
 import SidenavCard from "./SidenavCard.vue";
 import { watch } from "vue";
+import { ChevronDown } from "lucide-vue-next";
+import { ChevronUp } from "lucide-vue-next";
 
 const NavItemsEnum = {
   Mantenimientos: 'Mantenimientos',
@@ -124,7 +126,7 @@ const routeName = computed(() => route.name);
           <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
             <i class="ni ni-credit-card text-success text-sm "></i>
           </div>
-          <span class="nav-link-text ms-1">Maquinaria y equipos</span>
+          <span class="nav-link-text ms-1">Maquinarias</span>
           <ChevronDown v-if="!isEquiposOpen" class="ml-auto" />
           <ChevronUp v-else class="ml-auto" />
         </div>
@@ -240,7 +242,19 @@ const routeName = computed(() => route.name);
               </template>
             </sidenav-item>
           </li>
+          <li>
+            <sidenav-item
+              to="/mantenimientos/GestionActividaes"
+              :class="route.path === '/mantenimientos/planear-mantenimiento' ? 'active' : ''"
+              :navText="'Gestion Actual'"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+              </template>
+            </sidenav-item>
+          </li>
         </ul>
+
       </li>
 
       <li class="mt-12 nav-item">

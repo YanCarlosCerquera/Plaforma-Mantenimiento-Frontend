@@ -193,6 +193,7 @@ const exportToExcel = (rows) => {
                   class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2">
                   <i :class="icons.secondIcon || 'fas fa-trash'"></i>
                 </button>
+               
               </td>
             </tr>
           </template>
