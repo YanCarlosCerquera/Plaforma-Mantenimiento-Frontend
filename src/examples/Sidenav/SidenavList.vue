@@ -18,7 +18,6 @@ const store = useStore();
 const route = useRoute();
 
 const isEquiposOpen = ref(false);
-const IsMaterialOpen = ref(false);
 const isNavItemOpen = ref({
   [NavItemsEnum.Users]: false,
   [NavItemsEnum.Mantenimientos]: false,
@@ -26,10 +25,6 @@ const isNavItemOpen = ref({
 
 const toggleEquipos = () => {
   isEquiposOpen.value = !isEquiposOpen.value;
-};
-
-const toggleMaterial = () => {
-  IsMaterialOpen.value =!IsMaterialOpen.value;
 };
 
 const toggleNavItem = (navItemKey) => {
@@ -155,7 +150,7 @@ const routeName = computed(() => route.name);
           </li>
           <li>
             <sidenav-item
-              to="/Asserts"
+              to="/assets"
               :class="route.path === '/Bienes' ? 'active' : ''"
               :navText="'Bienes '"
             >
@@ -169,62 +164,12 @@ const routeName = computed(() => route.name);
 
       <li class="nav-item">
         <div 
-          @click="toggleMaterial"
-          class="nav-link"
-          :class="{ 'active': routeName === 'matenimeito' || IsMaterialOpen }"
-        >
-        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-          <i class="ni ni-settings text-info text-sm opacity-10"></i>
-        </div>
-          <span class="nav-link-text ms-1">Matenimiento</span>
-          <ChevronDown v-if="!IsMaterialOpen" class="ml-auto" />
-          <ChevronUp v-else class="ml-auto" />
-        </div>
-        <ul v-if="IsMaterialOpen" class="nav-item-dropdown">
-          <li>
-            <sidenav-item
-              to="/matenimeito/list"
-              :class="route.path === '/matenimeito/list' ? 'active' : ''"
-              :navText="'Agregar Categoria'"
-            >
-              <template v-slot:icon>
-                <i class="ni ni-bullet-list-67 text-success text-sm opacity-10"></i>
-              </template>
-            </sidenav-item>
-          </li>
-          <li>
-            <sidenav-item
-              to="/matenimeito/add"
-              :class="route.path === '/matenimeito/add' ? 'active' : ''"
-              :navText="'Categorias'"
-            >
-              <template v-slot:icon>
-                <i class="ni ni-fat-add text-success text-sm opacity-10"></i>
-              </template>
-            </sidenav-item>
-          </li>
-          <li>
-            <sidenav-item
-              to="/Asserts"
-              :class="route.path === '/Bienes' ? 'active' : ''"
-              :navText="'Bienes '"
-            >
-              <template v-slot:icon>
-                <i class="ni ni-fat-add text-success text-sm opacity-10"></i>
-              </template>
-            </sidenav-item>
-          </li>
-        </ul>
-      </li>
-
-      <li class="nav-item">
-        <div 
           @click="toggleNavItem(NavItemsEnum.Mantenimientos)"
           class="nav-link"
           :class="{ 'active': routeName === 'mantenimientos' || isNavItemOpen[NavItemsEnum.Mantenimientos] }"
         >
           <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-            <i class="fa fa-users text-success text-sm "></i>
+            <i class="ni ni-settings text-info text-sm opacity-10"></i>
           </div>
           <span class="nav-link-text ms-1">Mantenimientos</span>
           <ChevronDown v-if="!isNavItemOpen[NavItemsEnum.Mantenimientos]" class="ml-auto" />
@@ -292,7 +237,7 @@ const routeName = computed(() => route.name);
 
       <li class="nav-item">
         <sidenav-item
-          to="/signup"
+          to="/signin"
           :class="routeName === 'signup' ? 'active' : ''"
           :navText="'Cerrar sesión'"
         >

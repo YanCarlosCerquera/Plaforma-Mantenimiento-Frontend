@@ -1,141 +1,109 @@
 <template>
-  <nav aria-label="Page navigation">
-    <ul class="pagination justify-content-end mb-0">
-      <li class="page-item" :class="{ disabled: page <= 1 }">
-        <button class="page-link" @click="previousPage" :disabled="page <= 1">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-      </li>
-      
-      <li 
-        v-for="pageNumber in pages" 
-        :key="pageNumber"
-        class="page-item"
-        :class="{ active: pageNumber === page, disabled: pageNumber === '...' }"
-      >
-        <button 
-          class="page-link" 
-          @click="changePage(pageNumber)"
-          :disabled="pageNumber === '...'"
-        >
-          {{ pageNumber }}
-        </button>
-      </li>
-      
-      <li class="page-item" :class="{ disabled: page >= totalPages }">
-        <button class="page-link" @click="nextPage" :disabled="page >= totalPages">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </li>
-    </ul>
-  </nav>
+  <div class="pagination">
+      <button class="arrow" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
+          &lt;
+      </button>
+
+      <button v-if="currentPage > 3" class="page-number" @click="goToPage(1)">
+          1
+      </button>
+
+      <span v-if="currentPage > 3" class="dots">...</span>
+
+      <button v-for="page in dynamicPages" :key="page" :class="{ 'page-number': true, active: page === currentPage }"
+          @click="goToPage(page)">
+          {{ page }}
+      </button>
+
+      <span v-if="currentPage < totalPages - 2" class="dots">...</span>
+
+      <button v-if="currentPage < totalPages - 2" class="page-number" @click="goToPage(totalPages)">
+          {{ totalPages }}
+      </button>
+
+      <button class="arrow" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">
+          &gt;
+      </button>
+  </div>
 </template>
 
-<script setup>
-import { computed } from 'vue';
-
-const props = defineProps({
-  page: {
-    type: Number,
-    required: true
+<script>
+export default {
+  props: {
+      totalPages: {
+          type: Number,
+          required: true,
+      },
+      currentPage: {
+          type: Number,
+          default: 1,
+      },
   },
-  itemsPerPage: {
-    type: Number,
-    required: true
+  computed: {
+      dynamicPages() {
+          const pages = [];
+          if (this.currentPage <= 3) {
+              for (let i = 1; i <= Math.min(3, this.totalPages); i++) {
+                  pages.push(i);
+              }
+          } else if (this.currentPage >= this.totalPages - 2) {
+              for (let i = Math.max(1, this.totalPages - 2); i <= this.totalPages; i++) {
+                  pages.push(i);
+              }
+          } else {
+              pages.push(this.currentPage);     
+          }
+          return pages;
+      },
   },
-  totalItems: {
-    type: Number,
-    required: true
-  }
-});
-
-const emit = defineEmits(['update:page']);
-
-const totalPages = computed(() => Math.ceil(props.totalItems / props.itemsPerPage));
-
-const pages = computed(() => {
-  const current = props.page;
-  const total = totalPages.value;
-  const items = [];
-  
-  if (total <= 7) {
-    for (let i = 1; i <= total; i++) {
-      items.push(i);
-    }
-  } else {
-    if (current <= 4) {
-      for (let i = 1; i <= 5; i++) {
-        items.push(i);
-      }
-      items.push('...');
-      items.push(total);
-    } else if (current >= total - 3) {
-      items.push(1);
-      items.push('...');
-      for (let i = total - 4; i <= total; i++) {
-        items.push(i);
-      }
-    } else {
-      items.push(1);
-      items.push('...');
-      for (let i = current - 1; i <= current + 1; i++) {
-        items.push(i);
-      }
-      items.push('...');
-      items.push(total);
-    }
-  }
-  
-  return items;
-});
-
-const changePage = (page) => {
-  if (page === '...') return;
-  emit('update:page', page);
-};
-
-const previousPage = () => {
-  if (props.page > 1) {
-    emit('update:page', props.page - 1);
-  }
-};
-
-const nextPage = () => {
-  if (props.page < totalPages.value) {
-    emit('update:page', props.page + 1);
-  }
+  methods: {
+      goToPage(page) {
+          if (page >= 1 && page <= this.totalPages) {
+              this.$emit("page-change", page);
+          }
+      },
+  },
 };
 </script>
 
 <style scoped>
 .pagination {
-  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 20px;
 }
 
-.page-link {
-  padding: 0.5rem 0.75rem;
-  color: #344767;
-  background-color: #fff;
-  border: 1px solid #dee2e6;
+.page-number,
+.arrow {
+  background: #f1f1f1;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 12px;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
 
-.page-link:hover {
-  color: #344767;
-  background-color: #e9ecef;
-  border-color: #dee2e6;
+.page-number.active {
+  border-color: #39a900;
+  color: #39a900;
+  font-weight: bold;
 }
 
-.page-item.active .page-link {
-  background-color: #344767;
-  border-color: #344767;
-  color: white;
+.page-number:hover:not(.active),
+.arrow:hover:not(:disabled) {
+  background: #e0e0e0;
 }
 
-.page-item.disabled .page-link {
-  color: #6c757d;
-  pointer-events: none;
-  background-color: #fff;
-  border-color: #dee2e6;
+.arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;    
+  background: rgb(129, 129, 129);
+}
+
+.dots {
+  color: #999;
+  padding: 0 8px;
 }
 </style>

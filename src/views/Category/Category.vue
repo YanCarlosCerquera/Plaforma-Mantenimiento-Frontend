@@ -12,22 +12,22 @@ const fields = ref({
     textClass: 'text-secondary text-xs font-weight-bold'
   },
   operationVars: {
-    key: 'operationVars',
+    value: 'operationVars',
     class: 'align-middle text-center',
     textClass: 'text-secondary text-xs font-weight-bold'
   },
   accessories: {
-    key: 'accessories',
+    value: 'accessories',
     class: 'align-middle text-center',
     textClass: 'text-secondary text-xs font-weight-bold'
   },
   specs: {
-    key: 'specs',
+    value: 'specs',
     class: 'align-middle text-center',
     textClass: 'text-secondary text-xs font-weight-bold'
   },
   status: {
-    key: 'status',
+    value: 'status',
     class: 'align-middle text-center',
     textClass: 'text-secondary text-xs font-weight-bold'
   },
@@ -37,8 +37,8 @@ const rows = ref([]);
 const fetchData = async () => {
   try {
     const response = await apiService.get('/Categorias');
-    rows.value = response.data;
-    console.log(response);
+    rows.value = response;
+    console.log(rows.value);
   } catch (error) {
     console.error("Error fetching asset data:", error);
   }

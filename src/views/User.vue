@@ -9,7 +9,7 @@ const rows = ref([]);
 const fetchData = async () => {
   try {
     const response = await apiService.get('/users');
-    rows.value = response.data.filter(user => user.state === false);
+    rows.value = response.filter(user => user.state === false);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
