@@ -1,30 +1,32 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Assers from "../views/Assets/Assers.vue";
 import AssetDetail from "../views/Assets/AssetDetail.vue";
+import Assets from "../views/Assets/Assets.vue";
 import ListAssets from "../views/Assets/ListAssets.vue";
 import Machineandteams from "../views/Billing.vue";
 import Category from "../views/Category/Category.vue";
 import SaveCategory from "../views/Category/Save_Category.vue";
 import Configuration from "../views/Configuration.vue";
+import Control_User from "../views/Control_User.vue";
 import Dashboard from "../views/Dashboard.vue";
 import Bienes from "../views/Home/Bienes/Bienes.vue";
 import Index from "../views/Index.vue";
 import GestionActiviades from "../views/Matenimiento/GestionActiviades.vue";
 import HistoryMateni from "../views/Matenimiento/History/HistoryMateni.vue";
 import Informacion from "../views/Matenimiento/Informacion/Informacion.vue";
-import ReazliaInforme from "../views/Matenimiento/Informacion/ReazliaInforme.vue";
+import RealizarInforme from "../views/Matenimiento/Informacion/RealizarInforme.vue";
 import ListOrden from "../views/Matenimiento/ListOrden.vue";
 import Detalles from "../views/Matenimiento/detalles.vue";
 import PlanearMantenimiento from "../views/PlanearMantenimiento.vue";
 import Profile from "../views/Profile.vue";
-import SaveUser from "../views/Save_User.vue";
+import Roles from "../views/Roles.vue";
+import Routes from "../views/Routes.vue";
+import Save_User from "../views/Save_User.vue";
 import Signin from "../views/Signin.vue";
 import Signup from "../views/Signup.vue";
 import Users from "../views/Users.vue";
-import VirtualReality from "../views/VirtualReality.vue";
 import Password from "../views/password.vue";
 import ResetPassword from "../views/resetpassword.vue";
-import Control_User from "../views/Control_User.vue"
+
 const routes = [
   {
     path: "/",
@@ -39,18 +41,23 @@ const routes = [
   // Ruta para Bienes
   {
     path: "/bienes",
-    name: "a",
-    component: Bienes,
-  },
-  {
-    path: "/child",
-    name: "Child",
+    name: "bienes",
     component: Bienes,
   },
   {
     path: "/RecuperarContrase",
     name: "RecuperarContraseña",
     component: Password,
+  },
+  {
+    path: "/rol",
+    name: "Rol",
+    component: Roles,
+  },
+  {
+    path: "/ruta",
+    name: "Ruta",
+    component: Routes,
   },
   {
     path: "/ResetPassword",
@@ -63,19 +70,39 @@ const routes = [
     component: Dashboard,
   },
   {
-    path: "/users",
-    name: "Users",
+    path: "/profile",
+    name: "Profile",
+    component: Profile,
+  },
+  {
+    path: "/signin",
+    name: "Signin",
+    component: Signin,
+  },
+  {
+    path: "/signup",
+    name: "Signup",
+    component: Signup,
+  },
+  {
+    path: "/users/access",
+    name: "Control de accesso",
     component: Users,
   },
   {
+    path: "/configuration",
+    name: "Configuration",
+    component: Configuration,
+  },
+  {
     path: "/users/control",
-    name: "Gestión de Usuarios",
+    name: "Gestion de usuarios",
     component: Control_User,
   },
   {
     path: "/users/add",
-    name: "Agregar Usuarios",
-    component: SaveUser,
+    name: "Agregar de usuarios",
+    component: Save_User,
   },
   {
     path: "/maquinariayequipos",
@@ -93,11 +120,6 @@ const routes = [
     component: Category,
   },
   {
-    path: "/virtual-reality",
-    name: "Virtual Reality",
-    component: VirtualReality,
-  },
-  {
     path: "/assets",
     name: "Bienes",
     component: ListAssets,
@@ -110,32 +132,17 @@ const routes = [
   {
     path: "/assets/new",
     name: "CreateAsset",
-    component: Assers
+    component: Assets
   },
   {
     path: "/assets/edit",
     name: "EditAsset",
-    component: Assers
+    component: Assets
   },
   {
     path: "/assets/detail",
     name: "AssetDetail",
     component: AssetDetail
-  },
-  {
-    path: "/profile",
-    name: "Profile",
-    component: Profile,
-  },
-  {
-    path: "/signin",
-    name: "Signin",
-    component: Signin,
-  },
-  {
-    path: "/signup",
-    name: "Signup",
-    component: Signup,
   },
   {
     path: "/mantenimientos",
@@ -162,19 +169,14 @@ const routes = [
     component: Informacion,
   },
   {
-    path: "/ReazlziInforme",
+    path: "/RealizarInforme",
     name: "asdasda",
-    component: ReazliaInforme,
+    component: RealizarInforme,
   },
   {
     path: "/mantenimientos/detalles",
     name: "Detalles",
     component: Detalles,
-  },
-  {
-    path: "/configuration",
-    name: "Configuration",
-    component: Configuration,
   },
 ];
 
