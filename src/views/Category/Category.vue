@@ -36,7 +36,7 @@ const fields = ref({
 const rows = ref([]);
 const fetchData = async () => {
   try {
-    const response = await apiService.get('/categories');
+    const response = await apiService.get('/Categorias');
     rows.value = response.data;
     console.log(response);
   } catch (error) {

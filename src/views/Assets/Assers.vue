@@ -3,7 +3,7 @@
     <header class="form-header">
       <div>
         <h1 class="title">Inventarios</h1>
-        <h2 class="subtitle">Registrar nuevo bien</h2>
+        <h2 class="subtitle">{{ isEditMode ? 'Editar bien' : 'Registrar nuevo bien' }}</h2>
       </div>
       <img src="../../assets/logoSena.jpg" alt="SENA Logo" class="sena-logo" />
     </header>
@@ -285,182 +285,206 @@
           type="submit"
           class="btn-submit"
         >
-          Guardar
+          {{ isEditMode ? 'Guardar cambios' : 'Guardar' }}
         </button>
       </div>
     </form>
   </div>
 </template>
-<script>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import apiService from '../../service/apiService';
 import Swal from 'sweetalert2';
 
-export default {
-  name: 'InventoryForm',
-  setup() {
-    const formData = ref({
-      name: "",
-      location: "",
-      acquisitionDate: "",
-      brand: "",
-      modelo: "",
-      equipmentType: "",
-      trainingCenterId: "",
-      serialNumber: "",
-      inventoryCode: "",
-      accountHolder: "",
-      categoryId: "",
-      manufacturer: { name: "", address: "", phone: "" },
-      supplier: { name: "", address: "", phone: "" },
-      status: null,
-      image: null,
-    });
+const router = useRouter();
+const isEditMode = ref(false);
 
-    const categories = ref([]);
-    const trainingCenters = ref([]);
-    const imagePreview = ref(null);
-
-    const fetchCategories = async () => {
-      try {
-        const response = await apiService.get("/Categorias");
-        if (response && Array.isArray(response)) {
-          categories.value = response.map((category) => ({
-            value: category._id,
-            text: category.name,
-          }));
-        }
-      } catch (error) {
-        console.error("Error al obtener las categorías:", error);
-        categories.value = [];
-      }
-    };
-
-    const fetchTrainingCenters = async () => {
-      try {
-        const response = await apiService.get("/training-centers");
-        if (response && Array.isArray(response)) {
-          trainingCenters.value = response.map((center) => ({
-            value: center._id,
-            text: center.name,
-          }));
-        }
-      } catch (error) {
-        console.error("Error al obtener los centros de formación:", error);
-        trainingCenters.value = [];
-      }
-    };
-
-    const validateForm = () => {
-      const requiredFields = [
-        'name', 'location', 'acquisitionDate', 'brand', 'modelo', 'equipmentType',
-        'trainingCenterId', 'serialNumber', 'inventoryCode', 'accountHolder', 'categoryId',
-        'status'
-      ];
-
-      for (const field of requiredFields) {
-        if (!formData.value[field]) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error de validación',
-            text: `Por favor, complete el campo: ${field}`,
-          });
-          return false;
-        }
-      }
-
-      if (!formData.value.manufacturer.name || !formData.value.manufacturer.address || !formData.value.manufacturer.phone) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error de validación',
-          text: 'Por favor, complete todos los campos del fabricante',
-        });
-        return false;
-      }
-
-      if (!formData.value.supplier.name || !formData.value.supplier.address || !formData.value.supplier.phone) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error de validación',
-          text: 'Por favor, complete todos los campos del proveedor',
-        });
-        return false;
-      }
-
-      return true;
-    };
-
-    const handleSubmit = async () => {
-      if (!validateForm()) {
-        return;
-      }
-
-      try {
-        const formDataToSubmit = { ...formData.value };
-        if (formDataToSubmit.acquisitionDate) {
-          formDataToSubmit.acquisitionDate = new Date(formDataToSubmit.acquisitionDate);
-        }
-        const response = await apiService.post("/assets", formDataToSubmit);
-        console.log("API Response:", response);
-        
-        Swal.fire({
-          icon: 'success',
-          title: '¡Éxito!',
-          text: 'El formulario se ha enviado correctamente.',
-        });
-
-        // Clear form fields
-        Object.keys(formData.value).forEach(key => {
-          if (typeof formData.value[key] === 'object' && formData.value[key] !== null) {
-            Object.keys(formData.value[key]).forEach(subKey => {
-              formData.value[key][subKey] = '';
-            });
-          } else {
-            formData.value[key] = '';
-          }
-        });
-        formData.value.status = null;
-        imagePreview.value = null;
-
-      } catch (error) {
-        console.error("Error al enviar el formulario:", error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Ha ocurrido un error al enviar el formulario. Por favor, inténtelo de nuevo.',
-        });
-      }
-    };
-
-    const handleImageUpload = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        formData.value.image = file;
-        imagePreview.value = URL.createObjectURL(file);
-      }
-    };
-
-    onMounted(() => {
-      fetchCategories();
-      fetchTrainingCenters();
-    });
-
-    onBeforeUnmount(() => {
-      if (imagePreview.value) {
-        URL.revokeObjectURL(imagePreview.value);
-      }
-    });
-
-    return {
-      formData,
-      categories,
-      trainingCenters,
-      imagePreview,
-      handleSubmit,
-      handleImageUpload,
-    };
+const formData = ref({
+  name: '',
+  location: '',
+  acquisitionDate: '',
+  brand: '',
+  modelo: '',
+  equipmentType: '',
+  serialNumber: '',
+  inventoryCode: '',
+  accountHolder: '',
+  trainingCenterId: '',
+  categoryId: '',
+  status: '',
+  manufacturer: {
+    name: '',
+    address: '',
+    phone: ''
   },
+  supplier: {
+    name: '',
+    address: '',
+    phone: ''
+  }
+});
+
+const imagePreview = ref(null);
+const trainingCenters = ref([]);
+const categories = ref([]);
+
+// Cargar datos si estamos en modo edición
+const loadAssetData = async () => {
+  // Obtener el ID del localStorage
+  const assetId = localStorage.getItem('editAssetId');
+  console.log(assetId);
+  
+  
+  if (assetId) {
+    isEditMode.value = true;
+    try {
+      console.log('Cargando activo con ID:', assetId);
+      const response = await apiService.get(`/assets/${assetId}`);
+      const asset = response.data || response;
+      console.log('Datos del activo:', asset);
+      
+      // Formatear la fecha para el input date
+      const date = asset.acquisitionDate ? new Date(asset.acquisitionDate).toISOString().split('T')[0] : '';
+      
+      // Asignar los datos al formulario
+      formData.value = {
+        name: asset.name || '',
+        location: asset.location || '',
+        acquisitionDate: date,
+        brand: asset.brand || '',
+        modelo: asset.modelo || '',
+        equipmentType: asset.equipmentType || '',
+        serialNumber: asset.serialNumber || '',
+        inventoryCode: asset.inventoryCode || '',
+        accountHolder: asset.accountHolder || '',
+        trainingCenterId: asset.trainingCenterId?._id || '',
+        categoryId: asset.categoryId?._id || '',
+        status: asset.status || false,
+        manufacturer: {
+          name: asset.manufacturer?.name || '',
+          address: asset.manufacturer?.address || '',
+          phone: asset.manufacturer?.phone || ''
+        },
+        supplier: {
+          name: asset.supplier?.name || '',
+          address: asset.supplier?.address || '',
+          phone: asset.supplier?.phone || ''
+        }
+      };
+    } catch (error) {
+      console.error('Error loading asset:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo cargar la información del activo',
+        icon: 'error',
+        position: 'bottom-right',
+        toast: true,
+        timer: 3000,
+        background: '#dc3545',
+        color: 'white',
+        iconColor: 'white',
+        showConfirmButton: false,
+      });
+    }
+  } else {
+    isEditMode.value = false;
+  }
 };
+
+const handleSubmit = async () => {
+  try {
+    const dataToSend = {
+      ...formData.value,
+      acquisitionDate: formData.value.acquisitionDate ? new Date(formData.value.acquisitionDate).toISOString() : null
+    };
+
+    const assetId = localStorage.getItem('editAssetId');
+
+    if (assetId) {
+      // Modo edición - usar patch en lugar de put
+      await apiService.patch(`/assets/${assetId}`, dataToSend);
+      Swal.fire({
+        title: 'Activo actualizado',
+        icon: 'success',
+        position: 'bottom-right',
+        toast: true,
+        timer: 3000,
+        background: '#28a745',
+        color: 'white',
+        iconColor: 'white',
+        showConfirmButton: false,
+      });
+    } else {
+      // Modo creación
+      await apiService.post('/assets', dataToSend);
+      Swal.fire({
+        title: 'Activo creado',
+        icon: 'success',
+        position: 'bottom-right',
+        toast: true,
+        timer: 3000,
+        background: '#28a745',
+        color: 'white',
+        iconColor: 'white',
+        showConfirmButton: false,
+      });
+    }
+    // Limpiar el localStorage y redirigir
+    localStorage.removeItem('editAssetId');
+    router.push('/assets');
+  } catch (error) {
+    console.error('Error saving asset:', error);
+    Swal.fire({
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al guardar el activo',
+      icon: 'error',
+      position: 'bottom-right',
+      toast: true,
+      timer: 3000,
+      background: '#dc3545',
+      color: 'white',
+      iconColor: 'white',
+      showConfirmButton: false,
+    });
+  }
+};
+
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+// Cargar datos iniciales
+onMounted(async () => {
+  try {
+    // Cargar centros de formación
+    const centersResponse = await apiService.get('/training-centers');
+    trainingCenters.value = (centersResponse.data || centersResponse).map(center => ({
+      value: center._id,
+      text: center.name
+    }));
+
+    // Cargar categorías
+    const categoriesResponse = await apiService.get('/Categorias');
+    categories.value = (categoriesResponse.data || categoriesResponse).map(category => ({
+      value: category._id,
+      text: category.name
+    }));
+
+    // Cargar datos del activo si existe ID en localStorage
+    await loadAssetData();
+  } catch (error) {
+    console.error('Error loading initial data:', error);
+  }
+});
 </script>
 
 <style scoped>

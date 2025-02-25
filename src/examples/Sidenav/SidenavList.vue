@@ -5,33 +5,47 @@ import { useStore } from "vuex";
 
 import SidenavItem from "./SidenavItem.vue";
 import SidenavCard from "./SidenavCard.vue";
+import { watch } from "vue";
+import { ChevronDown } from "lucide-vue-next";
+import { ChevronUp } from "lucide-vue-next";
 
+const NavItemsEnum = {
+  Mantenimientos: 'Mantenimientos',
+  Users: 'Users',
+};
 
 const store = useStore();
-const isRTL = computed(() => store.state.isRTL);
-
 const route = useRoute();
-const getRoute = computed(() => {
-  const routeArr = route.path.split("/");
-  return routeArr[1];
-});
 
 const isEquiposOpen = ref(false);
 const IsMaterialOpen = ref(false);
-const isUsersOpen = ref(false);
+const isNavItemOpen = ref({
+  [NavItemsEnum.Users]: false,
+  [NavItemsEnum.Mantenimientos]: false,
+});
 
 const toggleEquipos = () => {
   isEquiposOpen.value = !isEquiposOpen.value;
-  
 };
 
 const toggleMaterial = () => {
   IsMaterialOpen.value =!IsMaterialOpen.value;
 };
 
-const toggleUsers = () => {
-  isUsersOpen.value = !isUsersOpen.value;
+const toggleNavItem = (navItemKey) => {
+  isNavItemOpen.value[navItemKey] = !isNavItemOpen.value[navItemKey];
 };
+
+const updateNavItemOpen = () => {
+  isNavItemOpen.value = {
+    [NavItemsEnum.Users]: route.path.startsWith('/users'),
+    [NavItemsEnum.Mantenimientos]: route.path.startsWith('/mantenimientos'),
+  };
+};
+
+watch(route.path, () => updateNavItemOpen());
+const isRTL = computed(() => store.state.isRTL);
+const routeName = computed(() => route.name);
 </script>
 
 
@@ -44,7 +58,7 @@ const toggleUsers = () => {
       <li class="nav-item">
         <sidenav-item
           to="/dashboard-default"
-          :class="getRoute === 'dashboard-default' ? 'active' : ''"
+          :class="routeName === 'dashboard-default' ? 'active' : ''"
           :navText="'Tablero Principal'"
         >
           <template v-slot:icon>
@@ -55,18 +69,18 @@ const toggleUsers = () => {
 
       <li class="nav-item">
         <div 
-          @click="toggleUsers"
+          @click="toggleNavItem(NavItemsEnum.Users)"
           class="nav-link"
-          :class="{ 'active': getRoute === 'users' || isUsersOpen }"
+          :class="{ 'active': routeName === 'users' || isNavItemOpen[NavItemsEnum.Users] }"
         >
           <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
             <i class="fa fa-users text-success text-sm "></i>
           </div>
           <span class="nav-link-text ms-1">Usuarios</span>
-          <ChevronDown v-if="!isUsersOpen" class="ml-auto" />
+          <ChevronDown v-if="!isNavItemOpen[NavItemsEnum.Users]" class="ml-auto" />
           <ChevronUp v-else class="ml-auto" />
         </div>
-        <ul v-if="isUsersOpen" class="nav-item-dropdown">
+        <ul v-if="isNavItemOpen[NavItemsEnum.Users]" class="nav-item-dropdown">
           <li>
             <sidenav-item
               to="/users/access"
@@ -107,12 +121,12 @@ const toggleUsers = () => {
         <div 
           @click="toggleEquipos"
           class="nav-link"
-          :class="{ 'active': getRoute === 'machineandteams' || isEquiposOpen }"
+          :class="{ 'active': routeName === 'machineandteams' || isEquiposOpen }"
         >
           <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
             <i class="ni ni-credit-card text-success text-sm "></i>
           </div>
-          <span class="nav-link-text ms-1">Maquinaria y equipos</span>
+          <span class="nav-link-text ms-1">Maquinarias</span>
           <ChevronDown v-if="!isEquiposOpen" class="ml-auto" />
           <ChevronUp v-else class="ml-auto" />
         </div>
@@ -157,7 +171,7 @@ const toggleUsers = () => {
         <div 
           @click="toggleMaterial"
           class="nav-link"
-          :class="{ 'active': getRoute === 'matenimeito' || IsMaterialOpen }"
+          :class="{ 'active': routeName === 'matenimeito' || IsMaterialOpen }"
         >
         <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
           <i class="ni ni-settings text-info text-sm opacity-10"></i>
@@ -201,15 +215,46 @@ const toggleUsers = () => {
             </sidenav-item>
           </li>
         </ul>
-        <sidenav-item
-          to="/virtual-reality"
-          :class="getRoute === 'virtual-reality' ? 'active' : ''"
-          :navText= "'Mantenimientos'"
+      </li>
+
+      <li class="nav-item">
+        <div 
+          @click="toggleNavItem(NavItemsEnum.Mantenimientos)"
+          class="nav-link"
+          :class="{ 'active': routeName === 'mantenimientos' || isNavItemOpen[NavItemsEnum.Mantenimientos] }"
         >
-          <template v-slot:icon>
-            <i class="ni ni-app text-info text-sm "></i>
-          </template>
-        </sidenav-item>
+          <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="fa fa-users text-success text-sm "></i>
+          </div>
+          <span class="nav-link-text ms-1">Mantenimientos</span>
+          <ChevronDown v-if="!isNavItemOpen[NavItemsEnum.Mantenimientos]" class="ml-auto" />
+          <ChevronUp v-else class="ml-auto" />
+        </div>
+        <ul v-if="isNavItemOpen[NavItemsEnum.Mantenimientos]" class="nav-item-dropdown">
+          <li>
+            <sidenav-item
+              to="/mantenimientos/planear-mantenimiento"
+              :class="route.path === '/mantenimientos/planear-mantenimiento' ? 'active' : ''"
+              :navText="'Planear Mantenimiento'"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+              </template>
+            </sidenav-item>
+          </li>
+          <li>
+            <sidenav-item
+              to="/mantenimientos/GestionActividaes"
+              :class="route.path === '/mantenimientos/planear-mantenimiento' ? 'active' : ''"
+              :navText="'Gestion Actual'"
+            >
+              <template v-slot:icon>
+                <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+              </template>
+            </sidenav-item>
+          </li>
+        </ul>
+
       </li>
 
       <li class="mt-12 nav-item">
@@ -224,7 +269,7 @@ const toggleUsers = () => {
       <li class="nav-item">
         <sidenav-item
           to="/profile"
-          :class="getRoute === 'profile' ? 'active' : ''"
+          :class="routeName === 'profile' ? 'active' : ''"
           :navText="'Perfil'"
         >
           <template v-slot:icon>
@@ -236,7 +281,7 @@ const toggleUsers = () => {
       <li class="nav-item">
         <sidenav-item
           to="/configuration"
-          :class="getRoute === 'configuration' ? 'active' : ''"
+          :class="routeName === 'configuration' ? 'active' : ''"
           :navText="isRTL ? 'تسجيل الدخول' : 'Configuraciones'"
         >
           <template v-slot:icon>
@@ -248,7 +293,7 @@ const toggleUsers = () => {
       <li class="nav-item">
         <sidenav-item
           to="/signup"
-          :class="getRoute === 'signup' ? 'active' : ''"
+          :class="routeName === 'signup' ? 'active' : ''"
           :navText="'Cerrar sesión'"
         >
           <template v-slot:icon>

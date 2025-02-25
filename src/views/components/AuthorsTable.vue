@@ -90,7 +90,6 @@ const exportToPDF = (rows) => {
   doc.save(`${title || "tabla"}.pdf`);
 };
 
-
 const exportToExcel = (rows) => {
   const tableHeaders = headers.map((header) => header.text || header);
 
@@ -113,13 +112,13 @@ const exportToExcel = (rows) => {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
 
   XLSX.writeFile(workbook, `${title || "tabla"}.xlsx`);
-
 };
 
 </script>
 
 <template>
   <h2 v-if="title" class="text-xl font-semibold" style="color: white;">{{ title }}</h2>
+  <div class="row justify-content-space-between py-2">
   <div class="row py-2" style="justify-content: space-between;">
     <div class="col-4">
       <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
@@ -133,6 +132,8 @@ const exportToExcel = (rows) => {
         <i class="fas fa-file-excel" style="color: green; font-size: 1.5rem;"></i>
       </button>
     </div>
+    <div class="col-4">
+      <!-- filtros -->
     <div v-if="filters" class="col-5 d-flex align-items-center">
       <!-- filtros -->
       <div class="bg-white rounded-lg d-flex shadow-sm" style="width: 100%">
@@ -148,7 +149,10 @@ const exportToExcel = (rows) => {
           <p style="margin-bottom: 0rem !important; padding: 10px;">Filtrar por</p>
         </div>
       </div>
+      </div>
+      </div>
     </div>
+    
   </div>
   <div class="card bg-white rounded-lg shadow-sm">
     <div class="card-body px-0 pt-0 pb-2">
@@ -162,8 +166,8 @@ const exportToExcel = (rows) => {
                 <div v-if="index === 0 && fields[field].main" class="d-flex px-2 py-1">
                   <div v-if="fields[field].showAvatar">
                     <img :src="getFieldValue(item, fields[field].avatar) ||
-                      '../../assets/img/team-2.jpg'
-                      " class="avatar avatar-sm me-3 rounded-circle" alt="user" />
+                      '../../assets/img/team-2.jpg'"
+                      class="avatar avatar-sm me-3 rounded-circle" alt="user" />
                   </div>
                   <div v-if="fields[field].main" class="d-flex flex-column justify-content-center">
                     <h6 class="mb-0 text-sm">
@@ -175,8 +179,7 @@ const exportToExcel = (rows) => {
                   </div>
                 </div>
                 <div v-else :class="fields[field].class || 'px-2 py-1'">
-                  <span :class="fields[field].textClass || 'text-xs font-weight-bold'
-                    ">
+                  <span :class="fields[field].textClass || 'text-xs font-weight-bold'">
                     {{ getFieldValue(item, fields[field].value) }}
                   </span>
                 </div>
@@ -190,6 +193,7 @@ const exportToExcel = (rows) => {
                   class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2">
                   <i :class="icons.secondIcon || 'fas fa-trash'"></i>
                 </button>
+               
               </td>
             </tr>
           </template>

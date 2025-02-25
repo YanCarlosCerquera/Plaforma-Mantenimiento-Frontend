@@ -10,6 +10,13 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import '@mdi/font/css/materialdesignicons.css';
+
+// Add Font Awesome CSS
+const fontAwesomeLink = document.createElement('link');
+fontAwesomeLink.rel = 'stylesheet';
+fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+document.head.appendChild(fontAwesomeLink);
+
 const appInstance = createApp(App);
 const vuetify = createVuetify({
   components,

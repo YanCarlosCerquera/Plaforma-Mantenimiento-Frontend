@@ -158,7 +158,7 @@
       const id = localStorage.getItem("IDCategoria");
       if (!id || id === "0") {
         // Crear nueva categoría
-        await apiService.post("/categories", data);
+        await apiService.post("/Categorias", data);
         store.dispatch("showToast", {
           title: "Categoría Creada",
           description: "La categoría se ha creado con éxito.",
@@ -166,7 +166,7 @@
         });
       } else {
         // Actualizar categoría existente
-        await apiService.patch(`/categories/${id}`, data);
+        await apiService.patch(`/Categorias/${id}`, data);
         store.dispatch("showToast", {
           title: "Categoría Actualizada",
           description: "La categoría se ha actualizado con éxito.",
@@ -469,3 +469,7 @@
       }
     }
     </style>
+
+
+
+

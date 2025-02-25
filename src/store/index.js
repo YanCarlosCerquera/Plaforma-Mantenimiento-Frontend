@@ -1,6 +1,12 @@
 import { createStore } from "vuex";
+import assets from './modules/assets';
+import tables from './modules/tables';
 
 export default createStore({
+  modules: {
+    assets,
+    tables
+  },
   state: {
     hideConfigButton: false,
     isPinned: false,
