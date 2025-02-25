@@ -1,30 +1,30 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Dashboard from "../views/Dashboard.vue";
-import Users from "../views/Users.vue";
-import Machineandteams from "../views/Billing.vue";
-import VirtualReality from "../views/VirtualReality.vue";
-import Index from "../views/Index.vue";
-import Profile from "../views/Profile.vue";
-import Signup from "../views/Signup.vue";
-import Signin from "../views/Signin.vue";
-import Password from "../views/password.vue";
-import ResetPassword from "../views/resetpassword.vue";
-import SaveCategory from "../views/Category/Save_Category.vue";
-import SaveUser from "../views/Save_User.vue";
-import Category from "../views/Category/Category.vue";
-import PlanearMantenimiento from "../views/PlanearMantenimiento.vue";
-import Bienes from "../views/Home/Bienes/Bienes.vue";
-import Configuration from "../views/Configuration.vue";
-import GestionActiviades from "../views/Matenimiento/GestionActiviades.vue";
-import Detalles from "../views/Matenimiento/detalles.vue";
-import ListOrden from "../views/Matenimiento/ListOrden.vue";
-import Informacion from "../views/Matenimiento/Informacion/Informacion.vue";
-import ReazliaInforme from "../views/Matenimiento/Informacion/ReazliaInforme.vue";
-import ListAssets from "../views/Assets/ListAssets.vue";
 import Assers from "../views/Assets/Assers.vue";
 import AssetDetail from "../views/Assets/AssetDetail.vue";
+import ListAssets from "../views/Assets/ListAssets.vue";
+import Machineandteams from "../views/Billing.vue";
+import Category from "../views/Category/Category.vue";
+import SaveCategory from "../views/Category/Save_Category.vue";
+import Configuration from "../views/Configuration.vue";
+import Dashboard from "../views/Dashboard.vue";
+import Bienes from "../views/Home/Bienes/Bienes.vue";
+import Index from "../views/Index.vue";
+import GestionActiviades from "../views/Matenimiento/GestionActiviades.vue";
 import HistoryMateni from "../views/Matenimiento/History/HistoryMateni.vue";
-
+import Informacion from "../views/Matenimiento/Informacion/Informacion.vue";
+import ReazliaInforme from "../views/Matenimiento/Informacion/ReazliaInforme.vue";
+import ListOrden from "../views/Matenimiento/ListOrden.vue";
+import Detalles from "../views/Matenimiento/detalles.vue";
+import PlanearMantenimiento from "../views/PlanearMantenimiento.vue";
+import Profile from "../views/Profile.vue";
+import SaveUser from "../views/Save_User.vue";
+import Signin from "../views/Signin.vue";
+import Signup from "../views/Signup.vue";
+import Users from "../views/Users.vue";
+import VirtualReality from "../views/VirtualReality.vue";
+import Password from "../views/password.vue";
+import ResetPassword from "../views/resetpassword.vue";
+import Control_User from "../views/Control_User.vue"
 const routes = [
   {
     path: "/",
@@ -70,7 +70,7 @@ const routes = [
   {
     path: "/users/control",
     name: "Gestión de Usuarios",
-    component: SaveUser,
+    component: Control_User,
   },
   {
     path: "/users/add",
@@ -103,7 +103,7 @@ const routes = [
     component: ListAssets,
   },
   {
-path: "/history",
+    path: "/history",
     name: "Historial",
     component: HistoryMateni
   },
@@ -156,11 +156,11 @@ path: "/history",
     name: "Ordenes de Trabajo",
     component: ListOrden,
   },
-    {
-  path: "/informes",
-  name: "Informes",
-  component: Informacion,
-    },
+  {
+    path: "/informes",
+    name: "Informes",
+    component: Informacion,
+  },
   {
     path: "/ReazlziInforme",
     name: "asdasda",
