@@ -15,6 +15,8 @@ import Category from "../views/Category/Category.vue";
 import Assers from "../views/Assets/Assers.vue";
 import Configuration from "../views/Configuration.vue";
 import Control_User from "../views/Control_User.vue";
+import Roles from "../views/Roles.vue";
+import Routes from "../views/Routes.vue";
 
 const routes = [
   {
@@ -31,6 +33,16 @@ const routes = [
     path: "/RecuperarContrase",
     name: "RecuperarContrase",
     component: password,
+  },
+  {
+    path: "/rol",
+    name: "Rol",
+    component: Roles,
+  },
+  {
+    path: "/ruta",
+    name: "Ruta",
+    component: Routes,
   },
   {
     path: "/ResetPassword",
