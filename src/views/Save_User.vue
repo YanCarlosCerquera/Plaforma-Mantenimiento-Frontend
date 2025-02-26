@@ -5,6 +5,7 @@ import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonSelect from "@/components/ArgonSelect.vue";
 import Swal from "sweetalert2";
 import Cookies from "js-cookie";
+import defaultImage from "@/assets/img/logos/image_upload.svg";
 
 const token = Cookies.get('authToken');
 
@@ -17,7 +18,7 @@ const user = ref({
   typeDocument: "",
   numberDocument: "",
   password: "",
-  photoUrl: "",
+  photoUrl: defaultImage, // Inicializar con la imagen por defecto
 });
 
 const roles = ref([]);
@@ -33,6 +34,7 @@ const assignedPosition = [
   { value: "Contratista", label: "Contratista" },
 ];
 
+// Manejar la subida de imágenes
 const handleImageUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
@@ -69,7 +71,7 @@ const handleImageUpload = (event) => {
 
         const compressedImage = canvas.toDataURL("image/jpeg", 0.8);
 
-        user.value.photoUrl = compressedImage;
+        user.value.photoUrl = compressedImage; // Actualizar la URL de la imagen
       };
 
       img.src = e.target.result;
@@ -79,10 +81,10 @@ const handleImageUpload = (event) => {
   }
 };
 
+// Obtener los roles desde la API
 const getDataRol = async () => {
   try {
     const response = await apiService.get("/rol", {}, { Authorization: `Bearer ${token}`, });
-    console.log("API Response:", response);
     if (response && Array.isArray(response)) {
       roles.value = response.map((assignedRol) => ({
         value: assignedRol._id,
@@ -100,9 +102,17 @@ const getDataRol = async () => {
 
 onMounted(getDataRol);
 
+// Manejar el envío del formulario
 const handleSubmit = async () => {
   try {
-    await apiService.post("/users", {...user.value, state: true}, { Authorization: `Bearer ${token}`, });
+    const userData = { ...user.value };
+
+    // Si la imagen es la misma que la imagen por defecto, enviar photoUrl como vacía
+    if (userData.photoUrl === defaultImage) {
+      userData.photoUrl = "";
+    }
+
+    await apiService.post("/users", { ...userData, state: true }, { Authorization: `Bearer ${token}`, });
 
     Swal.fire({
       title: "Usuario agregado exitosamente",
@@ -119,7 +129,7 @@ const handleSubmit = async () => {
       },
     });
 
-    handleCancel();
+    handleCancel(); // Restablecer el formulario
   } catch (error) {
     Swal.fire({
       title: "Error agregando usuario:",
@@ -141,9 +151,10 @@ const handleSubmit = async () => {
   }
 };
 
+// Restablecer el formulario al cancelar
 const handleCancel = () => {
   Object.keys(user.value).forEach((key) => (user.value[key] = ""));
-  user.value.photoUrl = null;
+  user.value.photoUrl = defaultImage; // Restablecer a la imagen por defecto
 };
 </script>
 
@@ -171,7 +182,7 @@ const handleCancel = () => {
                       style="position: relative; display: inline-block"
                     >
                       <img
-                        :src="user.photoUrl || 'https://via.placeholder.com/150'"
+                        :src="user.photoUrl"
                         alt="Imagen de usuario"
                         class="rounded-circle"
                         style="

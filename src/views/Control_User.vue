@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import Cookies from "js-cookie";
 import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonSelect from "@/components/ArgonSelect.vue";
+import defaultImage from "@/assets/img/logos/user.svg";
 
 const token = Cookies.get("authToken");
 const user = ref({
@@ -15,7 +16,7 @@ const user = ref({
   assignedPosition: "",
   typeDocument: "",
   numberDocument: "",
-  photoUrl: "",
+  photoUrl: defaultImage,
 });
 const userId = ref("");
 const headers = ref([
@@ -93,7 +94,7 @@ const fetchData = async () => {
         : "Sin cargo asignado",
       photoUrl: user.photoUrl
         ? user.photoUrl.replace("http://localhost:3000", "")
-        : user.photoUrl,
+        : defaultImage, 
       phone: user.phone ? user.phone.replace(/^\+?\d{1,2}/, "") : user.phone,
     }));
   } catch (error) {
@@ -173,7 +174,7 @@ const handleEdit = (row) => {
 };
 const handleCancel = () => {
   Object.keys(user.value).forEach((key) => (user.value[key] = ""));
-  user.value.photoUrl = null;
+  user.value.photoUrl = defaultImage; // Restablecer a la imagen por defecto
   userId.value = "";
   dialog.value = false;
 };
