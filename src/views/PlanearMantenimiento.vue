@@ -19,16 +19,19 @@
               <input 
                 type="text"
                 class="form-input"
-                placeholder="Yan Carlos Cerquera"
+                placeholder="Yan Carlos Cerquera" 
+                readonly
+                v-model="maintenanceRequest.requesterName"
               />
             </div>
   
             <div class="form-group">
               <label>Fecha de solicitud</label>
               <input 
-                type="text"
+                type="date"
                 class="form-input"
                 placeholder="19-06-2024"
+                v-model="maintenanceRequest.createdAt"
               />
             </div>
   
@@ -36,94 +39,95 @@
               <label>Tipo de mantenimiento</label>
               <select 
                 class="form-select"
+                v-model="maintenanceRequest.maintenanceType"
               >
-                <option>Preventivo</option>
+                <option value="Preventivo">Preventivo</option>
+                <option value="Correctivo">Correctivo</option>
               </select>
             </div>
   
             <div class="form-group">
               <label>Codigo inventario</label>
-              <input 
-                type="text"
-                class="form-input"
+              <ArgonAutocomplete 
                 placeholder="95271025953"
+                :items="assetsData"
+                v-model="maintenanceRequest.InventoryCode"
               />
             </div>
           </div>
   
           <img
             class="form-section-content-image"
-            src="../assets/img/image-planear-mantenimiento.png"
-            alt=""
+            :src="asset.image"
+            alt="Imagen del bien"
           >
         </div>
-
       </section>
 
-      <section class="form-section">
+      <section class="form-section" v-if="hasAssetData">
         <h3 class="section-title">Informacion del bien</h3>
 
-        <div class="form-grid">
+        <div class="form-grid asset-info-grid">
           <div class="form-group">
             <label>Centro de formacion</label>
             <p>
-              Centro de la empresa la industria y los Servicios.
+              {{ asset.centro_formacion }}
             </p>
           </div>
 
           <div class="form-group">
             <label>Ubicacion</label>
             <p>
-              Lab. Tecnologias de la informacion
+              {{ asset.ubicacion }}
             </p>
           </div>
 
           <div class="form-group">
             <label>Fecha de adquisición</label>
             <p>
-              11-09-2015
+              {{ asset.fecha }}
             </p>
           </div>
 
           <div class="form-group">
             <label>Marca</label>
             <p>
-              Fluke
+              {{ asset.marca }}
             </p>
           </div>
 
           <div class="form-group">
             <label>Modelo</label>
             <p>
-              DSX-5000
+              {{ asset.modelo }}
             </p>
           </div>
 
           <div class="form-group">
             <label>Cuentadante</label>
             <p>
-              Edgar Eduardo Olarte
+              {{ asset.cuentadante }}
             </p>
           </div>
 
           <div class="form-group">
             <label>Numero de serie</label>
             <p>
-              1818116396
+              {{ asset.serie }}
             </p>
           </div>
 
           <div class="form-group">
             <label>Tipo de equipo</label>
             <p>
-              Tecnico
+              {{ asset.tipo_equipo }}
             </p>
           </div>
 
           <div class="form-group">
             <label>Estado</label>
             <p>
-              Bueno
+              {{ asset.estado }}
             </p>
           </div>
         </div>
@@ -133,26 +137,178 @@
           <textarea
             class="form-input"
             rows="4"
+            v-model="maintenanceRequest.issueDescription"
           >Describa el motivo de la solicitud</textarea>
+        </div>
+        <div class="form-actions" v-if="hasAssetData">
+          <button 
+            type="submit"
+            class="btn-submit"
+          >
+            Enviar solicitud
+          </button>
         </div>
       </section>
 
-      <div class="form-actions">
-        <button 
-          type="submit"
-          class="btn-submit"
-        >
-          Enviar solicitud
-        </button>
-      </div>
     </form>
   </div>
 </template>
 
 <script setup>
-const handleSubmit = () => {
-  console.log('Form submitted');
+import { ref, computed, onMounted, watch } from 'vue';
+import defaultImage from '@/assets/img/logos/image_upload.svg'
+import apiService from '../service/apiService';
+import ArgonAutocomplete from '../components/ArgonAutocomplete.vue';
+import Cookies from 'js-cookie';
+import Swal from "sweetalert2";
+import { useRouter } from 'vue-router';
+
+const jwt_decode = require("jwt-decode");
+const token = Cookies.get("authToken");
+const decodedToken = jwt_decode.jwtDecode(token);
+const userId = decodedToken.sub;
+const assetsData = ref([])
+const router = useRouter()
+
+const asset = ref({
+  centro_formacion: '',
+  ubicacion: '',
+  fecha: '',
+  marca: '',
+  modelo: '',
+  cuentadante: '',
+  serie: '',
+  tipo_equipo: '',
+  estado: '',
+  image: defaultImage
+});
+
+const maintenanceRequest = ref({
+  requesterName: '',
+  requesterPhone: '',
+  serialNumber: '',
+  maintenanceType: '',
+  InventoryCode: '',
+  issueDescription: '',
+  createdAt: '',
+});
+
+const hasAssetData = computed(() => {
+  const rest = { ...asset.value };
+  delete rest.image;
+  return Object.values(rest).some(value => value !== '');
+});
+
+async function getUser() {
+  try {
+    const response = await apiService.get(
+      `users/${userId}`,
+      {},
+      { Authorization: `Bearer ${token}` }
+    );
+
+    maintenanceRequest.value.requesterName = response?.name;
+    maintenanceRequest.value.requesterPhone = response?.phone;
+
+  } catch (error) {
+    Swal.fire({
+      title: "Error",
+      text:
+        error.response?.data?.message ||
+        "Hubo un problema al cargar la información.",
+      icon: "error",
+      position: "bottom-right",
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "text-succes",
+      },
+    });
+  }
+}
+
+const fetchAssets = async () => {
+  try {
+    const response = await apiService.get('/assets');
+    assetsData.value = response.map(asset => ({
+      value: asset.inventoryCode,
+      subtitle: asset.name,
+      title: asset.inventoryCode
+    }));
+  } catch (error) {
+    console.error("error al cargar bienes: "+error)
+  }
+}
+
+const fetchSelectAsset = async (inventoryCode) => {
+  try {
+    const response = await apiService.get(`/assets/InventoryCode/${inventoryCode}`);
+    asset.value = {
+      centro_formacion: response.trainingCenterId.name,
+      ubicacion: response.location,
+      fecha: response.createdAt,
+      marca: response.brand,
+      modelo: response.modelo,
+      cuentadante: response.accountHolderId,
+      serie: response.serialNumber,
+      tipo_equipo: response.equipmentType,
+      estado: response.status,
+      image: response.image || defaultImage
+    };
+    maintenanceRequest.value.InventoryCode = inventoryCode;
+    maintenanceRequest.value.serialNumber = response.serialNumber;
+  } catch (error) {
+    console.error("error al cargar el bien: " + error);
+  }
+}
+
+const handleSubmit = async () => {
+  console.log(maintenanceRequest.value);
+  try {
+    const response = await apiService.post('/application-maintenance', maintenanceRequest.value);
+    console.log(response)
+    Swal.fire({
+      title: "Solicitud enviada",
+      text: response.trackingNumber,
+      icon: "success",
+      timer: 3000,
+      showConfirmButton: false,
+    });
+
+    setTimeout(() => {
+      router.push('/mantenimientos/GestionActividaes');
+    }, 1000);
+  } catch (error) {
+    Swal.fire({
+      title: "Error",
+      text: error.response?.data?.message || "Hubo un problema al enviar la solicitud.",
+      icon: "error",
+      position: "bottom-right",
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "text-error",
+      },
+    });
+  }
 };
+
+watch(() => maintenanceRequest.value.InventoryCode, (newInventoryCode) => {
+  if (newInventoryCode) {
+    fetchSelectAsset(newInventoryCode);
+  }
+});
+
+onMounted(() => {
+  fetchAssets();
+  getUser()
+});
 </script>
 
 <style scoped>
@@ -171,14 +327,14 @@ const handleSubmit = () => {
 }
 
 .title {
-  color: #0f610f;
+  color: #ffffff;
   font-size: 1.5rem;
   font-weight: 800;
   margin: 0;
 }
 
 .subtitle {
-  color: rgba(#0f610f, 0.7);
+  color: #494949;
   font-size: 1.25rem;
   font-weight: 500;
   margin: 0;
@@ -192,15 +348,12 @@ const handleSubmit = () => {
   padding: 6px;
 }
 
-.form-container {
+.form-section {
+  margin-bottom: 2rem;
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 2rem;
-}
-
-.form-section {
-  margin-bottom: 2rem;
 }
 
 .form-section-content {
@@ -210,6 +363,10 @@ const handleSubmit = () => {
 
 .form-section-content-image {
   margin: auto;
+  max-width: 200px;
+  min-width: 100px;
+  max-height: 200px;
+  min-width: 100px;
 }
 
 .section-title {
@@ -221,6 +378,12 @@ const handleSubmit = () => {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.asset-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Cambiado a tres columnas */
   gap: 1rem;
 }
 

@@ -68,7 +68,11 @@ function onSelect(item) {
         {{ item.raw.title }}
       </template>
       <template v-slot:item="{ item, props }">
-        <v-list-item v-bind="props" :title="item.raw.title"></v-list-item>
+        <v-list-item v-bind="props" :title="item.raw.title">
+          <v-list-item-subtitle v-if="item.raw.subtitle">
+            {{ item.raw.subtitle }}
+          </v-list-item-subtitle>
+        </v-list-item>
       </template>
     </v-autocomplete>
   </div>

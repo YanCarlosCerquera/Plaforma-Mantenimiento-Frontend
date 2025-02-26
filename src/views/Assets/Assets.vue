@@ -304,6 +304,7 @@ const isEditMode = ref(false);
 const formData = ref({
   name: '',
   location: '',
+  image: '',
   acquisitionDate: '',
   brand: '',
   modelo: '',
@@ -457,6 +458,7 @@ const handleImageUpload = (event) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       imagePreview.value = e.target.result;
+      formData.value.image = e.target.result;
     };
     reader.readAsDataURL(file);
   }

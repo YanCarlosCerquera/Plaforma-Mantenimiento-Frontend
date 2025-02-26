@@ -379,7 +379,7 @@ onBeforeUnmount(() => {
                   <argon-input prefix="+57 " type="number" v-model="userData.phone" />
                 </div>
                 <div>
-                  <argon-button color="success" size="sm" class="ms-auto" @click="updateUser">Actualizar
+                  <argon-button color="success" size="sm" class="ms-auto mt-3" @click="updateUser">Actualizar
                     perfil</argon-button>
                 </div>
               </div>
@@ -396,7 +396,7 @@ onBeforeUnmount(() => {
                   <ArgonAutocomplete type="text" v-model="userData.role" :items="roles" />
                 </div>
                 <div>
-                  <argon-button color="success" size="sm" class="ms-auto" @click="dialogVisible = true">Cambiar
+                  <argon-button color="success" size="sm" class="ms-auto mt-2" @click="dialogVisible = true">Cambiar
                     contraseña</argon-button>
                 </div>
               </div>

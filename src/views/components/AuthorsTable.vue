@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, ref, computed } from "vue";
+import { defineProps, ref, computed } from "vue";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
@@ -23,23 +23,14 @@ const { headers, rows, title, icons, fields } = defineProps({
     required: false,
   },
   icons: {
-    type: Object,
+    type: Array,
     required: false,
-    default: () => ({ firstIcon: "", secondIcon: "" }),
+    default: () => [],
   },
 });
 
-const emit = defineEmits(["edit", "delete"]);
 const itemsPerPage = ref(10);
 const page = ref(1);
-
-const handleEdit = (row) => {
-  emit("edit", row);
-};
-
-const handleDelete = (row) => {
-  emit("delete", row.id || row._id);
-};
 
 const getFieldValue = (obj, path) => {
   return path.split(".").reduce((prev, curr) => {
@@ -197,13 +188,10 @@ const exportToExcel = (rows) => {
                 </div>
               </td>
               <td class="align-middle text-center text-sm">
-                <button @click="handleEdit(item)"
+                <button v-for="(icon, index) in icons" :key="index"
+                  @click="icon.method(item)"
                   class="btn btn-sm btn-icon btn-bg-light btn-active-color-green btn-active-bg-warning mx-lg-2 my-2">
-                  <i :class="icons.firstIcon || 'fas fa-check'"></i>
-                </button>
-                <button @click="handleDelete(item)"
-                  class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2">
-                  <i :class="icons.secondIcon || 'fas fa-trash'"></i>
+                  <i :class="icon.class"></i>
                 </button>
               </td>
             </tr>

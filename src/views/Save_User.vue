@@ -173,7 +173,7 @@ const handleCancel = () => {
             <div class="col-md-6 d-flex align-items-center">
               <div class="row" style="width: 100%">
                 <div
-                  class="d-flex align-items-center justify-content-center mb-4"
+                  class="d-flex align-items-center justify-content-center mb-4 mt-4"
                   style="height: calc(3 * 70px)"
                 >
                   <div class="text-center">

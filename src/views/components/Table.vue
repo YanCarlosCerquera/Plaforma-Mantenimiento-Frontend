@@ -42,12 +42,25 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["edit", "delete", "view", "filter-change", "download"]);
-const itemsPerPage = ref(5);
+const itemsPerPage = ref(10); // Cambia el valor inicial si es necesario
 const page = ref(1);
+
+// Calcular el número total de páginas
+const totalPages = computed(() => {
+  return Math.ceil(filteredRows.value.length / itemsPerPage.value);
+});
+
+// Manejar el cambio de página
+const handlePageChange = (newPage) => {
+  page.value = newPage;
+};
+
 const activeFilters = ref({});
 const activeFilterField = ref(null);
 const tableData = ref([]);
 const isMobile = ref(window.innerWidth <= 768);
+
+
 
 // Detectar cambios en el tamaño de la ventana
 window.addEventListener('resize', () => {
@@ -330,6 +343,8 @@ const exportToExcel = () => {
 
   XLSX.writeFile(workbook, `${props.title || "tabla"}.xlsx`);
 };
+
+
 </script>
 
 <template>
@@ -528,10 +543,9 @@ const exportToExcel = () => {
         de {{ filteredRows.length }} registros
       </div>
       <Pagination
-        :page="page"
-        :itemsPerPage="itemsPerPage"
-        :totalItems="filteredRows.length"
-        @update:page="page = $event"
+        :totalPages="totalPages"
+        :currentPage="page"
+        @page-change="handlePageChange"
       />
     </div>
   </div>
