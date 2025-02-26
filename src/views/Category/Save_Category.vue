@@ -2,7 +2,7 @@
     <div class="container">
       <div class="header">
         <h1>Maquinaria y equipos</h1>
-        <p>Agregar categoría</p>
+        <p>{{ isUpdating ? "Actualizar Categoría" : "Agregar Categoría" }}</p>
       </div>
   
       <div class="form-container">
@@ -93,58 +93,62 @@
   import { useRouter } from "vue-router";
   import { useStore } from "vuex";
   import apiService from "../../service/apiService";
-  
+  import Cookies from 'js-cookie'; // Importar js-cookie
+
   const router = useRouter();
   const store = useStore();
-  
+
   const name = ref("");
   const spec = ref("");
   const accessory = ref("");
   const specs = ref([]);
   const accessories = ref([]);
-  const operationVars = ref([]);
+  const operationVars = ref([]); // Aquí se almacenan las variables de operación seleccionadas
   const newVariable = ref("");
-  const variables = ref(["Aceite", "Electricidad", "Presión", "Caudal", "Voltios"]);
-  
-  const isUpdating = computed(() => !!localStorage.getItem("IDCategoria"));
-  
+  const variables = ref(["Aceite", "Electricidad", "Presión", "Caudal", "Voltios"]); // Lista de variables disponibles
+
+  // Obtener el ID de la categoría desde la cookie
+  const categoryId = Cookies.get('categoryId');
+
+  const isUpdating = computed(() => !!categoryId);
+
   const clearForm = () => {
     name.value = "";
     specs.value = [];
     accessories.value = [];
     operationVars.value = [];
   };
-  
+
   const addSpec = () => {
     if (spec.value) {
       specs.value.push(spec.value);
       spec.value = "";
     }
   };
-  
+
   const removeSpec = (index) => {
     specs.value.splice(index, 1);
   };
-  
+
   const addAccessory = () => {
     if (accessory.value) {
       accessories.value.push(accessory.value);
       accessory.value = "";
     }
   };
-  
+
   const removeAccessory = (index) => {
     accessories.value.splice(index, 1);
   };
-  
+
   const addVariable = () => {
     if (newVariable.value && !variables.value.includes(newVariable.value)) {
-      variables.value.push(newVariable.value);
-      operationVars.value.push(newVariable.value);
+      variables.value.push(newVariable.value); // Agrega la nueva variable a la lista
+      operationVars.value.push(newVariable.value); // Selecciona la nueva variable automáticamente
       newVariable.value = "";
     }
   };
-  
+
   const handleSubmit = async () => {
     try {
       const data = {
@@ -154,9 +158,16 @@
         specs: specs.value,
         state: true,
       };
-  
-      const id = localStorage.getItem("IDCategoria");
-      if (!id || id === "0") {
+
+      if (isUpdating.value) {
+        // Actualizar categoría existente
+        await apiService.patch(`/Categorias/${categoryId}`, data);
+        store.dispatch("showToast", {
+          title: "Categoría Actualizada",
+          description: "La categoría se ha actualizado con éxito.",
+          status: "success",
+        });
+      } else {
         // Crear nueva categoría
         await apiService.post("/Categorias", data);
         store.dispatch("showToast", {
@@ -164,19 +175,11 @@
           description: "La categoría se ha creado con éxito.",
           status: "success",
         });
-      } else {
-        // Actualizar categoría existente
-        await apiService.patch(`/Categorias/${id}`, data);
-        store.dispatch("showToast", {
-          title: "Categoría Actualizada",
-          description: "La categoría se ha actualizado con éxito.",
-          status: "success",
-        });
-        localStorage.removeItem("IDCategoria");
       }
-  
+
       clearForm();
-      router.push("/admin/maq/cat/Consultar");
+      Cookies.remove('categoryId'); // Eliminar la cookie después de guardar
+      router.push('/machineandteams/add'); // Redirigir al segundo componente
     } catch (error) {
       store.dispatch("showToast", {
         title: "Error",
@@ -185,23 +188,22 @@
       });
     }
   };
-  
+
+  // Cargar los datos de la categoría si existe un ID
   onMounted(async () => {
-    const id = localStorage.getItem("IDCategoria");
-    if (id) {
+    if (categoryId) {
       try {
-        const data = await apiService.get(`/categories/${id}`);
-        name.value = data.name || "";
-        specs.value = data.specs || [];
-        accessories.value = data.accessories || [];
-        operationVars.value = data.operationVars || [];
+        const response = await apiService.get(`/Categorias/${categoryId}`);
+        name.value = response.name || "";
+        specs.value = response.specs || [];
+        accessories.value = response.accessories || [];
+        operationVars.value = response.operationVars || []; // Cargar las variables de operación
       } catch (error) {
-        console.error("Error fetching category:", error);
+        console.error("Error fetching category data:", error);
       }
     }
   });
   </script>
-  
     
  <style scoped>
     .container {

@@ -32,7 +32,7 @@ const routes = [
   {
     path: "/",
     name: "Home",
-    redirect: "/dashboard-default",
+    redirect: "/index",
   },
   {
     path: "/index",

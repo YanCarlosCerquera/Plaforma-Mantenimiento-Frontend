@@ -5,6 +5,8 @@ import apiService from "../service/apiService";
 import { useDisplay } from "vuetify";
 import Swal from "sweetalert2";
 import Cookies from "js-cookie";
+import ArgonSelect from "@/components/ArgonSelect.vue"; // Importa el componente ArgonSelect
+import defaultImage from "@/assets/img/logos/user.svg";
 
 const token = Cookies.get("authToken");
 
@@ -62,7 +64,7 @@ const formatPhone = (phone) => {
   const numero = phone.slice(phone.indexOf("-") + 1);
   return prefijo.startsWith("+")
     ? `${prefijo} ${numero}`
-    : `+${prefijo} ${numero}`;
+    : `${prefijo} ${numero}`;
 };
 
 const formatDate = (dateString) => {
@@ -87,8 +89,8 @@ const fetchData = async () => {
         phone: formatPhone(user.phone),
         createdAt: formatDate(user.createdAt),
         photoUrl: user.photoUrl
-          ? user.photoUrl.replace("http://localhost:3000", "")
-          : user.photoUrl,
+        ? user.photoUrl.replace("http://localhost:3000", "")
+        : defaultImage, 
       }));
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -103,7 +105,10 @@ const fetchRoles = async () => {
       {},
       { Authorization: `Bearer ${token}` }
     );
-    availableRoles.value = response.data || response;
+    availableRoles.value = response.map((role) => ({
+      value: role._id,
+      label: role.name,
+    }));
   } catch (error) {
     console.error("Error fetching roles:", error);
     alert("Error al cargar los roles");
@@ -228,52 +233,51 @@ onMounted(async () => {
         />
       </div>
     </div>
-    <v-dialog v-model="dialog" scrollable :fullscreen="mobile" max-width="500px">
+    <v-dialog v-model="dialog" scrollable :fullscreen="mobile" max-width="800px">
       <v-card class="bg-white">
-        <v-card-title class="text-h5 bg-light">
+        <v-card-title
+          class="card-title d-flex align-items-center justify-content-center text-h4 text-succes"
+          style="margin: 1rem"
+        >
           Autorizar Usuario
         </v-card-title>
-
-        <v-card-text>
+        <v-card-text class="card-body p-3">
           <v-container>
             <v-row>
               <v-col cols="12">
-                <v-select
+                <label for="assignedRol" class="form-control-label"
+                  >Asignar rol</label
+                >
+                <argon-select
+                  id="assignedRol"
+                  :options="availableRoles"
                   v-model="editedItem.assignedRol"
-                  :items="availableRoles"
-                  item-title="name"
-                  item-value="_id"
-                  label="Asignar rol"
-                  variant="outlined"
-                  required
-                  :loading="!availableRoles.length"
-                  :disabled="!availableRoles.length || isLoading"
-                  class="bg-white"
-                ></v-select>
+                />
               </v-col>
             </v-row>
           </v-container>
         </v-card-text>
-
-        <v-card-actions class="bg-light">
-          <v-spacer></v-spacer>
-          <v-btn
-            color="blue-darken-1"
-            variant="text"
+        <v-card-actions
+          class="d-flex justify-content-center mt-4"
+          style="gap: 60px; padding-top: 20px"
+        >
+          <button
+            class="btn btn-danger"
+            type="button"
             @click="dialog = false"
             :disabled="isLoading"
           >
             Cancelar
-          </v-btn>
-          <v-btn
-            color="blue-darken-1"
-            variant="text"
+          </button>
+          <button
+            class="btn btn-success"
+            type="button"
             @click="acceptUser(editedItem._id, editedItem.assignedRol)"
             :disabled="!editedItem.assignedRol || isLoading"
             :loading="isLoading"
           >
             Autorizar y Asignar Rol
-          </v-btn>
+          </button>
         </v-card-actions>
       </v-card>
     </v-dialog>

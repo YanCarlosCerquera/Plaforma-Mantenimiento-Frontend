@@ -163,10 +163,10 @@ const exportToExcel = (rows) => {
           <template v-slot:item="{ item }">
             <tr class="hover:bg-gray-50">
               <td v-for="(field, index) in Object.keys(fields)" :key="field">
+                <!-- Renderizar campos normales -->
                 <div v-if="index === 0 && fields[field].main" class="d-flex px-2 py-1">
                   <div v-if="fields[field].showAvatar">
-                    <img :src="getFieldValue(item, fields[field].avatar) ||
-                      '../../assets/img/team-2.jpg'"
+                    <img :src="getFieldValue(item, fields[field].avatar) || '../../assets/img/team-2.jpg'"
                       class="avatar avatar-sm me-3 rounded-circle" alt="user" />
                   </div>
                   <div v-if="fields[field].main" class="d-flex flex-column justify-content-center">
@@ -178,6 +178,18 @@ const exportToExcel = (rows) => {
                     </p>
                   </div>
                 </div>
+
+                <!-- Renderizar arreglos de manera especial -->
+                <div v-else-if="Array.isArray(getFieldValue(item, fields[field].value))" :class="fields[field].class || 'px-2 py-1'">
+                  <div class="d-flex flex-wrap gap-1">
+                    <div v-for="(value, idx) in getFieldValue(item, fields[field].value)" :key="idx"
+                      class="badge bg-light text-dark rounded-pill p-2">
+                      {{ value }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Renderizar campos normales -->
                 <div v-else :class="fields[field].class || 'px-2 py-1'">
                   <span :class="fields[field].textClass || 'text-xs font-weight-bold'">
                     {{ getFieldValue(item, fields[field].value) }}
@@ -193,7 +205,6 @@ const exportToExcel = (rows) => {
                   class="btn btn-sm btn-icon btn-bg-light btn-active-color-alert btn-active-bg-warning my-2">
                   <i :class="icons.secondIcon || 'fas fa-trash'"></i>
                 </button>
-               
               </td>
             </tr>
           </template>
@@ -214,6 +225,21 @@ const exportToExcel = (rows) => {
 </template>
 
 <style scoped>
+.badge {
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background-color: #f9fafb;
+  color: #374151;
+}
+
+.badge:hover {
+  background-color: #e5e7eb;
+  cursor: default;
+}
+
 :deep(.v-data-table) {
   background: transparent !important;
   border-radius: 8px;

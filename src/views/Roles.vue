@@ -49,6 +49,7 @@ const fields = ref({
 
 const rows = ref([]);
 const dialog = ref(false);
+const isEditing = ref(false); // Nuevo estado para distinguir entre editar y crear
 const isLoading = ref(false);
 
 const fetchData = async () => {
@@ -72,11 +73,14 @@ const fetchData = async () => {
 const handleEdit = (row) => {
     rol.value = { ...row };
     rolId.value = row._id;
+    isEditing.value = true;
     dialog.value = true;
 };
+
 const handleCancel = () => {
     Object.keys(rol.value).forEach((key) => (rol.value[key] = ""));
     rolId.value = "";
+    isEditing.value = false;
     dialog.value = false;
 };
 
@@ -137,10 +141,7 @@ const handleDelete = async (id) => {
 
 const handleSubmit = async () => {
     try {
-
         isLoading.value = true;
-
-        console.log("rol", rol.value);
 
         const data = {
             name: rol.value.name,
@@ -148,31 +149,51 @@ const handleSubmit = async () => {
             state: rol.value.state,
         };
 
-        await apiService.patch(`rol/${rolId.value}`, data, {
-            Authorization: `Bearer ${token}`,
-        });
+        if (isEditing.value) {
+            await apiService.patch(`rol/${rolId.value}`, data, {
+                Authorization: `Bearer ${token}`,
+            });
 
-        Swal.fire({
-            title: "Rol editado exitosamente",
-            icon: "success",
-            position: "bottom-right",
-            toast: true,
-            timer: 3000,
-            background: "#28a745",
-            color: "white",
-            iconColor: "white",
-            showConfirmButton: false,
-            customClass: {
-                title: "swal-title-white",
-            },
-        });
+            Swal.fire({
+                title: "Rol editado exitosamente",
+                icon: "success",
+                position: "bottom-right",
+                toast: true,
+                timer: 3000,
+                background: "#28a745",
+                color: "white",
+                iconColor: "white",
+                showConfirmButton: false,
+                customClass: {
+                    title: "swal-title-white",
+                },
+            });
+        } else {
+            await apiService.post(`rol`, data, {
+                Authorization: `Bearer ${token}`,
+            });
+
+            Swal.fire({
+                title: "Rol creado exitosamente",
+                icon: "success",
+                position: "bottom-right",
+                toast: true,
+                timer: 3000,
+                background: "#28a745",
+                color: "white",
+                iconColor: "white",
+                showConfirmButton: false,
+                customClass: {
+                    title: "swal-title-white",
+                },
+            });
+        }
 
         handleCancel();
-
         await fetchData();
     } catch (error) {
         Swal.fire({
-            title: "Error al editar rol: ",
+            title: "Error al " + (isEditing.value ? "editar" : "crear") + " rol: ",
             text: error.response?.data?.message || "Algo salió mal.",
             icon: "error",
             position: "bottom-right",
@@ -191,6 +212,16 @@ const handleSubmit = async () => {
     }
 };
 
+const openCreateDialog = () => {
+    rol.value = {
+        name: "",
+        description: "",
+        state: true,
+    };
+    isEditing.value = false;
+    dialog.value = true;
+};
+
 onMounted(async () => {
     await fetchData();
 });
@@ -200,43 +231,50 @@ onMounted(async () => {
     <div class="py-4 container-fluid">
         <div class="row">
             <div class="col-12">
+                <button class="btn btn-custom mb-3" @click="openCreateDialog">
+                    <i class="fas fa-plus me-2"></i>Agregar Nuevo Rol
+                </button>
+
                 <AuthorsTable :title="'Parametrización roles'" :headers="headers" :rows="rows" :fields="fields"
                     :icons="icons" @edit="handleEdit" @delete="handleDelete" />
             </div>
         </div>
-            <v-dialog v-model="dialog" :fullscreen="mobile" scrollable persistent max-width="800px">
+
+        <!-- Diálogo para crear/editar roles -->
+        <v-dialog v-model="dialog" :fullscreen="mobile" scrollable persistent max-width="800px">
             <v-card class="bg-white">
                 <v-card-title class="card-title d-flex align-items-center justify-content-center text-h4 text-succes"
                     style="margin: 1rem">
-                    Editar rol
+                    {{ isEditing ? 'Editar rol' : 'Crear nuevo rol' }}
                 </v-card-title>
                 <v-card-text class="card-body p-3">
                     <v-container>
                         <form @submit.prevent="handleSubmit">
                             <div class="row">
-                                    <div class="row" style="width: 100%">
-                                        <div>
-                                            <label for="example-text-input" class="form-control-label">Nombre
-                                                del rol</label>
-                                            <argon-input id="name" type="text" v-model="rol.name" />
-                                        </div>
-                                        <div>
-                                            <label for="example-text-input" class="form-control-label">Descripción</label>
-                                            <argon-input id="description" type="text" v-model="rol.description" />
-                                        </div>
-                                        <div>
-                                            <label for="example-text-input" class="form-control-label">Estado</label>
-                                            <argon-select id="state" :options="states"
-                                                v-model="rol.state" />
-                                        </div>
+                                <div class="row" style="width: 100%">
+                                    <div>
+                                        <label for="example-text-input" class="form-control-label">Nombre
+                                            del rol</label>
+                                        <argon-input id="name" type="text" v-model="rol.name" />
                                     </div>
+                                    <div>
+                                        <label for="example-text-input" class="form-control-label">Descripción</label>
+                                        <argon-input id="description" type="text" v-model="rol.description" />
+                                    </div>
+                                    <div>
+                                        <label for="example-text-input" class="form-control-label">Estado</label>
+                                        <argon-select id="state" :options="states" v-model="rol.state" />
+                                    </div>
+                                </div>
                             </div>
                             <v-card-actions class="d-flex justify-content-center mt-4"
                                 style="gap: 60px; padding-top: 20px">
                                 <button class="btn btn-danger" type="button" @click="handleCancel">
                                     Cancelar
                                 </button>
-                                <button class="btn btn-success" type="submit">Registrar</button>
+                                <button class="btn btn-success" type="submit">
+                                    {{ isEditing ? 'Guardar cambios' : 'Crear rol' }}
+                                </button>
                             </v-card-actions>
                         </form>
                     </v-container>
@@ -247,6 +285,20 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* Estilos personalizados para el botón */
+.btn-custom {
+    background-color: white; /* Fondo blanco */
+    color: #28a745; /* Letra verde */
+    border: 1px solid #28a745; /* Borde verde */
+    transition: all 0.3s ease; /* Transición suave */
+}
+
+.btn-custom:hover {
+    background-color: #28a745; /* Fondo verde al pasar el mouse */
+    color: white; /* Letra blanca al pasar el mouse */
+}
+
+/* Estilos para la tarjeta del diálogo */
 .v-card {
     color: rgba(0, 0, 0, 0.87);
 }
