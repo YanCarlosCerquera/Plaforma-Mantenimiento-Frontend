@@ -8,46 +8,53 @@
     </header>
 
     <form class="form-container" v-if="requestData">
-   
-
       <section class="form-section">
         <h3 class="section-title">Información del bien</h3>
-        
+
         <div class="details-container">
           <div class="details-info">
             <div class="info-group">
               <div class="info-item">
                 <label>Centro de formación</label>
-                <p>{{ requestData.assetInfo?.trainingCenterId.name || 'No disponible' }}</p>
+                <p>
+                  {{
+                    requestData.assetInfo?.trainingCenterId.name ||
+                    "No disponible"
+                  }}
+                </p>
               </div>
 
               <div class="info-item">
                 <label>Ubicación</label>
-                <p>{{ requestData.assetInfo?.location || 'No disponible' }}</p>
+                <p>{{ requestData.assetInfo?.location || "No disponible" }}</p>
               </div>
             </div>
 
             <div class="info-group">
               <div class="info-item">
                 <label>Marca</label>
-                <p>{{ requestData.assetInfo?.brand || 'No disponible' }}</p>
+                <p>{{ requestData.assetInfo?.brand || "No disponible" }}</p>
               </div>
 
               <div class="info-item">
                 <label>Modelo</label>
-                <p>{{ requestData.assetInfo?.modelo || 'No disponible' }}</p>
+                <p>{{ requestData.assetInfo?.modelo || "No disponible" }}</p>
               </div>
             </div>
 
             <div class="info-group">
               <div class="info-item">
                 <label>Número de serie</label>
-                <p>{{ requestData.assetInfo?.serialNumber || 'No disponible' }}</p>
+                <p>
+                  {{ requestData.assetInfo?.serialNumber || "No disponible" }}
+                </p>
               </div>
 
               <div class="info-item">
                 <label>Tipo de equipo</label>
-                <p>{{ requestData.assetInfo?.equipmentType || 'No disponible' }}</p>
+                <p>
+                  {{ requestData.assetInfo?.equipmentType || "No disponible" }}
+                </p>
               </div>
             </div>
 
@@ -59,21 +66,23 @@
 
               <div class="info-item">
                 <label>Estado</label>
-                <p>{{ requestData.assetInfo?.status || 'No disponible' }}</p>
+                <p>{{ requestData.assetInfo?.status || "No disponible" }}</p>
               </div>
             </div>
 
             <div class="info-group">
               <div class="info-item">
                 <label>Cuentadante</label>
-                <p>{{ requestData.assetInfo?.accountHolder || 'No disponible' }}</p>
+                <p>
+                  {{ requestData.assetInfo?.accountHolder || "No disponible" }}
+                </p>
               </div>
             </div>
           </div>
 
           <div class="details-image">
             <img :src="Logio" alt="Asset image" class="equipment-image" />
-            <button 
+            <button
               class="specs-button"
               :disabled="isLoading"
               @click="handleSubmit"
@@ -95,48 +104,64 @@
         </div>
 
         <h3 class="section-title">Información Proveedor</h3>
-        
+
         <div class="form-grid">
-        <div class="form-group">
+          <div class="form-group">
             <label>Cuentadante</label>
-            <p>{{ requestData.assetInfo?.manufacturer.name || 'No disponible' }}</p>
+            <p>
+              {{ requestData.assetInfo?.manufacturer.name || "No disponible" }}
+            </p>
           </div>
 
           <div class="form-group">
             <label>Número de serie</label>
-            <p>{{ requestData.assetInfo?.manufacturer.phone || 'No disponible' }}</p>
+            <p>
+              {{ requestData.assetInfo?.manufacturer.phone || "No disponible" }}
+            </p>
           </div>
 
           <div class="form-group">
             <label>Tipo de equipo</label>
-            <p>{{ requestData.assetInfo?.manufacturer.address || 'No disponible' }}</p>
+            <p>
+              {{
+                requestData.assetInfo?.manufacturer.address || "No disponible"
+              }}
+            </p>
           </div>
         </div>
-
 
         <h3 class="section-title">Información Accesorios</h3>
-        
+
         <div class="form-grid">
-        <div class="form-group">
+          <div class="form-group">
             <label>Cuentadante</label>
-            <p>{{ requestData.assetInfo?.supplier.name || 'No disponible' }}</p>
+            <p>{{ requestData.assetInfo?.supplier.name || "No disponible" }}</p>
           </div>
 
           <div class="form-group">
             <label>Número de serie</label>
-            <p>{{ requestData.assetInfo?.supplier.phone || 'No disponible' }}</p>
+            <p>
+              {{ requestData.assetInfo?.supplier.phone || "No disponible" }}
+            </p>
           </div>
 
           <div class="form-group">
             <label>Tipo de equipo</label>
-            <p>{{ requestData.assetInfo?.supplier.address || 'No disponible' }}</p>
+            <p>
+              {{ requestData.assetInfo?.supplier.address || "No disponible" }}
+            </p>
           </div>
         </div>
-
       </section>
 
-      <hr>
-      <section class="form-section" v-if="requestData.maintenanceHistory && requestData.maintenanceHistory.length > 0">
+      <hr />
+      <section
+        class="form-section"
+        v-if="
+          requestData.maintenanceHistory &&
+          requestData.maintenanceHistory.length > 0
+        "
+      >
         <h3 class="section-title">Historial de mantenimiento</h3>
         <div class="table-responsive">
           <table class="maintenance-table">
@@ -153,16 +178,27 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="maintenance in requestData.maintenanceHistory" :key="maintenance._id">
-                <td>{{ maintenance?.orderId?.solicitud?.solicitudId?.maintenanceType || 'No especificado' }}</td>
-                <td>{{ maintenance?.orderId?.radicado || 'Sin radicado' }}</td>
-                <td>{{ maintenance?.hours || '0' }}</td>
-                <td>${{ maintenance?.costs?.toFixed(2) || '0.00' }}</td>
-                <td>{{ maintenance?.workDone || 'No especificado' }}</td>
-                <td>{{ maintenance?.observation || 'Sin observaciones' }}</td>
+              <tr
+                v-for="maintenance in requestData.maintenanceHistory"
+                :key="maintenance._id"
+              >
+                <td>
+                  {{
+                    maintenance?.orderId?.solicitud?.solicitudId
+                      ?.maintenanceType || "No especificado"
+                  }}
+                </td>
+                <td>{{ maintenance?.orderId?.radicado || "Sin radicado" }}</td>
+                <td>{{ maintenance?.hours || "0" }}</td>
+                <td>${{ maintenance?.costs?.toFixed(2) || "0.00" }}</td>
+                <td>{{ maintenance?.workDone || "No especificado" }}</td>
+                <td>{{ maintenance?.observation || "Sin observaciones" }}</td>
                 <td>{{ formatDate(maintenance?.createdAt) }}</td>
                 <td>
-                  <button class="view-button" @click="viewMaintenanceDetail(maintenance)">
+                  <button
+                    class="view-button"
+                    @click="viewMaintenanceDetail(maintenance)"
+                  >
                     <i class="fas fa-eye"></i>
                   </button>
                 </td>
@@ -172,62 +208,61 @@
         </div>
       </section>
 
-      <div class="form-actions">
-       
-      </div>
+      <div class="form-actions"></div>
     </form>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import Logio from '../../assets/img/image-planear-mantenimiento.png';
-import apiService from '../../service/apiService';
+import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import Logio from "../../assets/img/image-planear-mantenimiento.png";
+import apiService from "../../service/apiService";
 
 const router = useRouter();
 const isLoading = ref(false);
 const requestData = ref({
   assetInfo: null,
-  maintenanceHistory: []
+  maintenanceHistory: [],
 });
 
-// Función para cargar el historial de mantenimiento
 const loadMaintenanceHistory = async (serialNumber) => {
   if (!serialNumber) {
-    console.error('No hay número de serie disponible');
+    console.error("No hay número de serie disponible");
     return [];
   }
 
   try {
-    console.log('Cargando historial para número de serie:', serialNumber);
-    const response = await apiService.get(`/work-report/maintenanceHistory/${serialNumber}`);
-    console.log('Historial de mantenimiento recibido:', response);
-    
+    console.log("Cargando historial para número de serie:", serialNumber);
+    const response = await apiService.get(
+      `/work-report/maintenanceHistory/${serialNumber}`
+    );
+    console.log("Historial de mantenimiento recibido:", response);
+
     if (Array.isArray(response)) {
-      return response.map(item => ({
+      return response.map((item) => ({
         ...item,
         costs: parseFloat(item.costs || 0),
         hours: parseInt(item.hours || 0),
         orderId: {
           ...item.orderId,
-          solicitud: item.orderId?.solicitud || { solicitudId: {} }
-        }
+          solicitud: item.orderId?.solicitud || { solicitudId: {} },
+        },
       }));
     }
     return [];
   } catch (error) {
-    console.error('Error al obtener historial de mantenimiento:', error);
+    console.error("Error al obtener historial de mantenimiento:", error);
     return [];
   }
 };
 
 // Función principal para cargar los datos del activo
 const loadAssetData = async () => {
-  const assetId = localStorage.getItem('selectedAssetId');
+  const assetId = localStorage.getItem("selectedAssetId");
   if (!assetId) {
-    console.error('No se encontró ID del activo');
-    router.push('/assets');
+    console.error("No se encontró ID del activo");
+    router.push("/assets");
     return;
   }
 
@@ -235,10 +270,10 @@ const loadAssetData = async () => {
   try {
     // 1. Cargar datos del activo
     const assetResponse = await apiService.get(`/assets/${assetId}`);
-    console.log('Datos del activo recibidos:', assetResponse);
+    console.log("Datos del activo recibidos:", assetResponse);
 
     if (!assetResponse) {
-      throw new Error('No se recibieron datos del activo');
+      throw new Error("No se recibieron datos del activo");
     }
 
     // 2. Cargar historial si hay número de serie
@@ -247,13 +282,12 @@ const loadAssetData = async () => {
     // 3. Actualizar el estado
     requestData.value = {
       assetInfo: assetResponse,
-      maintenanceHistory: history
+      maintenanceHistory: history,
     };
-
   } catch (error) {
-    console.error('Error al cargar datos:', error);
+    console.error("Error al cargar datos:", error);
     if (error.response?.status === 403) {
-      router.push('/login');
+      router.push("/login");
     }
   } finally {
     isLoading.value = false;
@@ -266,53 +300,57 @@ onMounted(() => {
 });
 
 const formatDate = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = new Date(dateString);
-  const options = { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   };
-  return date.toLocaleDateString('es-CO', options);
+  return date.toLocaleDateString("es-CO", options);
 };
 
-const handleSubmit = async () => { 
+const handleSubmit = async () => {
   if (requestData.value?.assetInfo?.serialNumber) {
-    localStorage.setItem('serialNumber', requestData.value.assetInfo.serialNumber);  
-    router.push('/history');
+    localStorage.setItem(
+      "serialNumber",
+      requestData.value.assetInfo.serialNumber
+    );
+    router.push("/detalles");
   } else {
-    console.error('No hay número de serie disponible');
+    console.error("No hay número de serie disponible");
   }
 };
 
 // Función para ver detalles del mantenimiento
 const viewMaintenanceDetail = (maintenance) => {
-  console.log('Detalles del mantenimiento:', {
+  console.log("Detalles del mantenimiento:", {
     tipo: maintenance?.orderId?.solicitud?.solicitudId?.maintenanceType,
     radicado: maintenance?.orderId?.radicado,
     horas: maintenance?.hours,
     costo: maintenance?.costs,
     trabajo: maintenance?.workDone,
     observaciones: maintenance?.observation,
-    fecha: formatDate(maintenance?.createdAt)
+    fecha: formatDate(maintenance?.createdAt),
   });
 };
 
 const downloadPDF = () => {
-  console.log('Descargando PDF...');
+  console.log("Descargando PDF...");
   // Implementar la descarga del PDF
 };
 
 const downloadExcel = () => {
-  console.log('Descargando Excel...');
+  console.log("Descargando Excel...");
   // Implementar la descarga del Excel
 };
 </script>
 
 <style scoped>
 .planear-mantenimiento-form {
+  border-radius: 20%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
@@ -321,7 +359,6 @@ const downloadExcel = () => {
 
 .form {
   margin-bottom: 2rem;
-
 }
 
 .form-header {
@@ -374,12 +411,12 @@ const downloadExcel = () => {
 }
 
 .section-title[data-v-6e17d3ef] {
-    color: #2EA12E;
-    font-size: 1.25rem;
-    margin-bottom: 1.5rem;
-    margin: initial;
-    align-content: center;
-    text-align: center; /* Añade esta línea para centrar el texto */
+  color: #2ea12e;
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  margin: initial;
+  align-content: center;
+  text-align: center; /* Añade esta línea para centrar el texto */
 }
 .form-grid {
   display: grid;
@@ -418,7 +455,7 @@ textarea {
 .form-input:focus,
 .form-select:focus {
   outline: none;
-  border-color: #2EA12E;
+  border-color: #2ea12e;
   box-shadow: 0 0 0 2px rgba(46, 161, 46, 0.1);
 }
 
@@ -428,7 +465,7 @@ textarea {
 }
 
 .btn-submit {
-  background-color: #2EA12E;
+  background-color: #2ea12e;
   color: white;
   border: none;
   border-radius: 4px;
@@ -458,7 +495,7 @@ textarea {
 }
 
 .generate-button {
-  background-color: #2EA12E;
+  background-color: #2ea12e;
   color: white;
   border: none;
   border-radius: 4px;
@@ -491,7 +528,7 @@ textarea {
 }
 
 .view-all {
-  color: #2EA12E;
+  color: #2ea12e;
   text-decoration: none;
   font-size: 0.9rem;
 }
@@ -527,7 +564,7 @@ td {
 .view-button {
   background: transparent;
   border: none;
-  color: #2EA12E;
+  color: #2ea12e;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 4px;
@@ -598,7 +635,7 @@ td {
 
 .specs-button {
   width: 100%;
-  background: #4CAF50;
+  background: #4caf50;
   color: white;
   border: none;
   padding: 0.5rem;

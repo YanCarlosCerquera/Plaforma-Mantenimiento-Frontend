@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import AssetDetail from "../views/Assets/AssetDetail.vue";
 import Assets from "../views/Assets/Assets.vue";
+import detalles_Bien from "../views/Assets/Detalles.vue";
 import ListAssets from "../views/Assets/ListAssets.vue";
 import Machineandteams from "../views/Billing.vue";
 import Category from "../views/Category/Category.vue";
@@ -178,6 +179,11 @@ const routes = [
     name: "Detalles",
     component: Detalles,
   },
+  {
+    name: "detalles_Bien",
+    path: "/detalles",
+    component: detalles_Bien,
+  }
 ];
 
 const router = createRouter({
