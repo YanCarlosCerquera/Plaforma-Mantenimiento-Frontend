@@ -1,13 +1,13 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { useStore } from 'vuex';
 import Swal from "sweetalert2";
-import Table from "../components/Table.vue";
+import { computed, onMounted, ref } from "vue";
+import { useStore } from "vuex";
 import router from "../../router";
 import { commonFormatters } from "../../store/modules/tables";
+import Table from "../components/Table.vue";
 
 const store = useStore();
-const TABLE_ID = 'maintenance-activities';
+const TABLE_ID = "maintenance-activities";
 
 const headers = ref([
   "Radicado de Solicitud",
@@ -15,7 +15,7 @@ const headers = ref([
   "Fecha de Solicitud",
   "Codigo Inventario",
   "Serial",
-  "Estado OT"
+  "Estado OT",
 ]);
 
 const fields = ref({
@@ -35,7 +35,7 @@ const fields = ref({
     textClass: "text-xs font-weight-bold",
   },
   inventoryCode: {
-    value: "inventoryCode",
+    value: "InventoryCode",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
   },
@@ -48,34 +48,31 @@ const fields = ref({
     value: "workOrderStatus",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
-  }
+  },
 });
 
-const rows = computed(() => store.getters['tables/getTableData'](TABLE_ID));
-const loading = computed(() => store.getters['tables/isTableLoading'](TABLE_ID));
+const rows = computed(() => store.getters["tables/getTableData"](TABLE_ID));
+const loading = computed(() =>
+  store.getters["tables/isTableLoading"](TABLE_ID)
+);
 
 const fetchData = async () => {
-  await store.dispatch('tables/fetchTableData', {
+  await store.dispatch("tables/fetchTableData", {
     tableId: TABLE_ID,
-    endpoint: '/application-maintenance',
+    endpoint: "/application-maintenance",
     formatters: {
       createdAt: commonFormatters.date,
-      workOrderStatus: commonFormatters.workOrderStatus
-    }
+      workOrderStatus: commonFormatters.workOrderStatus,
+    },
   });
 };
 
-const handleEdit = (row) => {
-  localStorage.setItem('editRequestId', row._id);
-  router.push('/maintenance/requests/edit');
-};
-
 const handleView = (row) => {
-  localStorage.setItem('selectedRequestId', row._id);
-  router.push('/mantenimientos/detalles');
+  localStorage.setItem("selectedRequestId", row._id);
+  router.push("/mantenimientos/detalles");
 };
 
-const handleDelete = async (id) => {
+const handleDelete = async (row) => {
   const result = await Swal.fire({
     title: "¿Estás seguro de que quieres eliminar esta solicitud?",
     text: "Esta acción no puede deshacerse.",
@@ -92,19 +89,19 @@ const handleDelete = async (id) => {
 
   if (!result.isConfirmed) return;
 
-  const { success } = await store.dispatch('tables/deleteTableItem', {
-    tableId: TABLE_ID,
-    endpoint: 'application-maintenance',
-    id,
+  const { success } = await store.dispatch("tables/deleteTableItem", {
+    endpoint: "application-maintenance",
+    itemId: row,
     refreshConfig: {
       tableId: TABLE_ID,
-      endpoint: '/application-maintenance',
+      endpoint: "/application-maintenance",
       formatters: {
         createdAt: commonFormatters.date,
-        workOrderStatus: commonFormatters.workOrderStatus
-      }
-    }
+        workOrderStatus: commonFormatters.workOrderStatus,
+      },
+    },
   });
+  fetchData();
 
   if (success) {
     Swal.fire({
@@ -140,7 +137,10 @@ onMounted(() => {
 
 // Recargar datos cuando se regresa a la página
 router.beforeEach((to, from, next) => {
-  if (to.path === '/maintenance/requests' && from.path.startsWith('/maintenance/requests/')) {
+  if (
+    to.path === "/maintenance/requests" &&
+    from.path.startsWith("/maintenance/requests/")
+  ) {
     fetchData();
   }
   next();
@@ -163,7 +163,6 @@ router.beforeEach((to, from, next) => {
           :headers="headers"
           :rows="rows"
           :fields="fields"
-          @edit="handleEdit"
           @delete="handleDelete"
           @view="handleView"
         >

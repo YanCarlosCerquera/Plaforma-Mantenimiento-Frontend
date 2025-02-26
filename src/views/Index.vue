@@ -1,18 +1,17 @@
 <script setup>
-import { onBeforeUnmount, onBeforeMount, computed } from "vue";
-import { useStore } from "vuex";
-import AppFooter from "@/examples/PageLayout/Footer.vue";
 import ArgonInput from "@/components/ArgonInput.vue";
+import AppFooter from "@/examples/PageLayout/Footer.vue";
+import { computed, onBeforeMount, onBeforeUnmount } from "vue";
+import { useStore } from "vuex";
 // import ArgonCheckbox from "@/components/ArgonCheckbox.vue";
 import ArgonButton from "@/components/ArgonButton.vue";
 import ArgonSelect from "@/components/ArgonSelect.vue";
 // import apiService from "../service/apiService";
 // import { useRouter } from "vue-router";
+import Swal from "sweetalert2";
+import { ref } from "vue";
 import fondoImage2 from "../assets/image208.png";
 import apiService from "../service/apiService";
-import { ref } from 'vue';
-import Swal from "sweetalert2";
-
 const body = document.getElementsByTagName("body")[0];
 const store = useStore();
 // const router = useRouter();
@@ -23,100 +22,103 @@ const maintenanceType = [
   { value: "Medio", label: "Medio" },
 ];
 
-
 const formData = ref({
-    requesterName: '',
-    requesterPhone: '',
-    serialNumber: '',
-    trackingNumber: '',
-    issueDescription: '',
-    inventoryCode: '',
-    maintenanceType: '',
-    workOrderStatus: Boolean,
+  requesterName: "",
+  requesterPhone: "",
+  serialNumber: "",
+  trackingNumber: "",
+  issueDescription: "",
+  inventoryCode: "",
+  maintenanceType: "",
+  workOrderStatus: Boolean,
 });
 
 const loading = ref(false);
 
+const OnNew = () => {
+  window.location.href = "/activo";
+};
 const handleSubmit = async (event) => {
-    event.preventDefault();
-    
-    // Validación básica
-    if (!formData.value.requesterName || !formData.value.requesterPhone || !formData.value.serialNumber) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Campos requeridos',
-            text: 'Por favor complete todos los campos requeridos',
-        });
-        return;
+  event.preventDefault();
+
+  // Validación básica
+  if (
+    !formData.value.requesterName ||
+    !formData.value.requesterPhone ||
+    !formData.value.serialNumber
+  ) {
+    Swal.fire({
+      icon: "warning",
+      title: "Campos requeridos",
+      text: "Por favor complete todos los campos requeridos",
+    });
+    return;
+  }
+
+  loading.value = true;
+
+  // Mostrar alerta de carga
+  Swal.fire({
+    title: "Enviando solicitud...",
+    text: "Por favor espere mientras procesamos su solicitud.",
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    didOpen: () => {
+      Swal.showLoading(); // Muestra un spinner
+    },
+  });
+
+  try {
+    let { requesterPhone } = formData.value;
+
+    // Agregar prefijo si no está presente
+    if (!requesterPhone.startsWith("57")) {
+      requesterPhone = `57${requesterPhone}`;
     }
 
-    loading.value = true;
+    const data = {
+      ...formData.value,
+      requesterPhone,
+      createdAt: new Date().toISOString(),
+    };
 
-    // Mostrar alerta de carga
+    const response = await apiService.post("/application-maintenance", data);
+
+    // Cerrar alerta de carga
+    Swal.close();
+
+    // Mostrar alerta de éxito
     Swal.fire({
-        title: 'Enviando solicitud...',
-        text: 'Por favor espere mientras procesamos su solicitud.',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => {
-            Swal.showLoading(); // Muestra un spinner
-        },
+      icon: "success",
+      title: "Éxito",
+      html: `Solicitud enviada exitosamente.<br>El número de radicado es: <b>${response.trackingNumber}</b>`,
     });
 
-    try {
-        let { requesterPhone } = formData.value;
+    // Resetea el formulario tras un envío exitoso
+    formData.value = {
+      requesterName: "",
+      requesterPhone: "",
+      serialNumber: "",
+      issueDescription: "",
+      inventoryCode: "",
+      maintenanceType: "",
+    };
+  } catch (error) {
+    console.error("Error al enviar la solicitud:", error);
 
-        // Agregar prefijo si no está presente
-        if (!requesterPhone.startsWith('57')) {
-            requesterPhone = `57${requesterPhone}`;
-        }
+    // Cerrar alerta de carga
+    Swal.close();
 
-        const data = {
-            ...formData.value,
-            requesterPhone,
-            createdAt: new Date().toISOString()
-        };
-
-      const response  =  await apiService.post("/application-maintenance", data);
-        
-        // Cerrar alerta de carga
-        Swal.close();
-
-        // Mostrar alerta de éxito
-        Swal.fire({
-            icon: 'success',
-            title: 'Éxito',
-            html: `Solicitud enviada exitosamente.<br>El número de radicado es: <b>${response.trackingNumber}</b>`,
-        });
-
-        // Resetea el formulario tras un envío exitoso
-        formData.value = {
-            requesterName: '',
-            requesterPhone: '',
-            serialNumber: '',
-            issueDescription: '',
-            inventoryCode: '',
-            maintenanceType: '',
-        };
-
-    } catch (error) {
-        console.error('Error al enviar la solicitud:', error);
-
-        // Cerrar alerta de carga
-        Swal.close();
-
-        // Mostrar alerta de error
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Error al procesar la solicitud. Por favor intente nuevamente.',
-        });
-    } finally {
-        loading.value = false;
-    }
+    // Mostrar alerta de error
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Error al procesar la solicitud. Por favor intente nuevamente.",
+    });
+  } finally {
+    loading.value = false;
+  }
 };
-
-
 
 onBeforeMount(() => {
   store.state.hideConfigButton = true;
@@ -175,7 +177,7 @@ const backgroundStyle = computed(() => ({
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-md-6 text-center">
-            <ArgonButton color="success" class="w-100 mb-3">
+            <ArgonButton @click="OnNew" color="success" class="w-100 mb-3">
               <i
                 class="fa fa-database fa-4x position-static my-3 mr-10"
                 aria-hidden="true"
@@ -217,7 +219,6 @@ const backgroundStyle = computed(() => ({
                   id="requesterName"
                   type="text"
                   v-model="formData.requesterName"
-
                   placeholder="Nombre del solicitante"
                   aria-label="Correo"
                 />
@@ -269,9 +270,9 @@ const backgroundStyle = computed(() => ({
                 </p>
                 <ArgonInput
                   id="InventoryCode"
-                  name = "InventoryCode"
+                  name="InventoryCode"
                   type="text"
-                    v-model="formData.InventoryCode"
+                  v-model="formData.InventoryCode"
                   placeholder="Código de inventario"
                   aria-label="Inventario"
                 />
@@ -284,7 +285,7 @@ const backgroundStyle = computed(() => ({
                   id="maintenanceType"
                   placeholder="Selecciona el tipo de documento"
                   name="maintenanceType"
-                    v-model="formData.maintenanceType"
+                  v-model="formData.maintenanceType"
                   size="lg"
                   :options="maintenanceType"
                 />

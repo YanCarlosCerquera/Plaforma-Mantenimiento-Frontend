@@ -1,18 +1,17 @@
 <script setup>
-import { ref, computed } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 
-import SidenavItem from "./SidenavItem.vue";
-import SidenavCard from "./SidenavCard.vue";
+import Cookies from "js-cookie";
+import { ChevronDown, ChevronUp } from "lucide-vue-next";
 import { watch } from "vue";
-import { ChevronDown } from "lucide-vue-next";
-import { ChevronUp } from "lucide-vue-next";
-import Cookies from 'js-cookie'
+import SidenavCard from "./SidenavCard.vue";
+import SidenavItem from "./SidenavItem.vue";
 
 const NavItemsEnum = {
-  Mantenimientos: 'Mantenimientos',
-  Users: 'Users',
+  Mantenimientos: "Mantenimientos",
+  Users: "Users",
 };
 
 const store = useStore();
@@ -35,16 +34,16 @@ const toggleNavItem = (navItemKey) => {
 
 const updateNavItemOpen = () => {
   isNavItemOpen.value = {
-    [NavItemsEnum.Users]: route.path.startsWith('/users'),
-    [NavItemsEnum.Mantenimientos]: route.path.startsWith('/mantenimientos'),
+    [NavItemsEnum.Users]: route.path.startsWith("/users"),
+    [NavItemsEnum.Mantenimientos]: route.path.startsWith("/mantenimientos"),
   };
 };
 
 const logout = () => {
   Cookies.remove("authToken");
-  Cookies.remove("menu")
-  router.push("/signin")
-}
+  Cookies.remove("menu");
+  router.push("/signin");
+};
 
 watch(route.path, () => updateNavItemOpen());
 const isRTL = computed(() => store.state.isRTL);
@@ -67,25 +66,36 @@ const routeName = computed(() => route.name);
             :navText="'Tablero Principal'"
           >
             <template v-slot:icon>
-              <i class="ni ni-tv-2 text-primary text-sm "></i>
+              <i class="ni ni-tv-2 text-primary text-sm"></i>
             </template>
           </sidenav-item>
         </li>
 
         <li class="nav-item">
-          <div 
+          <div
             @click="toggleNavItem(NavItemsEnum.Users)"
             class="nav-link"
-            :class="{ 'active': routeName === 'users' || isNavItemOpen[NavItemsEnum.Users] }"
+            :class="{
+              active:
+                routeName === 'users' || isNavItemOpen[NavItemsEnum.Users],
+            }"
           >
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="fa fa-users text-success text-sm "></i>
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center"
+            >
+              <i class="fa fa-users text-success text-sm"></i>
             </div>
             <span class="nav-link-text ms-1">Usuarios</span>
-            <ChevronDown v-if="!isNavItemOpen[NavItemsEnum.Users]" class="ml-auto" />
+            <ChevronDown
+              v-if="!isNavItemOpen[NavItemsEnum.Users]"
+              class="ml-auto"
+            />
             <ChevronUp v-else class="ml-auto" />
           </div>
-          <ul v-if="isNavItemOpen[NavItemsEnum.Users]" class="nav-item-dropdown">
+          <ul
+            v-if="isNavItemOpen[NavItemsEnum.Users]"
+            class="nav-item-dropdown"
+          >
             <li>
               <sidenav-item
                 to="/users/access"
@@ -93,7 +103,7 @@ const routeName = computed(() => route.name);
                 :navText="'Control de acceso'"
               >
                 <template v-slot:icon>
-                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+                  <i class="ni ni-bullet-list-67 text-success text-sm"></i>
                 </template>
               </sidenav-item>
             </li>
@@ -104,7 +114,7 @@ const routeName = computed(() => route.name);
                 :navText="'Agregar usuarios'"
               >
                 <template v-slot:icon>
-                  <i class="ni ni-fat-add text-success text-sm "></i>
+                  <i class="ni ni-fat-add text-success text-sm"></i>
                 </template>
               </sidenav-item>
             </li>
@@ -115,7 +125,7 @@ const routeName = computed(() => route.name);
                 :navText="'Gestión de usuarios'"
               >
                 <template v-slot:icon>
-                  <i class="fa fa-user text-success text-sm "></i>
+                  <i class="fa fa-user text-success text-sm"></i>
                 </template>
               </sidenav-item>
             </li>
@@ -123,13 +133,17 @@ const routeName = computed(() => route.name);
         </li>
 
         <li class="nav-item">
-          <div 
+          <div
             @click="toggleEquipos"
             class="nav-link"
-            :class="{ 'active': routeName === 'machineandteams' || isEquiposOpen }"
+            :class="{
+              active: routeName === 'machineandteams' || isEquiposOpen,
+            }"
           >
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-credit-card text-success text-sm "></i>
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center"
+            >
+              <i class="ni ni-credit-card text-success text-sm"></i>
             </div>
             <span class="nav-link-text ms-1">Maquinarias</span>
             <ChevronDown v-if="!isEquiposOpen" class="ml-auto" />
@@ -143,7 +157,7 @@ const routeName = computed(() => route.name);
                 :navText="'Agregar Categoria'"
               >
                 <template v-slot:icon>
-                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+                  <i class="ni ni-bullet-list-67 text-success text-sm"></i>
                 </template>
               </sidenav-item>
             </li>
@@ -154,7 +168,7 @@ const routeName = computed(() => route.name);
                 :navText="'Categorias'"
               >
                 <template v-slot:icon>
-                  <i class="ni ni-fat-add text-success text-sm "></i>
+                  <i class="ni ni-fat-add text-success text-sm"></i>
                 </template>
               </sidenav-item>
             </li>
@@ -165,7 +179,7 @@ const routeName = computed(() => route.name);
                 :navText="'Bienes '"
               >
                 <template v-slot:icon>
-                  <i class="ni ni-fat-add text-success text-sm "></i>
+                  <i class="ni ni-fat-add text-success text-sm"></i>
                 </template>
               </sidenav-item>
             </li>
@@ -173,38 +187,69 @@ const routeName = computed(() => route.name);
         </li>
 
         <li class="nav-item">
-          <div 
+          <div
             @click="toggleNavItem(NavItemsEnum.Mantenimientos)"
             class="nav-link"
-            :class="{ 'active': routeName === 'mantenimientos' || isNavItemOpen[NavItemsEnum.Mantenimientos] }"
+            :class="{
+              active:
+                routeName === 'mantenimientos' ||
+                isNavItemOpen[NavItemsEnum.Mantenimientos],
+            }"
           >
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center"
+            >
               <i class="ni ni-settings text-info text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">Mantenimientos</span>
-            <ChevronDown v-if="!isNavItemOpen[NavItemsEnum.Mantenimientos]" class="ml-auto" />
+            <ChevronDown
+              v-if="!isNavItemOpen[NavItemsEnum.Mantenimientos]"
+              class="ml-auto"
+            />
             <ChevronUp v-else class="ml-auto" />
           </div>
-          <ul v-if="isNavItemOpen[NavItemsEnum.Mantenimientos]" class="nav-item-dropdown">
+          <ul
+            v-if="isNavItemOpen[NavItemsEnum.Mantenimientos]"
+            class="nav-item-dropdown"
+          >
             <li>
               <sidenav-item
                 to="/mantenimientos/planear-mantenimiento"
-                :class="route.path === '/mantenimientos/planear-mantenimiento' ? 'active' : ''"
+                :class="
+                  route.path === '/mantenimientos/planear-mantenimiento'
+                    ? 'active'
+                    : ''
+                "
                 :navText="'Planear Mantenimiento'"
               >
                 <template v-slot:icon>
-                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+                  <i class="ni ni-bullet-list-67 text-success text-sm"></i>
                 </template>
               </sidenav-item>
             </li>
             <li>
               <sidenav-item
                 to="/mantenimientos/GestionActividaes"
-                :class="route.path === '/mantenimientos/planear-mantenimiento' ? 'active' : ''"
+                :class="
+                  route.path === '/mantenimientos/planear-mantenimiento'
+                    ? 'active'
+                    : ''
+                "
                 :navText="'Gestion Actual'"
               >
                 <template v-slot:icon>
-                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+                  <i class="ni ni-bullet-list-67 text-success text-sm"></i>
+                </template>
+              </sidenav-item>
+            </li>
+            <li>
+              <sidenav-item
+                to="/assets/new"
+                :class="route.path === '/assets/new' ? 'active' : ''"
+                :navText="'Agregar Bienes'"
+              >
+                <template v-slot:icon>
+                  <i class="ni ni-bullet-list-67 text-success text-sm"></i>
                 </template>
               </sidenav-item>
             </li>
@@ -228,7 +273,7 @@ const routeName = computed(() => route.name);
             :navText="'Perfil'"
           >
             <template v-slot:icon>
-              <i class="ni ni-single-02 text-dark text-sm "></i>
+              <i class="ni ni-single-02 text-dark text-sm"></i>
             </template>
           </sidenav-item>
         </li>
@@ -240,7 +285,7 @@ const routeName = computed(() => route.name);
             :navText="isRTL ? 'تسجيل الدخول' : 'Configuraciones'"
           >
             <template v-slot:icon>
-              <i class="ni ni-single-copy-04 text-danger text-sm "></i>
+              <i class="ni ni-single-copy-04 text-danger text-sm"></i>
             </template>
           </sidenav-item>
         </li>
@@ -253,7 +298,7 @@ const routeName = computed(() => route.name);
             :navText="'Cerrar sesión'"
           >
             <template v-slot:icon>
-              <i class="ni ni-collection text-info text-sm "></i>
+              <i class="ni ni-collection text-info text-sm"></i>
             </template>
           </sidenav-item>
         </li>
@@ -270,12 +315,14 @@ const routeName = computed(() => route.name);
         links: [
           {
             label: 'Documentation',
-            route: 'https://www.creative-tim.com/learning-lab/vue/overview/argon-dashboard/',
+            route:
+              'https://www.creative-tim.com/learning-lab/vue/overview/argon-dashboard/',
             color: 'dark',
           },
           {
             label: 'Buy now',
-            route: 'https://www.creative-tim.com/product/vue-argon-dashboard-pro?ref=vadp',
+            route:
+              'https://www.creative-tim.com/product/vue-argon-dashboard-pro?ref=vadp',
             color: 'success',
           },
         ],

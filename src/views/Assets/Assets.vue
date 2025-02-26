@@ -3,20 +3,21 @@
     <header class="form-header">
       <div>
         <h1 class="title">Inventarios</h1>
-        <h2 class="subtitle">{{ isEditMode ? 'Editar bien' : 'Registrar nuevo bien' }}</h2>
+        <h2 class="subtitle">
+          {{ isEditMode ? "Editar bien" : "Registrar nuevo bien" }}
+        </h2>
       </div>
       <img src="../../assets/logoSena.jpg" alt="SENA Logo" class="sena-logo" />
     </header>
 
     <form @submit.prevent="handleSubmit" class="form-container">
-      
       <!-- Equipment Data Section -->
       <section class="form-section">
         <h3 class="section-title">Datos del equipo</h3>
         <div class="form-grid">
           <div class="form-group">
             <label for="name">Nombre</label>
-            <input 
+            <input
               id="name"
               v-model="formData.name"
               type="text"
@@ -27,15 +28,15 @@
 
           <div class="form-group">
             <label for="trainingCenterId">Centro de formación</label>
-            <select 
+            <select
               id="trainingCenterId"
               v-model="formData.trainingCenterId"
               class="form-select"
             >
               <option value="">Seleccionar...</option>
-              <option 
-                v-for="centro in trainingCenters" 
-                :key="centro.value" 
+              <option
+                v-for="centro in trainingCenters"
+                :key="centro.value"
                 :value="centro.value"
               >
                 {{ centro.text }}
@@ -45,15 +46,15 @@
 
           <div class="form-group">
             <label for="categoryId">Categoría</label>
-            <select 
+            <select
               id="categoryId"
               v-model="formData.categoryId"
               class="form-select"
             >
               <option value="">Seleccionar...</option>
-              <option 
-                v-for="categoria in categories" 
-                :key="categoria.value" 
+              <option
+                v-for="categoria in categories"
+                :key="categoria.value"
                 :value="categoria.value"
               >
                 {{ categoria.text }}
@@ -63,7 +64,7 @@
 
           <div class="form-group">
             <label for="equipmentType">Tipo de equipo</label>
-            <input 
+            <input
               id="equipmentType"
               v-model="formData.equipmentType"
               type="text"
@@ -74,7 +75,7 @@
 
           <div class="form-group">
             <label for="location">Ubicación</label>
-            <input 
+            <input
               id="location"
               v-model="formData.location"
               type="text"
@@ -85,7 +86,7 @@
 
           <div class="form-group">
             <label for="serialNumber">Número de serie</label>
-            <input 
+            <input
               id="serialNumber"
               v-model="formData.serialNumber"
               type="text"
@@ -96,7 +97,7 @@
 
           <div class="form-group">
             <label for="acquisitionDate">Fecha de adquisición</label>
-            <input 
+            <input
               id="acquisitionDate"
               v-model="formData.acquisitionDate"
               type="date"
@@ -106,11 +107,7 @@
 
           <div class="form-group">
             <label for="status">Estado</label>
-            <select 
-              id="status"
-              v-model="formData.status"
-              class="form-select"
-            >
+            <select id="status" v-model="formData.status" class="form-select">
               <option value="">Seleccionar...</option>
               <option :value="true">Bueno</option>
               <option :value="false">Malo</option>
@@ -119,7 +116,7 @@
 
           <div class="form-group">
             <label for="brand">Marca</label>
-            <input 
+            <input
               id="brand"
               v-model="formData.brand"
               type="text"
@@ -130,7 +127,7 @@
 
           <div class="form-group">
             <label for="inventoryCode">Código de inventario</label>
-            <input 
+            <input
               id="inventoryCode"
               v-model="formData.inventoryCode"
               type="text"
@@ -141,7 +138,7 @@
 
           <div class="form-group">
             <label for="modelo">Modelo</label>
-            <input 
+            <input
               id="modelo"
               v-model="formData.modelo"
               type="text"
@@ -152,7 +149,7 @@
 
           <div class="form-group">
             <label for="accountHolder">Cuentadante</label>
-            <input 
+            <input
               id="accountHolder"
               v-model="formData.accountHolder"
               type="text"
@@ -166,13 +163,14 @@
       <!-- Image Upload Section -->
       <section class="image-section">
         <h3 class="section-title">Cargar imagen del bien</h3>
-        
+
         <div class="image-container">
           <!-- Lado izquierdo - Carga de imagen -->
           <div class="upload-side">
             <h4 class="upload-title">Cargar Img</h4>
             <div class="upload-box">
               <input
+                id="image"
                 type="file"
                 @change="handleImageUpload"
                 accept="image/*"
@@ -187,10 +185,10 @@
           <div class="preview-side">
             <h4 class="preview-title">Ver la Img</h4>
             <div class="preview-box">
-              <img 
-                v-if="imagePreview" 
-                :src="imagePreview" 
-                alt="Vista previa" 
+              <img
+                v-if="imagePreview"
+                :src="imagePreview"
+                alt="Vista previa"
                 class="preview-image"
               />
               <div v-else class="empty-preview">
@@ -207,7 +205,7 @@
         <div class="form-grid">
           <div class="form-group">
             <label for="manufacturerName">Nombre</label>
-            <input 
+            <input
               id="manufacturerName"
               v-model="formData.manufacturer.name"
               type="text"
@@ -218,7 +216,7 @@
 
           <div class="form-group">
             <label for="manufacturerAddress">Dirección</label>
-            <input 
+            <input
               id="manufacturerAddress"
               v-model="formData.manufacturer.address"
               type="text"
@@ -229,7 +227,7 @@
 
           <div class="form-group">
             <label for="manufacturerPhone">Teléfono</label>
-            <input 
+            <input
               id="manufacturerPhone"
               v-model="formData.manufacturer.phone"
               type="tel"
@@ -246,7 +244,7 @@
         <div class="form-grid">
           <div class="form-group">
             <label for="supplierName">Nombre</label>
-            <input 
+            <input
               id="supplierName"
               v-model="formData.supplier.name"
               type="text"
@@ -257,7 +255,7 @@
 
           <div class="form-group">
             <label for="supplierAddress">Dirección</label>
-            <input 
+            <input
               id="supplierAddress"
               v-model="formData.supplier.address"
               type="text"
@@ -268,7 +266,7 @@
 
           <div class="form-group">
             <label for="supplierPhone">Teléfono</label>
-            <input 
+            <input
               id="supplierPhone"
               v-model="formData.supplier.phone"
               type="tel"
@@ -281,11 +279,8 @@
 
       <!-- Submit Button -->
       <div class="form-actions">
-        <button 
-          type="submit"
-          class="btn-submit"
-        >
-          {{ isEditMode ? 'Guardar cambios' : 'Guardar' }}
+        <button type="submit" class="btn-submit">
+          {{ isEditMode ? "Guardar cambios" : "Guardar" }}
         </button>
       </div>
     </form>
@@ -293,37 +288,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import apiService from '../../service/apiService';
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
+import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import apiService from "../../service/apiService";
 
 const router = useRouter();
 const isEditMode = ref(false);
 
 const formData = ref({
-  name: '',
-  location: '',
-  acquisitionDate: '',
-  brand: '',
-  modelo: '',
-  equipmentType: '',
-  serialNumber: '',
-  inventoryCode: '',
-  accountHolder: '',
-  trainingCenterId: '',
-  categoryId: '',
-  status: '',
+  name: "",
+  location: "",
+  acquisitionDate: "",
+  brand: "",
+  image: " ",
+  modelo: "",
+  equipmentType: "",
+  serialNumber: "",
+  inventoryCode: "",
+  accountHolder: "",
+  trainingCenterId: "",
+  categoryId: "",
+  status: "",
   manufacturer: {
-    name: '',
-    address: '',
-    phone: ''
+    name: "",
+    address: "",
+    phone: "",
   },
   supplier: {
-    name: '',
-    address: '',
-    phone: ''
-  }
+    name: "",
+    address: "",
+    phone: "",
+  },
 });
 
 const imagePreview = ref(null);
@@ -332,59 +328,58 @@ const categories = ref([]);
 
 // Cargar datos si estamos en modo edición
 const loadAssetData = async () => {
-  // Obtener el ID del localStorage
-  const assetId = localStorage.getItem('editAssetId');
+  const assetId = localStorage.getItem("editAssetId");
   console.log(assetId);
-  
-  
+
   if (assetId) {
     isEditMode.value = true;
     try {
-      console.log('Cargando activo con ID:', assetId);
+      console.log("Cargando activo con ID:", assetId);
       const response = await apiService.get(`/assets/${assetId}`);
       const asset = response.data || response;
-      console.log('Datos del activo:', asset);
-      
+      console.log("Datos del activo:", asset);
+
       // Formatear la fecha para el input date
-      const date = asset.acquisitionDate ? new Date(asset.acquisitionDate).toISOString().split('T')[0] : '';
-      
-      // Asignar los datos al formulario
+      const date = asset.acquisitionDate
+        ? new Date(asset.acquisitionDate).toISOString().split("T")[0]
+        : "";
+
       formData.value = {
-        name: asset.name || '',
-        location: asset.location || '',
+        name: asset.name || "",
+        location: asset.location || "",
         acquisitionDate: date,
-        brand: asset.brand || '',
-        modelo: asset.modelo || '',
-        equipmentType: asset.equipmentType || '',
-        serialNumber: asset.serialNumber || '',
-        inventoryCode: asset.inventoryCode || '',
-        accountHolder: asset.accountHolder || '',
-        trainingCenterId: asset.trainingCenterId?._id || '',
-        categoryId: asset.categoryId?._id || '',
+        brand: asset.brand || "",
+        modelo: asset.modelo || "",
+        equipmentType: asset.equipmentType || "",
+        serialNumber: asset.serialNumber || "",
+        inventoryCode: asset.inventoryCode || "",
+        accountHolder: asset.accountHolder || "",
+        trainingCenterId: asset.trainingCenterId?._id || "",
+        categoryId: asset.categoryId?._id || "",
         status: asset.status || false,
         manufacturer: {
-          name: asset.manufacturer?.name || '',
-          address: asset.manufacturer?.address || '',
-          phone: asset.manufacturer?.phone || ''
+          name: asset.manufacturer?.name || "",
+          address: asset.manufacturer?.address || "",
+          phone: asset.manufacturer?.phone || "",
         },
         supplier: {
-          name: asset.supplier?.name || '',
-          address: asset.supplier?.address || '',
-          phone: asset.supplier?.phone || ''
-        }
+          name: asset.supplier?.name || "",
+          address: asset.supplier?.address || "",
+          phone: asset.supplier?.phone || "",
+        },
       };
     } catch (error) {
-      console.error('Error loading asset:', error);
+      console.error("Error loading asset:", error);
       Swal.fire({
-        title: 'Error',
-        text: 'No se pudo cargar la información del activo',
-        icon: 'error',
-        position: 'bottom-right',
+        title: "Error",
+        text: "No se pudo cargar la información del activo",
+        icon: "error",
+        position: "bottom-right",
         toast: true,
         timer: 3000,
-        background: '#dc3545',
-        color: 'white',
-        iconColor: 'white',
+        background: "#dc3545",
+        color: "white",
+        iconColor: "white",
         showConfirmButton: false,
       });
     }
@@ -397,55 +392,57 @@ const handleSubmit = async () => {
   try {
     const dataToSend = {
       ...formData.value,
-      acquisitionDate: formData.value.acquisitionDate ? new Date(formData.value.acquisitionDate).toISOString() : null
+      acquisitionDate: formData.value.acquisitionDate
+        ? new Date(formData.value.acquisitionDate).toISOString()
+        : null,
     };
 
-    const assetId = localStorage.getItem('editAssetId');
+    const assetId = localStorage.getItem("editAssetId");
 
     if (assetId) {
       // Modo edición - usar patch en lugar de put
       await apiService.patch(`/assets/${assetId}`, dataToSend);
       Swal.fire({
-        title: 'Activo actualizado',
-        icon: 'success',
-        position: 'bottom-right',
+        title: "Activo actualizado",
+        icon: "success",
+        position: "bottom-right",
         toast: true,
         timer: 3000,
-        background: '#28a745',
-        color: 'white',
-        iconColor: 'white',
+        background: "#28a745",
+        color: "white",
+        iconColor: "white",
         showConfirmButton: false,
       });
     } else {
       // Modo creación
-      await apiService.post('/assets', dataToSend);
+      await apiService.post("/assets", dataToSend);
       Swal.fire({
-        title: 'Activo creado',
-        icon: 'success',
-        position: 'bottom-right',
+        title: "Activo creado",
+        icon: "success",
+        position: "bottom-right",
         toast: true,
         timer: 3000,
-        background: '#28a745',
-        color: 'white',
-        iconColor: 'white',
+        background: "#28a745",
+        color: "white",
+        iconColor: "white",
         showConfirmButton: false,
       });
     }
     // Limpiar el localStorage y redirigir
-    localStorage.removeItem('editAssetId');
-    router.push('/assets');
+    localStorage.removeItem("editAssetId");
+    router.push("/assets");
   } catch (error) {
-    console.error('Error saving asset:', error);
+    console.error("Error saving asset:", error);
     Swal.fire({
-      title: 'Error',
-      text: error.response?.data?.message || 'Error al guardar el activo',
-      icon: 'error',
-      position: 'bottom-right',
+      title: "Error",
+      text: error.response?.data?.message || "Error al guardar el activo",
+      icon: "error",
+      position: "bottom-right",
       toast: true,
       timer: 3000,
-      background: '#dc3545',
-      color: 'white',
-      iconColor: 'white',
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
       showConfirmButton: false,
     });
   }
@@ -457,6 +454,7 @@ const handleImageUpload = (event) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       imagePreview.value = e.target.result;
+      formData.value.image = e.target.result;
     };
     reader.readAsDataURL(file);
   }
@@ -466,23 +464,27 @@ const handleImageUpload = (event) => {
 onMounted(async () => {
   try {
     // Cargar centros de formación
-    const centersResponse = await apiService.get('/training-centers');
-    trainingCenters.value = (centersResponse.data || centersResponse).map(center => ({
-      value: center._id,
-      text: center.name
-    }));
+    const centersResponse = await apiService.get("/training-centers");
+    trainingCenters.value = (centersResponse.data || centersResponse).map(
+      (center) => ({
+        value: center._id,
+        text: center.name,
+      })
+    );
 
     // Cargar categorías
-    const categoriesResponse = await apiService.get('/Categorias');
-    categories.value = (categoriesResponse.data || categoriesResponse).map(category => ({
-      value: category._id,
-      text: category.name
-    }));
+    const categoriesResponse = await apiService.get("/Categorias");
+    categories.value = (categoriesResponse.data || categoriesResponse).map(
+      (category) => ({
+        value: category._id,
+        text: category.name,
+      })
+    );
 
     // Cargar datos del activo si existe ID en localStorage
     await loadAssetData();
   } catch (error) {
-    console.error('Error loading initial data:', error);
+    console.error("Error loading initial data:", error);
   }
 });
 </script>
@@ -503,7 +505,7 @@ onMounted(async () => {
 }
 
 .title {
-  color: #2EA12E;
+  color: #2ea12e;
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
@@ -532,7 +534,7 @@ onMounted(async () => {
 }
 
 .section-title {
-  color: #2EA12E;
+  color: #2ea12e;
   font-size: 1.25rem;
   margin-bottom: 1.5rem;
 }
@@ -566,7 +568,7 @@ label {
 .form-input:focus,
 .form-select:focus {
   outline: none;
-  border-color: #2EA12E;
+  border-color: #2ea12e;
   box-shadow: 0 0 0 2px rgba(46, 161, 46, 0.1);
 }
 
@@ -652,7 +654,7 @@ label {
 }
 
 .btn-submit {
-  background-color: #2EA12E;
+  background-color: #2ea12e;
   color: white;
   border: none;
   border-radius: 4px;
