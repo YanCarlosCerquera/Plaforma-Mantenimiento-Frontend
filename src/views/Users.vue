@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue";
 import AuthorsTable from "./components/AuthorsTable.vue";
 import apiService from "../service/apiService";
-import { useDisplay } from "vuetify";
 import Swal from "sweetalert2";
 import Cookies from "js-cookie";
 import ArgonSelect from "@/components/ArgonSelect.vue"; // Importa el componente ArgonSelect
@@ -17,10 +16,6 @@ const headers = ref([
   "Número de documento",
   "Fecha de registro",
 ]);
-const icons = ref({
-  firstIcon: "fas fa-check",
-  secondIcon: "fas fa-trash",
-});
 
 const fields = ref({
   usuario: {
@@ -54,7 +49,6 @@ const fields = ref({
 const rows = ref([]);
 const dialog = ref(false);
 const editedItem = ref({});
-const { mobile } = useDisplay();
 const availableRoles = ref([]);
 const isLoading = ref(false);
 
@@ -212,6 +206,11 @@ const acceptUser = async (Userid, assignedRol) => {
   }
 };
 
+const icons = ref([
+{ class: 'fas fa-check', method: handleEdit },
+{ class: 'fas fa-trash', method: handleDelete },
+]);
+
 onMounted(async () => {
   await fetchData();
   fetchRoles();
@@ -228,12 +227,10 @@ onMounted(async () => {
           :rows="rows"
           :fields="fields"
           :icons="icons"
-          @edit="handleEdit"
-          @delete="handleDelete"
         />
       </div>
     </div>
-    <v-dialog v-model="dialog" scrollable :fullscreen="mobile" max-width="800px">
+    <v-dialog v-model="dialog" scrollable  max-width="600px">
       <v-card class="bg-white">
         <v-card-title
           class="card-title d-flex align-items-center justify-content-center text-h4 text-succes"
