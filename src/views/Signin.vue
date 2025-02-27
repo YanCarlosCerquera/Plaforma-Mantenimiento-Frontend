@@ -11,11 +11,7 @@
         <div class="form-group">
           <label for="documentType">Tipo de documento</label>
           <select id="documentType" v-model="formData.typeDocument" required>
-            <option
-              v-for="type in documentTypes"
-              :key="type.value"
-              :value="type.value"
-            >
+            <option v-for="type in documentTypes" :key="type.value" :value="type.value">
               {{ type.label }}
             </option>
           </select>
@@ -23,31 +19,21 @@
 
         <div class="form-group">
           <label for="document">Número de documento</label>
-          <input
-            id="document"
-            type="text"
-            v-model="formData.document"
-            required
-            placeholder="Ingrese su número de documento"
-          />
+          <input id="document" type="text" v-model="formData.document" required
+            placeholder="Ingrese su número de documento" />
         </div>
 
         <div class="form-group password-group">
           <label for="password">Contraseña</label>
-          <input
-            :type="showPassword ? 'text' : 'password'"
-            id="password"
-            v-model="formData.password"
-            required
-            placeholder="Ingrese su contraseña"
-          />
+          <input :type="showPassword ? 'text' : 'password'" id="password" v-model="formData.password" required
+            placeholder="Ingrese su contraseña" />
           <button type="button" class="toggle-password" @click="togglePassword">
             <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
           </button>
         </div>
 
         <div class="form-group remember-me">
-          <label for="rememberMe">Olvidaste tu Contraseña?</label>
+          <a href="/RecuperarContrase" class="forgot-password">¿Olvidaste tu contraseña?</a>
         </div>
 
         <button type="submit" class="submit-btn">Ingresar</button>
@@ -61,11 +47,7 @@
     <div class="background-image">
       <div class="overlay"></div>
       <div class="content">
-        <h2>"Centro de la empresa, la industria y los servicios"</h2>
-        <p>
-          Servicios tecnológicos (Tecnologías de la información) | Tecnoparque
-          nodo Neiva.
-        </p>
+        <h1>"Centro de la empresa, la industria y los servicios"</h1>
       </div>
     </div>
   </div>
@@ -91,6 +73,8 @@ const documentTypes = [
   { value: "Cédula de Extranjería", label: "Cédula de Extranjería" },
   { value: "Tarjeta de Identidad", label: "Tarjeta de Identidad" },
 ];
+
+
 
 const formData = ref({
   typeDocument: "",
@@ -190,43 +174,48 @@ onBeforeUnmount(() => {
   display: flex;
   height: 100vh;
   font-family: "Arial", sans-serif;
+  background-color: #f8f9fa;
 }
 
 .login-card {
   flex: 1;
-  max-width: 400px;
+  max-width: 500px;
   padding: 2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: #ffffff;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  background-color: #d8e0d7ad;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  margin: 2rem;
+  max-height: 700px;
+  margin-top: 250px;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1rem;
-  margin-right: 55%;
+  margin-bottom: 1.5rem;
 }
 
 .logo {
-  max-width: 30px;
+  max-width: 40px;
   margin-right: 1rem;
 }
 
 .main-title {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   color: #28a745;
   margin: 0;
 }
 
 .subtitle {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 0.95rem;
+  color: #000000;
   margin-bottom: 2rem;
   text-align: center;
+  font-weight: 600;
 }
 
 .form-group {
@@ -236,8 +225,13 @@ onBeforeUnmount(() => {
 label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: #000000;
   font-size: 0.9rem;
+  font-weight: 700;
+}
+
+h1 {
+  color: #fff;
 }
 
 input,
@@ -247,13 +241,14 @@ select {
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 input:focus,
 select:focus {
   outline: none;
   border-color: #28a745;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
 }
 
 .password-group {
@@ -263,22 +258,27 @@ select:focus {
 .toggle-password {
   position: absolute;
   right: 10px;
-  top: calc(50% + 10px);
+  top: 70%;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: #000;
   font-size: 1.2rem;
 }
 
-.remember-me {
-  display: flex;
-  align-items: center;
+.toggle-password:hover {
+  color: #28a745;
 }
 
-.remember-me input {
-  margin-right: 0.5rem;
+.forgot-password {
+  color: #1ca349;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
 }
 
 .submit-btn {
@@ -308,10 +308,13 @@ select:focus {
   text-decoration: none;
 }
 
+.signup-link a:hover {
+  text-decoration: underline;
+}
+
 .background-image {
   flex: 1;
   background-image: url("../assets/image208.png");
-
   background-size: cover;
   background-position: center;
   position: relative;
@@ -328,8 +331,8 @@ select:focus {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(40, 167, 70, 0.2); /* Color semitransparente */
-  backdrop-filter: blur(8px); /* Aplicar desenfoque al fondo */
+  background-color: rgba(40, 167, 70, 0.2);
+  backdrop-filter: blur(8px);
 }
 
 .content {
@@ -355,10 +358,48 @@ select:focus {
 
   .login-card {
     max-width: 100%;
+    margin: 1rem;
   }
 
   .background-image {
     display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .login-card {
+    max-width: 100%;
+    margin: 1rem;
+    padding: 1.5rem;
+    max-height: 700px;
+    margin-top: 250px;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 992px) {
+  .login-card {
+    max-width: 80%;
+    margin: 1.5rem;
+    padding: 1.75rem;
+    max-height: 700px;
+    margin-top: 250px;
+  }
+}
+
+@media (min-width: 993px) {
+  .login-card {
+    flex: 1;
+    max-width: 500px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: #d8e0d7ad;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    margin: 2rem;
+    max-height: 700px;
+    margin-top: 250px;
   }
 }
 </style>

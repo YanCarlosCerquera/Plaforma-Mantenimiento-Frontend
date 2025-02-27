@@ -111,10 +111,6 @@
       <div id="particles-js"></div>
       <div class="content">
         <h2>"Centro de la empresa, la industria y los servicios"</h2>
-        <p>
-          Servicios tecnológicos (Tecnologías de la información) | Tecnoparque
-          nodo Neiva.
-        </p>
       </div>
     </div>
 
@@ -310,26 +306,33 @@ const formatPhoneNumber = (event) => {
 
 .register-card {
   flex: 1;
-  max-width: 600px;
-  padding: 2rem;
+  max-width: 700px;
+  padding: 1em;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: #ffffff;
-  overflow-y: auto;
-  z-index: 10;
+  background-color: #d8e0d7ad;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  margin: 2rem;
+  max-height: 70vh;
+  margin-top: 150px;
 }
+
+
 
 .logo-container {
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
+  justify-content: center;
 }
 
 .logo {
   width: 40px;
   height: 40px;
   margin-right: 1rem;
+  justify-content: center;
 }
 
 .main-title {
@@ -337,6 +340,7 @@ const formatPhoneNumber = (event) => {
   color: #28a745;
   font-weight: 700;
   margin: 0;
+  text-align: center;
 }
 
 .welcome-text {
@@ -344,12 +348,16 @@ const formatPhoneNumber = (event) => {
   color: #333;
   margin-bottom: 0.5rem;
   font-weight: 700;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .subtitle {
   font-size: 1rem;
   color: #666;
   margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 .form-center {
@@ -513,7 +521,9 @@ select:focus {
   }
 
   .register-card {
-    max-width: 100%;
+    max-width: 80%;
+    margin-left: 6rem;
+
   }
 
   .particles-background {
@@ -528,6 +538,49 @@ select:focus {
 
   .register-card {
     padding: 1rem;
+    max-height: auto;
+    margin-top: 1em;
+  }
+
+  .welcome-text {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  input,
+  select {
+    padding: 0.5rem;
+  }
+
+  .submit-btn {
+    padding: 0.5rem;
+  }
+
+  .content h2 {
+    font-size: 2rem;
+  }
+
+  .content p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .register-card {
+    padding: 1rem;
+    max-height: auto;
+    margin-top: 2em;
   }
 
   .welcome-text {
