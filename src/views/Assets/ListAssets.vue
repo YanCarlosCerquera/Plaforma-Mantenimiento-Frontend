@@ -1,12 +1,13 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { useStore } from 'vuex';
 import Swal from "sweetalert2";
-import Table from "../components/Table.vue";
+import { computed, onMounted, ref } from "vue";
+import { useStore } from "vuex";
 import router from "../../router";
+import apiService from "../../service/apiService";
+import Table from "../components/Table.vue";
 
 const store = useStore();
-const TABLE_ID = 'assets-list';
+const TABLE_ID = "assets-list";
 
 const headers = ref([
   "Codigo de Inventario",
@@ -15,7 +16,7 @@ const headers = ref([
   "Ubicacion",
   "Fecha de adquisicion",
   "Categoria",
-  "Estado"
+  "Estado",
 ]);
 
 const fields = ref({
@@ -23,7 +24,7 @@ const fields = ref({
     value: "inventoryCode",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
-    filterable: true
+    filterable: true,
   },
   serialNumber: {
     value: "serialNumber",
@@ -39,7 +40,7 @@ const fields = ref({
     value: "location",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
-    filterable: true
+    filterable: true,
   },
   createdAt: {
     value: "createdAt",
@@ -50,71 +51,73 @@ const fields = ref({
     value: "categoryId",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
-    filterable: true
+    filterable: true,
   },
   status: {
     value: "status",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
-    filterable: true
-  }
+    filterable: true,
+  },
 });
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString('es-ES', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
+  return new Date(dateString).toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
   });
 };
 
 const formatStatus = (status) => {
-  return status ? 'Activo' : 'Inactivo';
+  return status ? "Bueno" : "Dañado";
 };
 
 const formatCategory = (categoryId) => {
   return categoryId?.name;
 };
 
-const rows = computed(() => store.getters['tables/getTableData'](TABLE_ID));
-const loading = computed(() => store.getters['tables/isTableLoading'](TABLE_ID));
+const rows = computed(() => store.getters["tables/getTableData"](TABLE_ID));
+const loading = computed(() =>
+  store.getters["tables/isTableLoading"](TABLE_ID)
+);
 
 // Configuración de filtros
 const filterOptions = ref([
   {
-    field: 'status',
-    label: 'Estado',
-    type: 'select',
-    options: ['Activo', 'Inactivo']
+    field: "status",
+    label: "Estado",
+    type: "select",
+    options: ["Activo", "Inactivo"],
   },
   {
-    field: 'location',
-    label: 'Ubicación',
-    type: 'select',
-    options: []
+    field: "location",
+    label: "Ubicación",
+    type: "select",
+    options: [],
   },
   {
-    field: 'categoryId',
-    label: 'Categoría',
-    type: 'select',
-    options: []
-  }
+    field: "categoryId",
+    label: "Categoría",
+    type: "select",
+    options: [],
+  },
 ]);
 
 const updateFilterOptions = (data) => {
   const locations = new Set();
   const categories = new Set();
 
-  data.forEach(item => {
+  data.forEach((item) => {
     if (item.location) locations.add(item.location);
     if (item.categoryId?.name) categories.add(item.categoryId.name);
   });
 
-  filterOptions.value = filterOptions.value.map(filter => {
-    if (filter.field === 'location') {
+  filterOptions.value = filterOptions.value.map((filter) => {
+    if (filter.field === "location") {
       filter.options = Array.from(locations).sort();
-    } else if (filter.field === 'categoryId') {
+    } else if (filter.field === "categoryId") {
       filter.options = Array.from(categories).sort();
     }
     return filter;
@@ -122,16 +125,14 @@ const updateFilterOptions = (data) => {
 };
 
 const fetchData = async () => {
-  await store.dispatch('tables/fetchTableData', {
+  await store.dispatch("tables/fetchTableData", {
     tableId: TABLE_ID,
     endpoint: "/assets",
     formatters: {
       createdAt: formatDate,
       status: formatStatus,
-      categoryId: formatCategory
-
-      
-    }
+      categoryId: formatCategory,
+    },
   });
 
   // Actualizar opciones de filtros después de cargar los datos
@@ -139,15 +140,14 @@ const fetchData = async () => {
 };
 
 const handleEdit = (row) => {
-  localStorage.setItem('editAssetId', row._id);
-  router.push('/assets/edit');
+  localStorage.setItem("editAssetId", row._id);
+  router.push("/assets/edit");
 };
 
 const handleView = (row) => {
-  localStorage.setItem('selectedAssetId', row._id);
-  router.push('/assets/detail');
+  localStorage.setItem("selectedAssetId", row._id);
+  router.push("/assets/detail");
 };
-
 const handleDelete = async (id) => {
   const result = await Swal.fire({
     title: "¿Estás seguro de que quieres eliminar este activo?",
@@ -157,32 +157,20 @@ const handleDelete = async (id) => {
     cancelButtonText: "Cancelar",
     reverseButtons: true,
     customClass: {
-      title: "text-success",
+      title: "text-succes",
       confirmButton: "btn-success",
       cancelButton: "btn-danger",
     },
   });
 
-  if (!result.isConfirmed) return;
+  if (!result.isConfirmed) {
+    return;
+  }
 
-  const { success } = await store.dispatch('tables/deleteTableItem', {
-    tableId: TABLE_ID,
-    endpoint: 'assets',
-    id,
-    refreshConfig: {
-      tableId: TABLE_ID,
-      endpoint: '/assets',
-      formatters: {
-        createdAt: formatDate,
-        status: formatStatus,
-        categoryId: formatCategory
-      }
-    }
-  });
-
-  if (success) {
+  try {
+    await apiService.delete(`assets/${id}`);
     Swal.fire({
-      title: "Activo eliminado correctamente",
+      title: "activo eliminado correctamente",
       icon: "success",
       position: "bottom-right",
       toast: true,
@@ -191,11 +179,15 @@ const handleDelete = async (id) => {
       color: "white",
       iconColor: "white",
       showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
     });
-  } else {
+    await fetchData();
+  } catch (error) {
     Swal.fire({
-      title: "Error al eliminar el activo",
-      text: "Algo salió mal al intentar eliminar el activo.",
+      title: "Error al eliminar activo",
+      text: error.response?.data?.message || "Algo salió mal.",
       icon: "error",
       position: "bottom-right",
       toast: true,
@@ -204,15 +196,18 @@ const handleDelete = async (id) => {
       color: "white",
       iconColor: "white",
       showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
     });
   }
 };
 
 // Manejar cambios en los filtros
 const handleFilterChange = (filters) => {
-  store.dispatch('tables/applyFilters', {
+  store.dispatch("tables/applyFilters", {
     tableId: TABLE_ID,
-    filters
+    filters,
   });
 };
 
@@ -222,7 +217,7 @@ onMounted(() => {
 
 // Recargar datos cuando se regresa a la página
 router.beforeEach((to, from, next) => {
-  if (to.path === '/assets' && from.path.startsWith('/assets/')) {
+  if (to.path === "/assets" && from.path.startsWith("/assets/")) {
     fetchData();
   }
   next();

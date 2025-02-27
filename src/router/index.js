@@ -9,7 +9,6 @@ import SaveCategory from "../views/Category/Save_Category.vue";
 import Configuration from "../views/Configuration.vue";
 import Control_User from "../views/Control_User.vue";
 import Dashboard from "../views/Dashboard.vue";
-import Bienes from "../views/Home/Bienes/Bienes.vue";
 import Index from "../views/Index.vue";
 import GestionActiviades from "../views/Matenimiento/GestionActiviades.vue";
 import HistoryMateni from "../views/Matenimiento/History/HistoryMateni.vue";
@@ -27,6 +26,7 @@ import Signup from "../views/Signup.vue";
 import Users from "../views/Users.vue";
 import Password from "../views/password.vue";
 import ResetPassword from "../views/resetpassword.vue";
+import Bienes from "../views/Home/Bienes/Bienes.vue";
 
 const routes = [
   {
@@ -183,6 +183,11 @@ const routes = [
     name: "detalles_Bien",
     path: "/detalles",
     component: detalles_Bien,
+  },
+  {
+    name: "Consultar activo",
+    path: "/activo",
+    component: Bienes,
   }
 ];
 

@@ -337,7 +337,7 @@ onMounted(async () => {
                 <div class="col-md-6 d-flex align-items-center">
                   <div class="row" style="width: 100%">
                     <div
-                      class="d-flex align-items-center justify-content-center mb-4"
+                      class="d-flex align-items-center justify-content-center"
                       style="height: calc(3 * 70px)"
                     >
                       <div class="text-center">
@@ -398,7 +398,7 @@ onMounted(async () => {
                     </div>
                   </div>
                 </div>
-                <div class="col-md-6 d-flex align-items-center">
+                <div class="col-md-6 d-flex align-items-center mt-4">
                   <div class="row" style="width: 100%">
                     <div>
                       <label for="example-text-input" class="form-control-label"

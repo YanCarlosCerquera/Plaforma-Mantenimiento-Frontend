@@ -4,7 +4,6 @@ import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 import SidenavItem from "./SidenavItem.vue";
-import SidenavCard from "./SidenavCard.vue";
 import { watch } from "vue";
 import { ChevronDown } from "lucide-vue-next";
 import { ChevronUp } from "lucide-vue-next";
@@ -13,6 +12,7 @@ import Cookies from 'js-cookie'
 const NavItemsEnum = {
   Mantenimientos: 'Mantenimientos',
   Users: 'Users',
+  Inventario: 'Inventario', 
 };
 
 const store = useStore();
@@ -23,6 +23,7 @@ const isEquiposOpen = ref(false);
 const isNavItemOpen = ref({
   [NavItemsEnum.Users]: false,
   [NavItemsEnum.Mantenimientos]: false,
+  [NavItemsEnum.Inventario]: false,
 });
 
 const toggleEquipos = () => {
@@ -37,6 +38,7 @@ const updateNavItemOpen = () => {
   isNavItemOpen.value = {
     [NavItemsEnum.Users]: route.path.startsWith('/users'),
     [NavItemsEnum.Mantenimientos]: route.path.startsWith('/mantenimientos'),
+    [NavItemsEnum.Inventario]: route.path.startsWith('/assets'), 
   };
 };
 
@@ -211,6 +213,35 @@ const routeName = computed(() => route.name);
           </ul>
         </li>
 
+        <!-- Menú de Inventario -->
+        <li class="nav-item">
+          <div 
+            @click="toggleNavItem(NavItemsEnum.Inventario)"
+            class="nav-link"
+            :class="{ 'active': routeName === 'assets' || isNavItemOpen[NavItemsEnum.Inventario] }"
+          >
+            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="ni ni-box-2 text-info text-sm opacity-10"></i>
+            </div>
+            <span class="nav-link-text ms-1">Inventario</span>
+            <ChevronDown v-if="!isNavItemOpen[NavItemsEnum.Inventario]" class="ml-auto" />
+            <ChevronUp v-else class="ml-auto" />
+          </div>
+          <ul v-if="isNavItemOpen[NavItemsEnum.Inventario]" class="nav-item-dropdown">
+            <li>
+              <sidenav-item
+                to="/assets/new"
+                :class="route.path === '/assets/new' ? 'active' : ''"
+                :navText="'Agregar bienes'"
+              >
+                <template v-slot:icon>
+                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+                </template>
+              </sidenav-item>
+            </li>
+          </ul>
+        </li>
+
         <!-- Sección de "Perfil y Configuraciones" -->
         <li class="mt-12 nav-item">
           <h6
@@ -261,27 +292,6 @@ const routeName = computed(() => route.name);
     </div>
   </div>
 
-  <!-- Footer fuera del área scrollable -->
-  <div class="pt-3 mx-3 mt-3 sidenav-footer">
-    <sidenav-card
-      :card="{
-        title: 'Need Help?',
-        description: 'Please check our docs',
-        links: [
-          {
-            label: 'Documentation',
-            route: 'https://www.creative-tim.com/learning-lab/vue/overview/argon-dashboard/',
-            color: 'dark',
-          },
-          {
-            label: 'Buy now',
-            route: 'https://www.creative-tim.com/product/vue-argon-dashboard-pro?ref=vadp',
-            color: 'success',
-          },
-        ],
-      }"
-    />
-  </div>
 </template>
 
 <style scoped>
@@ -330,20 +340,9 @@ const routeName = computed(() => route.name);
   background: #555;
 }
 
-/* Estilos para el área scrollable */
 .scrollable-nav-items {
-  overflow-y: auto; /* Habilita el scroll vertical */
-  max-height: calc(100vh - 200px); /* Ajusta la altura máxima */
+  overflow-y: auto; 
+  max-height: calc(100vh - 200px);
 }
 
-/* Estilos para el footer */
-.sidenav-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: white; /* Ajusta el color de fondo según tu diseño */
-  z-index: 1000; /* Asegura que el footer esté por encima del contenido */
-  padding: 1rem; /* Ajusta el padding según sea necesario */
-}
 </style>

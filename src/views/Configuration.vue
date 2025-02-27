@@ -29,18 +29,15 @@ app.use(vuetify);
       </v-col>
     </v-row>
 
-    <!-- Contenedor blanco con ancho completo -->
     <v-container
       class="pa-6 container-full-width"
       fluid
     >
-      <!-- Sección de Parametrización -->
       <v-row>
         <v-col cols="12">
           <h3 class="text-h5 font-weight-bold mb-4">Parametrización</h3>
         </v-col>
 
-        <!-- Botones de parametrización -->
         <v-col cols="12" md="6">
           <router-link to="/rol" outlined block class="py-6 text-body-1 custom-btn mb-3">
             <span>Gestión de centro de formación</span>
@@ -66,7 +63,6 @@ app.use(vuetify);
           </router-link>
         </v-col>
 
-        <!-- Último botón de parametrización con el mismo ancho -->
         <v-col cols="12" md="6" class="mx-auto">
           <router-link to="/ruta" outlined block class="py-6 text-body-1 custom-btn mb-3">
             <span>Gestión de rutas</span>
@@ -75,7 +71,6 @@ app.use(vuetify);
         </v-col>
       </v-row>
       
-      <!-- Sección de Registros del sistema (ocupa todo el ancho) -->
       <v-row>
         <v-col cols="12">
           <h3 class="text-h5 font-weight-bold mb-4">Registros del sistema</h3>
@@ -137,7 +132,6 @@ export default {
   color: #4caf50;
 }
 
-/* Estilo para posicionar el ícono al final del botón */
 .icon-end {
   margin-left: auto; /* Empuja el ícono al final */
   padding-right: 16px; /* Espacio adicional al final */

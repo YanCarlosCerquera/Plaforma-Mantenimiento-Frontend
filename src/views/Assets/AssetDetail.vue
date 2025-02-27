@@ -81,7 +81,11 @@
           </div>
 
           <div class="details-image">
-            <img :src="Logio" alt="Asset image" class="equipment-image" />
+            <img
+              :src="requestData.image"
+              alt="Asset image"
+              class="equipment-image"
+            />
             <button
               class="specs-button"
               :disabled="isLoading"
@@ -216,7 +220,6 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import Logio from "../../assets/img/image-planear-mantenimiento.png";
 import apiService from "../../service/apiService";
 
 const router = useRouter();
@@ -268,7 +271,6 @@ const loadAssetData = async () => {
 
   isLoading.value = true;
   try {
-    // 1. Cargar datos del activo
     const assetResponse = await apiService.get(`/assets/${assetId}`);
     console.log("Datos del activo recibidos:", assetResponse);
 
@@ -276,14 +278,13 @@ const loadAssetData = async () => {
       throw new Error("No se recibieron datos del activo");
     }
 
-    // 2. Cargar historial si hay número de serie
     const history = await loadMaintenanceHistory(assetResponse.serialNumber);
 
-    // 3. Actualizar el estado
     requestData.value = {
       assetInfo: assetResponse,
       maintenanceHistory: history,
     };
+    requestData.value.image = `${assetResponse.image}`;
   } catch (error) {
     console.error("Error al cargar datos:", error);
     if (error.response?.status === 403) {
