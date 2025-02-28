@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import apiService from '../../service/apiService';
 import AuthorsTable from '../components/AuthorsTable.vue';
 import Swal from 'sweetalert2';
@@ -110,6 +110,55 @@ const handleDelete = async (id) => {
   }
 };
 
+const icons = ref([
+{ class: 'fas fa-edit', method: handleEdit },
+{ class: 'fas fa-trash', method: handleDelete },
+]);
+
+const getFieldValue = (obj, path) => {
+  return path.split(".").reduce((prev, curr) => {
+    return prev ? prev[curr] : null;
+  }, obj);
+};
+
+const filteredRows = computed(() => {
+  return rows.value.filter(row => {
+    return filters.value.every(filter => {
+      if (!filter.selectedOption) return true;  
+
+      const fieldValue = getFieldValue(row, filter.field);
+
+      if (Array.isArray(fieldValue)) {
+        return fieldValue.includes(filter.selectedOption);
+      }
+
+      return fieldValue === filter.selectedOption;
+    });
+  });
+});
+
+const filters = ref([
+  {
+    field: "operationVars",
+    options: [
+      { value: "", label: "variable operacion" },
+      { value: "electricidad", label: "electricidad" },
+      { value: "voltios", label: "voltios" },
+      { value: "Presión", label: "Presión" },
+    ],
+    selectedOption: "",
+  },
+  {
+    field: "specs",
+    options: [
+      { value: "", label: "especificaciones" },
+      { value: "corei9", label: "corei9" },
+      { value: "92gb ram", label: "92gb ram" },
+    ],
+    selectedOption: "",
+  },
+])
+
 onMounted(() => {
   fetchData();
 });
@@ -121,10 +170,10 @@ onMounted(() => {
       <div class="col-12">
         <AuthorsTable
           :headers="headers"
-          :rows="rows"
+          :rows="filteredRows"
           :fields="fields"
-          @edit="handleEdit"
-          @delete="handleDelete"
+          :icons="icons"
+          :filters="filters"
         />
       </div>
     </div>

@@ -19,10 +19,6 @@ const headers = ref([
     { text: "Descripción", value: "ruta.route" },
     { text: "Estado", value: "ruta.state" },
 ]);
-const icons = ref({
-    firstIcon: "fas fa-pen",
-    secondIcon: "fas fa-trash",
-});
 
 const states = [
     { value: true, label: "Activo" },
@@ -188,6 +184,11 @@ const handleSubmit = async () => {
     }
 };
 
+const icons = ref([
+{ class: 'fas fa-edit', method: handleEdit },
+{ class: 'fas fa-trash', method: handleDelete },
+]);
+
 onMounted(async () => {
     await fetchData();
 });
@@ -198,7 +199,7 @@ onMounted(async () => {
         <div class="row">
             <div class="col-12">
                 <AuthorsTable :title="'Parametrización rutas'" :headers="headers" :rows="rows" :fields="fields"
-                    :icons="icons" @edit="handleEdit" @delete="handleDelete" />
+                    :icons="icons" />
             </div>
         </div>
             <v-dialog v-model="dialog" :fullscreen="mobile" scrollable persistent max-width="800px">

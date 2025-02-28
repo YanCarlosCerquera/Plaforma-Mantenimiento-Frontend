@@ -1,11 +1,12 @@
 <script setup>
-import { defineProps, ref, computed } from "vue";
+import { defineProps, ref, computed, watch } from "vue";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import Pagination from "./Pagination.vue";
+// import ArgonSelect from "@/components/ArgonSelect.vue";
 
-const { headers, rows, title, icons, fields } = defineProps({
+const { headers, rows, title, icons, fields, filters } = defineProps({
   headers: {
     type: Array,
     required: true,
@@ -27,7 +28,14 @@ const { headers, rows, title, icons, fields } = defineProps({
     required: false,
     default: () => [],
   },
+  filters: {
+    type: Array,
+    required: false,
+    default: () => [],
+  },
 });
+
+const emit = defineEmits(['filter-change']);
 
 const itemsPerPage = ref(10);
 const page = ref(1);
@@ -47,10 +55,14 @@ const tableHeaders = computed(() => {
   }));
 });
 
-const allHeaders = computed(() => [
-  ...tableHeaders.value,
-  { title: "Acciones", key: "actions", sortable: false, align: "center" },
-]);
+const allHeaders = computed(() => {
+  const headers = [...tableHeaders.value];
+  if (icons.length > 0) {
+    headers.push({ title: "Acciones", key: "actions", sortable: false, align: "center" });
+  }
+  return headers;
+});
+
 
 const exportToPDF = (rows) => {
   const doc = new jsPDF();
@@ -105,45 +117,66 @@ const exportToExcel = (rows) => {
   XLSX.writeFile(workbook, `${title || "tabla"}.xlsx`);
 };
 
+const resetFilters = () => {
+  console.log(filters);
+  
+  filters.forEach(filter => {
+    filter.selectedOption = "";
+    filter.value = "";
+  });
+  emit('filter-change', filters.value);
+};
+
+watch(() => filters.value, (newFilters) => {
+  emit('filter-change', newFilters);
+}, { deep: true });
+
 </script>
 
 <template>
-  <h2 v-if="title" class="text-xl font-semibold" style="color: white;">{{ title }}</h2>
+<div class="row justify-content-space-between py-2 " style="background: linear-gradient(to bottom right, rgb(255 255 255), rgb(213 213 213)); border-radius: 8px; padding: 10px; ">
   <div class="row justify-content-space-between py-2">
-  <div class="row py-2" style="justify-content: space-between;">
-    <div class="col-4">
-      <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
-        style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
-        @click="exportToPDF(rows)">
-        <i class="fas fa-file-pdf" style="color: red; font-size: 1.5rem;"></i>
-      </button>
-      <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-alert btn-active-bg-warning my-2"
-        style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
-        @click="exportToExcel(rows)">
-        <i class="fas fa-file-excel" style="color: green; font-size: 1.5rem;"></i>
-      </button>
-    </div>
-    <div class="col-4">
-      <!-- filtros -->
-    <div v-if="filters" class="col-5 d-flex align-items-center">
-      <!-- filtros -->
-      <div class="bg-white rounded-lg d-flex shadow-sm" style="width: 100%">
-        <div
-          style="border-right: 1px solid grey; padding:0px 10px; display: flex; flex-direction: row; align-items: center;">
-          <button class="btn-icon btn-bg-white" style="margin-bottom: 0rem !important; padding: 10px;">
-            <i class="fas fa-arrow-up"></i>
-            <i class="fas fa-arrow-down"></i>
-          </button>
-          <button class="btn-icon btn-bg-white" style="margin-bottom: 0rem !important; padding: 10px;">
-            <i class="fa-solid fa-rotate-right"></i>
-          </button>
-          <p style="margin-bottom: 0rem !important; padding: 10px;">Filtrar por</p>
+    <h2 v-if="title" class="text-xl font-semibold" style="color: #28a745;">{{ title }}</h2>
+    <div class="row py-2" style="justify-content: space-between;">
+        <!-- Contenedor flex para alinear botones y filtros -->
+        <div class="d-flex align-items-center justify-content-between w-100">
+          <!-- Botones y componente personalizado (lado izquierdo) -->
+          <div class="d-flex align-items-center gap-2">
+            <!-- Slot para el componente personalizado -->
+            <slot name="add-button"></slot>
+
+            <!-- Botones de PDF y Excel -->
+            <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
+              style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
+              @click="exportToPDF(rows)">
+              <i class="fas fa-file-pdf" style="color: red; font-size: 1.5rem;"></i>
+            </button>
+            <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-alert btn-active-bg-warning my-2"
+              style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
+              @click="exportToExcel(rows)">
+              <i class="fas fa-file-excel" style="color: green; font-size: 1.5rem;"></i>
+            </button>
+          </div>
+
+          <!-- Filtros (lado derecho) -->
+          <div v-if="filters.length > 0" class="col-4 w-full card bg-white rounded-lg shadow-sm d-flex justify-content-center p-1">
+            <div class="col-12 d-flex align-items-center flex-wrap">
+              <span class="me-4 ms-4 btn-reset" @click="resetFilters()">
+                <i class="fas fa-rotate-left"></i>
+              </span>
+              <div v-for="(filter, index) in filters" :key="index" class="d-flex align-items-center">
+                <div class="d-flex flex-nowrap align-items-center input-group-text filter-select-wrapper">
+                  <select v-model="filter.selectedOption" class="form-select orm-select filter-select">
+                    <option v-for="option in filter.options" :key="option.value" :value="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      </div>
-      </div>
-    </div>
-    
   </div>
   <div class="card bg-white rounded-lg shadow-sm">
     <div class="card-body px-0 pt-0 pb-2">
@@ -174,7 +207,7 @@ const exportToExcel = (rows) => {
                 <div v-else-if="Array.isArray(getFieldValue(item, fields[field].value))" :class="fields[field].class || 'px-2 py-1'">
                   <div class="d-flex flex-wrap gap-1">
                     <div v-for="(value, idx) in getFieldValue(item, fields[field].value)" :key="idx"
-                      class="badge bg-light text-dark rounded-pill p-2">
+                      class="badge  text-dark rounded-pill p-2">
                       {{ value }}
                     </div>
                   </div>
@@ -187,10 +220,10 @@ const exportToExcel = (rows) => {
                   </span>
                 </div>
               </td>
-              <td class="align-middle text-center text-sm">
+              <td v-if="icons.length > 0" class="align-middle text-center text-sm">
                 <button v-for="(icon, index) in icons" :key="index"
                   @click="icon.method(item)"
-                  class="btn btn-sm btn-icon btn-bg-light btn-active-color-green btn-active-bg-warning mx-lg-2 my-2">
+                  class="btn btn-sm btn-icon  btn-active-color-green mx-lg-2 my-2 px-3 py-2 btn-table">
                   <i :class="icon.class"></i>
                 </button>
               </td>
@@ -210,6 +243,7 @@ const exportToExcel = (rows) => {
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <style scoped>
@@ -219,8 +253,8 @@ const exportToExcel = (rows) => {
   padding: 0.25rem 0.75rem;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  background-color: #f9fafb;
-  color: #374151;
+  background-color: #cbf1cd !important;
+  color: #2b313b !important;
 }
 
 .badge:hover {
@@ -286,5 +320,104 @@ const exportToExcel = (rows) => {
 /* Hover effect for table rows */
 :deep(tbody tr:hover) {
   background-color: #f9fafb;
+}
+
+.input-group-text {
+  border: none;
+  border-radius: 0%;
+  border-left: #000 1px solid;
+}
+
+.form-select {
+  border: none;
+}
+
+.input-group-sm .form-select, .input-group-sm .input-group-text {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.btn-reset {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background-color: #28a745;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-reset:hover {
+  background-color: #5ba86d;
+  box-shadow: 0 4px 6px rgba(116, 192, 252, 0.2);
+}
+
+.btn-reset i {
+  font-size: 1rem;
+}
+
+.filter-select {
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  color: #495057;
+  cursor: pointer;
+  appearance: none; /* Elimina el estilo por defecto del select */
+  -webkit-appearance: none; /* Para navegadores basados en WebKit */
+  -moz-appearance: none; /* Para Firefox */
+}
+
+.filter-select:hover {
+  border-color: #5ba86d;
+  box-shadow: 0 0 0 2px rgba(116, 192, 252, 0.2);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #5ba86d;
+  box-shadow: 0 0 0 3px rgba(116, 192, 252, 0.3);
+}
+
+/* Estilo para el ícono del select (opcional) */
+.filter-select-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-select-wrapper::after {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #5ba86d;
+  font-size: 0.75rem;
+}
+
+.btn-table {
+  cursor: pointer;
+  border-radius: 8px;
+  background-color: #28a745;
+  color: white;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-table:hover {
+  background-color: #5ba86d;
+  box-shadow: 0 4px 6px rgba(116, 192, 252, 0.2);
+}
+
+.btn-table i {
+  font-size: 3rem;
 }
 </style>

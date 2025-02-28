@@ -19,10 +19,6 @@ const headers = ref([
     { text: "Descripción", value: "rol.description" },
     { text: "Estado", value: "rol.state" },
 ]);
-const icons = ref({
-    firstIcon: "fas fa-pen",
-    secondIcon: "fas fa-trash",
-});
 
 const states = [
     { value: true, label: "Activo" },
@@ -222,6 +218,11 @@ const openCreateDialog = () => {
     dialog.value = true;
 };
 
+const icons = ref([
+{ class: 'fas fa-edit', method: handleEdit },
+{ class: 'fas fa-trash', method: handleDelete },
+]);
+
 onMounted(async () => {
     await fetchData();
 });
@@ -231,12 +232,15 @@ onMounted(async () => {
     <div class="py-4 container-fluid">
         <div class="row">
             <div class="col-12">
-                <button class="btn btn-custom mb-3" @click="openCreateDialog">
-                    <i class="fas fa-plus me-2"></i>Agregar Nuevo Rol
-                </button>
-
+                
                 <AuthorsTable :title="'Parametrización roles'" :headers="headers" :rows="rows" :fields="fields"
-                    :icons="icons" @edit="handleEdit" @delete="handleDelete" />
+                :icons="icons" >
+                    <template #add-button >
+                        <button class="btn btn-custom " @click="openCreateDialog">
+                            <i class="fas fa-plus me-2"></i>Agregar Nuevo Rol
+                        </button>
+                    </template>
+                </AuthorsTable>
             </div>
         </div>
 
@@ -291,6 +295,7 @@ onMounted(async () => {
     color: #28a745; /* Letra verde */
     border: 1px solid #28a745; /* Borde verde */
     transition: all 0.3s ease; /* Transición suave */
+    margin-bottom: 0%;
 }
 
 .btn-custom:hover {

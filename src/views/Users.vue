@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import AuthorsTable from "./components/AuthorsTable.vue";
 import apiService from "../service/apiService";
 import Swal from "sweetalert2";
@@ -211,6 +211,35 @@ const icons = ref([
 { class: 'fas fa-trash', method: handleDelete },
 ]);
 
+const getFieldValue = (obj, path) => {
+  return path.split(".").reduce((prev, curr) => {
+    return prev ? prev[curr] : null;
+  }, obj);
+};
+
+const filteredRows = computed(() => {
+  return rows.value.filter(row => {
+    return filters.value.every(filter => {
+      if (!filter.selectedOption) return true;  
+      const fieldValue = getFieldValue(row, filter.field); 
+      return fieldValue === filter.selectedOption; 
+    });
+  });
+});
+
+const filters = ref([
+  {
+    field: "typeDocument",
+    options: [
+      { value: "", label: "tipo documento" },
+      { value: "Cédula de Ciudadanía", label: "Cédula de Ciudadanía" },
+      { value: "Cédula de Extranjería", label: "Cédula de Extranjería" },
+      { value: "Tarjeta de Identidad", label: "Tarjeta de Identidad" },
+    ],
+    selectedOption: "",
+  },
+])
+
 onMounted(async () => {
   await fetchData();
   fetchRoles();
@@ -224,9 +253,10 @@ onMounted(async () => {
         <AuthorsTable
           :title="'Control de acceso'"
           :headers="headers"
-          :rows="rows"
+          :rows="filteredRows"
           :fields="fields"
           :icons="icons"
+          :filters="filters"
         />
       </div>
     </div>
