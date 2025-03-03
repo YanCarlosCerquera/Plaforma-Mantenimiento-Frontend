@@ -4,6 +4,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import Pagination from "./Pagination.vue";
+import ArgonInput from "../../components/ArgonInput.vue";
 // import ArgonSelect from "@/components/ArgonSelect.vue";
 
 const { headers, rows, title, icons, fields, filters } = defineProps({
@@ -36,7 +37,7 @@ const { headers, rows, title, icons, fields, filters } = defineProps({
 });
 
 const emit = defineEmits(['filter-change']);
-
+const search = ref('');
 const itemsPerPage = ref(10);
 const page = ref(1);
 
@@ -52,6 +53,7 @@ const tableHeaders = computed(() => {
     key: Object.keys(fields)[index] || "actions",
     value: header.value || null,
     align: "start",
+    sortable: false,
   }));
 });
 
@@ -127,6 +129,26 @@ const resetFilters = () => {
   emit('filter-change', filters.value);
 };
 
+const customFilter = (value, search, item) => {
+  if (!search) return true;
+
+  const rawItem = item.raw;
+  const searchTerm = search.toLowerCase();
+
+  // Función recursiva para buscar en campos anidados
+  const searchInObject = (obj, term) => {
+    return Object.keys(obj).some(key => {
+      const fieldValue = obj[key];
+      if (typeof fieldValue === 'object' && fieldValue !== null) {
+        return searchInObject(fieldValue, term); // Búsqueda recursiva
+      }
+      return String(fieldValue).toLowerCase().includes(term);
+    });
+  };
+
+  return searchInObject(rawItem, searchTerm);
+};
+
 watch(() => filters.value, (newFilters) => {
   emit('filter-change', newFilters);
 }, { deep: true });
@@ -134,14 +156,14 @@ watch(() => filters.value, (newFilters) => {
 </script>
 
 <template>
-<div class="row justify-content-space-between py-2 " style="background: linear-gradient(to bottom right, rgb(255 255 255), rgb(213 213 213)); border-radius: 8px; padding: 10px; ">
-  <div class="row justify-content-space-between py-2">
-    <h2 v-if="title" class="text-xl font-semibold" style="color: #28a745;">{{ title }}</h2>
-    <div class="row py-2" style="justify-content: space-between;">
+  <div class="row justify-content-space-between py-2" style="background: linear-gradient(to bottom right, rgb(255 255 255), rgb(213 213 213)); border-radius: 8px; padding: 10px;">
+    <div class="justify-content-space-between py-2">
+      <h2 v-if="title" class="text-xl font-semibold" style="color: #28a745;">{{ title }}</h2>
+      <div class="py-2">
         <!-- Contenedor flex para alinear botones y filtros -->
-        <div class="d-flex align-items-center justify-content-between w-100">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between w-100 gap-2">
           <!-- Botones y componente personalizado (lado izquierdo) -->
-          <div class="d-flex align-items-center gap-2">
+          <div class="d-flex flex-wrap align-items-center gap-2">
             <!-- Slot para el componente personalizado -->
             <slot name="add-button"></slot>
 
@@ -159,14 +181,17 @@ watch(() => filters.value, (newFilters) => {
           </div>
 
           <!-- Filtros (lado derecho) -->
-          <div v-if="filters.length > 0" class="col-4 w-full card bg-white rounded-lg shadow-sm d-flex justify-content-center p-1">
-            <div class="col-12 d-flex align-items-center flex-wrap">
-              <span class="me-4 ms-4 btn-reset" @click="resetFilters()">
+          <div v-if="filters.length > 0" class="col-12 col-md-7 card bg-white rounded-lg shadow-sm d-flex justify-content-center p-1">
+            <div class="col-12 d-flex flex-wrap align-items-center gap-2">
+              <span class="btn-reset" @click="resetFilters()">
                 <i class="fas fa-rotate-left"></i>
               </span>
               <div v-for="(filter, index) in filters" :key="index" class="d-flex align-items-center">
-                <div class="d-flex flex-nowrap align-items-center input-group-text filter-select-wrapper">
-                  <select v-model="filter.selectedOption" class="form-select orm-select filter-select">
+                <div v-if="filter.type === 'date'" class="d-flex flex-nowrap align-items-center input-group-text filter-select-wrapper">
+                  <input v-model="filter.selectedOption" type="date" class="form-control form-control-sm filter-select" />
+                </div>
+                <div v-else class="d-flex flex-nowrap align-items-center input-group-text filter-select-wrapper">
+                  <select v-model="filter.selectedOption" class="form-select filter-select">
                     <option v-for="option in filter.options" :key="option.value" :value="option.value">
                       {{ option.label }}
                     </option>
@@ -177,73 +202,78 @@ watch(() => filters.value, (newFilters) => {
           </div>
         </div>
       </div>
-  </div>
-  <div class="card bg-white rounded-lg shadow-sm">
-    <div class="card-body px-0 pt-0 pb-2">
-      <div class="table-responsive p-0">
-        <v-data-table v-model:items-per-page="itemsPerPage" v-model:page="page" :headers="allHeaders" :items="rows"
-          :items-per-page-options="[5, 10, 25]" class="elevation-1">
-          <!-- Custom item slot -->
-          <template v-slot:item="{ item }">
-            <tr class="hover:bg-gray-50">
-              <td v-for="(field, index) in Object.keys(fields)" :key="field">
-                <!-- Renderizar campos normales -->
-                <div v-if="index === 0 && fields[field].main" class="d-flex px-2 py-1">
-                  <div v-if="fields[field].showAvatar">
-                    <img :src="getFieldValue(item, fields[field].avatar) || '../../assets/img/team-2.jpg'"
-                      class="avatar avatar-sm me-3 rounded-circle" alt="user" />
-                  </div>
-                  <div v-if="fields[field].main" class="d-flex flex-column justify-content-center">
-                    <h6 class="mb-0 text-sm">
-                      {{ getFieldValue(item, fields[field].main) }}
-                    </h6>
-                    <p v-if="fields[field].sub" class="text-xs text-secondary mb-0">
-                      {{ getFieldValue(item, fields[field].sub) }}
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Renderizar arreglos de manera especial -->
-                <div v-else-if="Array.isArray(getFieldValue(item, fields[field].value))" :class="fields[field].class || 'px-2 py-1'">
-                  <div class="d-flex flex-wrap gap-1">
-                    <div v-for="(value, idx) in getFieldValue(item, fields[field].value)" :key="idx"
-                      class="badge  text-dark rounded-pill p-2">
-                      {{ value }}
+    </div>
+    <div class="card bg-white rounded-lg shadow-sm ">
+      <div class="d-flex justify-end">
+        <div class="search-container">
+          <ArgonInput v-model="search" placeholder="Buscar..." class="row input-search" IconDir="right" icon="fa-solid fa-magnifying-glass"/>
+        </div>
+      </div>
+      <div class="card-body px-0 pt-0 pb-2">
+        <div class="table-responsive p-0">
+          <v-data-table v-model:items-per-page="itemsPerPage" v-model:page="page" :headers="allHeaders" :items="rows"
+            :items-per-page-options="[5, 10, 25]" :search="search" :custom-filter="customFilter" class="elevation-1">
+            <!-- Custom item slot -->
+            <template v-slot:item="{ item }">
+              <tr class="hover:bg-gray-50">
+                <td v-for="(field, index) in Object.keys(fields)" :key="field">
+                  <!-- Renderizar campos normales -->
+                  <div v-if="index === 0 && fields[field].main" class="d-flex px-2 py-1">
+                    <div v-if="fields[field].showAvatar">
+                      <img :src="getFieldValue(item, fields[field].avatar) || '../../assets/img/team-2.jpg'"
+                        class="avatar avatar-sm me-3 rounded-circle" alt="user" />
+                    </div>
+                    <div v-if="fields[field].main" class="d-flex flex-column justify-content-center">
+                      <h6 class="mb-0 text-sm">
+                        {{ getFieldValue(item, fields[field].main) }}
+                      </h6>
+                      <p v-if="fields[field].sub" class="text-xs text-secondary mb-0">
+                        {{ getFieldValue(item, fields[field].sub) }}
+                      </p>
                     </div>
                   </div>
-                </div>
 
-                <!-- Renderizar campos normales -->
-                <div v-else :class="fields[field].class || 'px-2 py-1'">
-                  <span :class="fields[field].textClass || 'text-xs font-weight-bold'">
-                    {{ getFieldValue(item, fields[field].value) }}
-                  </span>
-                </div>
-              </td>
-              <td v-if="icons.length > 0" class="align-middle text-center text-sm">
-                <button v-for="(icon, index) in icons" :key="index"
-                  @click="icon.method(item)"
-                  class="btn btn-sm btn-icon  btn-active-color-green mx-lg-2 my-2 px-3 py-2 btn-table">
-                  <i :class="icon.class"></i>
-                </button>
-              </td>
-            </tr>
-          </template>
+                  <!-- Renderizar arreglos de manera especial -->
+                  <div v-else-if="Array.isArray(getFieldValue(item, fields[field].value))" :class="fields[field].class || 'px-2 py-1'">
+                    <div class="d-flex flex-wrap gap-1">
+                      <div v-for="(value, idx) in getFieldValue(item, fields[field].value)" :key="idx"
+                        class="badge text-dark rounded-pill p-2">
+                        {{ value }}
+                      </div>
+                    </div>
+                  </div>
 
-          <!-- Empty state -->
-          <template v-slot:no-data>
-            <p class="text-center p-3">La tabla no tiene datos para mostrar</p>
-          </template>
+                  <!-- Renderizar campos normales -->
+                  <div v-else :class="fields[field].class || 'px-2 py-1'">
+                    <span :class="fields[field].textClass || 'text-xs font-weight-bold'">
+                      {{ getFieldValue(item, fields[field].value) }}
+                    </span>
+                  </div>
+                </td>
+                <td v-if="icons.length > 0" class="align-middle text-center text-sm">
+                  <button v-for="(icon, index) in icons" :key="index"
+                    @click="icon.method(item)"
+                    class="btn btn-sm btn-icon btn-active-color-green mx-lg-2 my-2 px-3 py-2 btn-table">
+                    <i :class="icon.class"></i>
+                  </button>
+                </td>
+              </tr>
+            </template>
 
-          <template v-slot:bottom="bottomProps">
-            <Pagination class="py-2" :totalPages="bottomProps.pageCount" :currentPage="bottomProps.page"
-              @page-change="page = $event" />
-          </template>
-        </v-data-table>
+            <!-- Empty state -->
+            <template v-slot:no-data>
+              <p class="text-center p-3">La tabla no tiene datos para mostrar</p>
+            </template>
+
+            <template v-slot:bottom="bottomProps">
+              <Pagination class="py-2" :totalPages="bottomProps.pageCount" :currentPage="bottomProps.page"
+                @page-change="page = $event" />
+            </template>
+          </v-data-table>
+        </div>
       </div>
     </div>
   </div>
-</div>
 </template>
 
 <style scoped>
@@ -326,6 +356,7 @@ watch(() => filters.value, (newFilters) => {
   border: none;
   border-radius: 0%;
   border-left: #000 1px solid;
+  padding: 0.25rem 0rem !important;
 }
 
 .form-select {
@@ -340,6 +371,7 @@ watch(() => filters.value, (newFilters) => {
 .btn-reset {
   cursor: pointer;
   padding: 0.5rem 1rem;
+  margin: 0 1rem;
   border-radius: 8px;
   background-color: #28a745;
   color: white;
@@ -362,7 +394,10 @@ watch(() => filters.value, (newFilters) => {
 
 .filter-select {
   border-radius: 8px;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.3s ease;
@@ -372,6 +407,7 @@ watch(() => filters.value, (newFilters) => {
   appearance: none; /* Elimina el estilo por defecto del select */
   -webkit-appearance: none; /* Para navegadores basados en WebKit */
   -moz-appearance: none; /* Para Firefox */
+  border: none; /* Añade un borde para que coincida con el select */
 }
 
 .filter-select:hover {
@@ -420,4 +456,57 @@ watch(() => filters.value, (newFilters) => {
 .btn-table i {
   font-size: 3rem;
 }
+
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 8px; 
+  border: none;
+  padding: 0 !important;
+  margin: 0.8rem;
+  width: 100%;
+  max-width: 50%;
+  min-width: 300px;
+}
+
+.input-search {
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .filter-select-wrapper {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .btn-reset {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .search-container {
+    max-width: 100%;
+    min-width: auto;
+  }
+}
+
+/* Estilos para los botones en pantallas pequeñas */
+@media (max-width: 576px) {
+  .btn-sm {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
 </style>

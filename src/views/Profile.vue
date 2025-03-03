@@ -327,78 +327,85 @@ onBeforeUnmount(() => {
   <main>
     <div class="container-fluid">
       <div class="page-header min-height-300" style="
-          /* background-image: url(&quot;https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80&quot;); */
           margin-right: -24px;
           margin-left: -34%;
         ">
-        <span class="mask  opacity-6"></span>
+        <span class="mask opacity-6"></span>
       </div>
-      <h3 class="mt-3 mb-1 text-succes">Configuraciones</h3>
+      <h3 class="mt-3 mb-1 text-success">Configuraciones</h3>
       <h5 class="mb-1">Perfil de {{ userRole }}</h5>
       <div class="card shadow-lg mt-2" style="margin-top: -50px; margin-right: 24px">
         <div class="card-body p-3">
-          <div class="row">
-            <div class="col-md-2 d-flex align-items-center">
-              <div class="avatar avatar-xxl position-relative" style="min-width: 150px; min-height: 150px">
-                <img :src="userData.image ? userData.image : '../assets/img/team-1.jpg'
-                  " alt="profile_image" class="shadow-sm w-100 border-radius-lg"
-                  style="max-width: 200px; height: auto" />
-                <button class="btn btn-success btn-circle"
-                  style="position: absolute; bottom: 2px; right: 2px; margin: 0" @click="$refs.fileInput.click()">
+          <div class="custom-grid">
+            <!-- Columna imagen -->
+            <div class="custom-column column-image">
+              <div class="avatar avatar-xxl position-relative" style="width: 70% !important; height: 60% !important;">
+                <img 
+                  :src="userData.image ? userData.image : '../assets/img/team-1.jpg'" 
+                  alt="profile_image" 
+                  class="shadow-sm w-100 border-radius-lg"
+                  style="width: 100%; height: 100%; object-fit: cover; max-height: 70%;" 
+                />
+                <button 
+                  class="btn btn-success btn-circle"
+                  style="position: absolute; bottom: 0px; right: 2px; margin: 0; width: 48px; height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%;" 
+                  @click="$refs.fileInput.click()"
+                >
                   <i class="fas fa-edit"></i>
                 </button>
-                <input ref="fileInput" type="file" accept="image/*" @change="handleImageChange" style="display: none" />
+                <input 
+                  ref="fileInput" 
+                  type="file" 
+                  accept="image/*" 
+                  @change="handleImageChange" 
+                  style="display: none" 
+                />
               </div>
             </div>
-            <div class="col-md-3">
-              <div class="row">
-                <p class="text-sm">Información del usuario</p>
-                <div>
-                  <label for="example-text-input" class="form-control-label">Nombre de usuario</label>
-                  <argon-input id="name" type="text" value="lucky.jesse" v-model="userData.name" />
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label">Tipo de documento</label>
-                  <argon-select :options="documentTypes" v-model="userData.documentType" />
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label">Número de documento</label>
-                  <argon-input type="number" v-model="userData.documentNumber" />
-                </div>
+            <!-- Columna información del usuario -->
+            <div class="custom-column">
+              <p class="text-sm">Información del usuario</p>
+              <div class="mb-3">
+                <label for="example-text-input" class="form-control-label">Nombre de usuario</label>
+                <argon-input id="name" type="text" value="lucky.jesse" v-model="userData.name" />
+              </div>
+              <div class="mb-3">
+                <label for="example-text-input" class="form-control-label">Tipo de documento</label>
+                <argon-select :options="documentTypes" v-model="userData.documentType" />
+              </div>
+              <div class="mb-3">
+                <label for="example-text-input" class="form-control-label">Número de documento</label>
+                <argon-input type="number" v-model="userData.documentNumber" />
               </div>
             </div>
-            <div class="col-md-3">
+            <!-- Columna contactos -->
+            <div class="custom-column">
               <p class="text-sm">Contactos</p>
-              <div class="row">
-                <div>
-                  <label for="example-text-input" class="form-control-label">Correo electrónico</label>
-                  <argon-input id="email" type="email" value="jesse@example.com" v-model="userData.email" />
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label">Número de telefóno</label>
-                  <argon-input prefix="+57 " type="number" v-model="userData.phone" />
-                </div>
-                <div>
-                  <argon-button color="success" size="sm" class="ms-auto mt-3" @click="updateUser">Actualizar
-                    perfil</argon-button>
-                </div>
+              <div class="mb-3">
+                <label for="example-text-input" class="form-control-label">Correo electrónico</label>
+                <argon-input id="email" type="email" value="jesse@example.com" v-model="userData.email" />
+              </div>
+              <div class="mb-3">
+                <label for="example-text-input" class="form-control-label">Número de telefóno</label>
+                <argon-input prefix="+57 " type="number" v-model="userData.phone" />
+              </div>
+              <div class="mb-3 column-button">
+                <argon-button color="success" class="ms-auto mt-2 mb-3 w-100" @click="updateUser">Actualizar perfil</argon-button>
               </div>
             </div>
-            <div class="col-md-3">
+            <!-- Columna cargos -->
+            <div class="custom-column">
               <p class="text-sm">Cargos</p>
-              <div class="row">
-                <div>
-                  <label for="example-text-input" class="form-control-label">Cargo desempeñado</label>
-                  <argon-select id="position" :options="positions" v-model="userData.position" />
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label">Rol asignado</label>
-                  <ArgonAutocomplete type="text" v-model="userData.role" :items="roles" />
-                </div>
-                <div>
-                  <argon-button color="success" size="sm" class="ms-auto mt-2" @click="dialogVisible = true">Cambiar
-                    contraseña</argon-button>
-                </div>
+              <div class="mb-3">
+                <label for="example-text-input" class="form-control-label">Cargo desempeñado</label>
+                <argon-select id="position" :options="positions" v-model="userData.position" />
+              </div>
+              <div class="mb-3">
+                <label for="example-text-input" class="form-control-label">Rol asignado</label>
+                <ArgonAutocomplete type="text" v-model="userData.role" :items="roles" />
+              </div>
+              <div class="mb-3 column-button">
+                <argon-button color="success" class="ms-auto mt-2 mb-3 w-100" @click="dialogVisible = true">Cambiar contraseña</argon-button>
               </div>
             </div>
           </div>
@@ -408,7 +415,7 @@ onBeforeUnmount(() => {
     <v-dialog v-model="dialogVisible" max-width="500">
       <v-card>
         <v-card-title class="d-flex justify-content-center">
-          <h5 class="modal-title text-succes" id="exampleModalLabel">
+          <h5 class="modal-title text-success" id="exampleModalLabel">
             Cambiar Contraseña
           </h5>
         </v-card-title>
@@ -443,3 +450,53 @@ onBeforeUnmount(() => {
     </v-dialog>
   </main>
 </template>
+
+<style scoped>
+.custom-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columnas con el mismo ancho */
+  gap: 8px; /* Reducir el espacio entre columnas */
+}
+
+.custom-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Reducir el espacio entre elementos dentro de la columna */
+}
+
+.column-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Asegurar que la columna de la imagen ocupe todo el alto disponible */
+}
+
+.column-image img {
+  width: 100% !important; /* La imagen ocupa todo el ancho de su contenedor */
+  height: auto !important; /* Mantener la proporción de la imagen */
+  object-fit: cover !important; /* Asegurar que la imagen cubra el espacio */
+  max-height: 70%; /* Limitar la altura máxima de la imagen al 70% del contenedor */
+}
+
+.column-button {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+}
+
+.column-button   {
+  width: 100%; /* Los botones ocupan todo el ancho de su columna */
+}
+
+/* Media query para pantallas pequeñas */
+@media (max-width: 768px) {
+  .custom-grid {
+    grid-template-columns: 1fr; /* Cambiar a una sola columna en pantallas pequeñas */
+  }
+
+  .column-button {
+    order: 1; /* Mover los botones al final de los inputs */
+  }
+}
+</style>

@@ -220,13 +220,25 @@ const getFieldValue = (obj, path) => {
 const filteredRows = computed(() => {
   return rows.value.filter(row => {
     return filters.value.every(filter => {
-      if (!filter.selectedOption) return true;  
-      const fieldValue = getFieldValue(row, filter.field); 
-      return fieldValue === filter.selectedOption; 
+      if (!filter.selectedOption) return true;
+
+      const fieldValue = getFieldValue(row, filter.field);
+
+      if (filter.type === 'date') {
+        const selectedDate = new Date(filter.selectedOption);
+        const rowDate = new Date(fieldValue);
+
+        // Comparar las fechas con un margen de +/- 1 día
+        const timeDifference = Math.abs(rowDate.getTime() - selectedDate.getTime());
+        const dayDifference = timeDifference / (1000 * 3600 * 24);
+
+        return dayDifference <= 1; // Aceptar fechas dentro de un margen de 1 día
+      }
+
+      return fieldValue === filter.selectedOption;
     });
   });
 });
-
 const filters = ref([
   {
     field: "typeDocument",
@@ -236,6 +248,12 @@ const filters = ref([
       { value: "Cédula de Extranjería", label: "Cédula de Extranjería" },
       { value: "Tarjeta de Identidad", label: "Tarjeta de Identidad" },
     ],
+    selectedOption: "",
+  },
+  {
+    field: "createdAt", // Campo de fecha en tus datos
+    label: "Fecha",
+    type: "date",
     selectedOption: "",
   },
 ])

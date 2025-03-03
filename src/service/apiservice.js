@@ -1,4 +1,5 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const apiClient = axios.create({
     baseURL: process.env.Url || "http://localhost:3001",
@@ -7,11 +8,21 @@ const apiClient = axios.create({
     },
 });
 
+apiClient.interceptors.request.use(
+    (config) => {
+        const token = Cookies.get("authToken"); 
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
 const apiService = {
-    get: async (route, params = {}, headers = {}) => {
+    get: async (route, params = {}) => {
         try {
-            const config = { params, headers };
-            const response = await apiClient.get(route, config);
+            const response = await apiClient.get(route, { params });
             return response.data;
         } catch (error) {
             console.error("Error en GET:", error.response?.data || error.message);
@@ -19,10 +30,9 @@ const apiService = {
         }
     },
 
-    post: async (route, data = {}, headers = {}) => {
+    post: async (route, data = {}) => {
         try {
-            const config = { headers };
-            const response = await apiClient.post(route, data, config);
+            const response = await apiClient.post(route, data);
             return response.data;
         } catch (error) {
             console.error("Error en POST:", error.response?.data || error.message);
@@ -30,10 +40,9 @@ const apiService = {
         }
     },
 
-    patch: async (route, data = {}, headers = {}) => {
+    patch: async (route, data = {}) => {
         try {
-            const config = { headers };
-            const response = await apiClient.patch(route, data, config);
+            const response = await apiClient.patch(route, data);
             return response.data;
         } catch (error) {
             console.error("Error en PATCH:", error.response?.data || error.message);
@@ -41,10 +50,9 @@ const apiService = {
         }
     },
 
-    delete: async (route, headers = {}) => {
+    delete: async (route) => {
         try {
-            const config = { headers };
-            const response = await apiClient.delete(route, config);
+            const response = await apiClient.delete(route);
             return response.data;
         } catch (error) {
             console.error("Error en DELETE:", error.response?.data || error.message);
