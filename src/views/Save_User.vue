@@ -188,19 +188,6 @@ const handleCancel = () => {
               </div>
             </div>
             <div class="grid-item">
-              <label for="assignedRol" class="form-control-label">Asignar rol</label>
-              <argon-select id="assignedRol" :options="roles" v-model="user.assignedRol" />
-            </div>
-            <div class="grid-item">
-              <label for="assignedPosition" class="form-control-label">Asignar cargo</label>
-              <argon-select id="assignedPosition" :options="assignedPosition" v-model="user.assignedPosition" />
-            </div>
-            <div class="grid-item">
-              <label for="password" class="form-control-label">Contraseña</label>
-              <argon-input id="password" type="password" v-model="user.password" />
-            </div>
-            <!-- Columna derecha -->
-            <div class="grid-item">
               <label for="name" class="form-control-label">Nombre completo</label>
               <argon-input id="name" type="text" v-model="user.name" />
             </div>
@@ -213,13 +200,26 @@ const handleCancel = () => {
               <argon-input id="phone" prefix="+57" type="number" v-model="user.phone" />
             </div>
             <div class="grid-item">
+              <label for="assignedRol" class="form-control-label">Asignar rol</label>
+              <argon-select id="assignedRol" :options="roles" v-model="user.assignedRol" />
+            </div>
+            <div class="grid-item">
               <label for="typeDocument" class="form-control-label">Tipo de documento</label>
               <argon-select id="typeDocument" :options="documentTypes" v-model="user.typeDocument" />
+            </div>
+            <div class="grid-item">
+              <label for="assignedPosition" class="form-control-label">Asignar cargo</label>
+              <argon-select id="assignedPosition" :options="assignedPosition" v-model="user.assignedPosition" />
             </div>
             <div class="grid-item">
               <label for="numberDocument" class="form-control-label">Número de documento</label>
               <argon-input id="numberDocument" type="number" v-model="user.numberDocument" />
             </div>
+            <div class="grid-item">
+              <label for="password" class="form-control-label">Contraseña</label>
+              <argon-input id="password" type="password" v-model="user.password" />
+            </div>
+            <!-- Columna derecha -->
             <div class="grid-item">
               <label for="confirmPassword" class="form-control-label">Confirmar contraseña</label>
               <argon-input id="confirmPassword" type="password" v-model="user.password" />

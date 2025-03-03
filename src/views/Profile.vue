@@ -496,7 +496,11 @@ onBeforeUnmount(() => {
   }
 
   .column-button {
-    order: 1; /* Mover los botones al final de los inputs */
+    order: 5 !important; /* Mover los botones al final de los inputs */
+  }
+
+  .column-image img {
+    max-height: 200px !important; /* Ajustar la altura máxima de la imagen en móviles */
   }
 }
 </style>

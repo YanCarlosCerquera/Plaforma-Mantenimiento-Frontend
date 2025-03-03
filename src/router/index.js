@@ -27,6 +27,7 @@ import Users from "../views/Users.vue";
 import Password from "../views/password.vue";
 import ResetPassword from "../views/resetpassword.vue";
 import Bienes from "../views/Home/Bienes/Bienes.vue";
+import AssignmentRoutes from "../views/AssignmentRoutes.vue";
 
 const routes = [
   {
@@ -59,6 +60,11 @@ const routes = [
     path: "/ruta",
     name: "Ruta",
     component: Routes,
+  },
+  {
+    path: "/assignmentRoutes",
+    name: "permiso de rutas",
+    component: AssignmentRoutes,
   },
   {
     path: "/ResetPassword",

@@ -205,27 +205,28 @@
   });
   </script>
     
- <style scoped>
+    <style scoped>
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 1rem;
       font-family: system-ui, -apple-system, sans-serif;
     }
     
     .header {
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
+      text-align: start;
     }
     
     .header h1 {
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 700;
       margin: 0;
       letter-spacing: -0.025em;
     }
     
     .header p {
-      font-size: 1.125rem;
+      font-size: 1rem;
       color: #64748b;
       margin-top: 0.5rem;
     }
@@ -233,12 +234,12 @@
     .form-container {
       background: white;
       border-radius: 1rem;
-      padding: 2rem;
+      padding: 1.5rem;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
     
     .form-group {
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
     
     .form-group label {
@@ -253,8 +254,7 @@
     
     .input-nombre {
       width: 100%;
-      max-width: 400px;
-      height: 2.75rem;
+      height: 2.5rem;
       padding: 0 1rem;
       border: 2px solid #e2e8f0;
       border-radius: 0.75rem;
@@ -271,9 +271,9 @@
     
     .columns {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-      margin-bottom: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
     }
     
     .column h2 {
@@ -286,7 +286,7 @@
     
     .input {
       flex: 1;
-      height: 2.75rem;
+      height: 2.5rem;
       padding: 0 1rem;
       border: 2px solid #e2e8f0;
       border-radius: 0.75rem;
@@ -312,7 +312,7 @@
       color: white;
       border: none;
       padding: 0 1.5rem;
-      height: 2.75rem;
+      height: 2.5rem;
       font-size: 0.875rem;
       font-weight: 500;
       cursor: pointer;
@@ -370,14 +370,14 @@
     }
     
     .variables-section {
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
     
     .variables-section h2 {
       font-size: 1rem;
       font-weight: 600;
       color: #1dcb11;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       text-align: center;
       letter-spacing: -0.025em;
     }
@@ -385,8 +385,8 @@
     .checkbox-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
+      gap: 1rem;
+      margin-bottom: 1rem;
       justify-content: center;
     }
     
@@ -425,8 +425,8 @@
     
     .new-variable-group {
       display: flex;
-      justify-content: flex-start;
-      padding: 0 2rem;
+      justify-content: center;
+      padding: 0 1rem;
     }
     
     .input-container {
@@ -441,13 +441,13 @@
       color: white;
       border: none;
       border-radius: 9999px;
-      padding: 1rem 2.5rem;
+      padding: 0.75rem 2rem;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
       display: block;
-      margin: 2rem auto 0;
+      margin: 1.5rem auto 0;
       min-width: 200px;
     }
     
@@ -458,16 +458,67 @@
     }
     
     @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+    
+      .header h1 {
+        font-size: 1.25rem;
+      }
+    
+      .header p {
+        font-size: 0.875rem;
+      }
+    
+      .form-container {
+        padding: 1rem;
+      }
+    
       .columns {
         grid-template-columns: 1fr;
+        gap: 1rem;
       }
-      
-      .new-variable-group {
-        padding: 0;
+    
+      .input-nombre, .input {
+        height: 2.25rem;
+        font-size: 0.875rem;
       }
-      
-      .input-container {
-        max-width: 100%;
+    
+      .button, .button-rounded {
+        height: 2.25rem;
+        font-size: 0.75rem;
+        padding: 0 1rem;
+      }
+    
+      .submit-button {
+        padding: 0.5rem 1.5rem;
+        font-size: 0.875rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 1.125rem;
+      }
+    
+      .header p {
+        font-size: 0.75rem;
+      }
+    
+      .input-nombre, .input {
+        height: 2rem;
+        font-size: 0.75rem;
+      }
+    
+      .button, .button-rounded {
+        height: 2rem;
+        font-size: 0.625rem;
+        padding: 0 0.75rem;
+      }
+    
+      .submit-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
       }
     }
     </style>

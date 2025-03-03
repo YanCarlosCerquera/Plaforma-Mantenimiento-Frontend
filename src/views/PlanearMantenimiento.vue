@@ -266,10 +266,8 @@ const fetchSelectAsset = async (inventoryCode) => {
 }
 
 const handleSubmit = async () => {
-  console.log(maintenanceRequest.value);
   try {
     const response = await apiService.post('/application-maintenance', maintenanceRequest.value);
-    console.log(response)
     Swal.fire({
       title: "Solicitud enviada",
       text: response.trackingNumber,
@@ -359,6 +357,7 @@ onMounted(() => {
 .form-section-content {
   display: grid;
   grid-template-columns: 2fr 1fr;
+  gap: 1rem;
 }
 
 .form-section-content-image {
@@ -366,7 +365,7 @@ onMounted(() => {
   max-width: 200px;
   min-width: 100px;
   max-height: 200px;
-  min-width: 100px;
+  min-height: 100px;
 }
 
 .section-title {
@@ -383,7 +382,7 @@ onMounted(() => {
 
 .asset-info-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Cambiado a tres columnas */
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
@@ -452,6 +451,19 @@ textarea {
   }
 
   .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-section-content {
+    grid-template-columns: 1fr;
+  }
+
+  .form-section-content-image {
+    order: 1; /* Mueve la imagen debajo del autocomplete */
+    margin-top: 1rem;
+  }
+
+  .asset-info-grid {
     grid-template-columns: 1fr;
   }
 }
