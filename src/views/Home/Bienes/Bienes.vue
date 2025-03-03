@@ -1,41 +1,25 @@
 <template>
   <div class="min-h-screen bg-white">
     <!-- Hero Section -->
-    <div class="hero-section">
-      <div class="container">
-        <nav class="navbar">
-          <div class="logo-section">
-            <div class="brand-text">
-              <div class="brand-group">
-                <span>Tecnoparque</span>
-                <span>Nodo Neiva</span>
-              </div>
-              <div class="separator"></div>
-              <div class="brand-group">
-                <span>Servicios</span>
-                <span>Tecnológicos</span>
-              </div>
-            </div>
+    <div class="page-header align-items-start min-vh-50 pb-11 md:h-60" :style="backgroundStyle">
+      <span class="mask bg-gradient-dark opacity-6 md:h-60"></span>
+      <div class="container row">
+        <div class="row justify-content-center mt-8 md:mt-16">
+          <div class="col-lg-12 text-left mx-auto mt-8 md:mt-16">
+            <h1 class="text-white mb-2 mt-1 md:mt-12 md:text-4xl lg:text-4xl sm:text-xs">
+              Bienvenidos al sistema de gestión de inventarios de la regional Huila
+            </h1>
           </div>
-          <div class="auth-buttons">
-            <button class="btn btn-primary">
-              <i-lucide-user class="btn-icon" />
-              Iniciar Sesión
-            </button>
-            <button class="btn btn-primary">
-              <i-lucide-plus class="btn-icon" />
-              Registrarse
-            </button>
-          </div>
-        </nav>
-        <div class="hero-content">
-          <h1 class="hero-title">
-            Bienvenidos al sistema de gestión<br />
-            de inventarios de la regional Huila
-          </h1>
-          <p class="hero-subtitle">
-            Gestione y controle sus activos de manera eficiente
-          </p>
+        </div>
+      </div>
+      <div class="container row d-flex justify-content-end flex-wrap">
+        <div class="d-flex flex-column flex-md-row justify-content-end w-100">
+          <ArgonButton color="success" class="my-2 md:my-4 mb-2 w-100 w-md-25 md:w-1/4 lg:w-1/5" @click="handleLoginClick">
+            Ingresar
+          </ArgonButton>
+          <ArgonButton color="success" class="my-2 md:my-4 mb-2 w-100 w-md-25 md:w-1/4 lg:w-1/5 mx-md-3" @click="handleSignup">
+            Registrarse
+          </ArgonButton>
         </div>
       </div>
     </div>
@@ -83,10 +67,8 @@
                 <span class="visually-hidden">Cargando...</span>
               </div>
             </div>
-            <Table
+            <AuthorsTable
   v-else
-  :tableId="TABLE_ID"
-  title="Bienes"
   :headers="headers"
   :rows="filteredRows"
   :fields="fields"
@@ -104,7 +86,9 @@
   import { ref, onMounted, computed } from 'vue'
   import { useStore } from "vuex"
   import { onBeforeUnmount, onBeforeMount } from "vue"
-import Table from '../../components/Table.vue'
+import AuthorsTable from '../../components/AuthorsTable.vue'
+import  fondoImage2 from '../../../assets/image208.png'
+import ArgonButton from "@/components/ArgonButton.vue";
 
   const searchQuery = ref('')
   const searchType = ref('serial')
@@ -194,6 +178,7 @@ const filterOptions = ref([
 ]);
 
 
+
 const updateFilterOptions = (data) => {
   const locations = new Set();
   const categories = new Set();
@@ -246,7 +231,11 @@ const fetchData = async () => {
     store.state.showFooter = true
     body.classList.add("bg-gray-100")
   })
-  
+  const backgroundStyle = computed(() => ({
+  backgroundImage: `url(${fondoImage2})`,
+  backgroundSize: "stretch",
+  backgroundPosition: "top",
+}));
 
   
   const handleSearch = () => {
@@ -273,7 +262,7 @@ const fetchData = async () => {
   
   onMounted(async () => {
   await fetchData();
-  filteredRows.value = rows.value; // Inicializa filteredRows con los datos originales
+  filteredRows.value = rows.value; 
 });
   </script>
   

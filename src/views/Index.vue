@@ -25,7 +25,7 @@ const formData = ref({
   serialNumber: "",
   trackingNumber: "",
   issueDescription: "",
-  inventoryCode: "",
+  InventoryCode: "",
   maintenanceType: "",
   workOrderStatus: false,
 });
@@ -102,7 +102,7 @@ const handleSubmit = async (event) => {
       requesterPhone: "",
       serialNumber: "",
       issueDescription: "",
-      inventoryCode: "",
+      InventoryCode: "",
       maintenanceType: "",
       workOrderStatus: false,
     };
@@ -231,7 +231,7 @@ const backgroundStyle = computed(() => ({
                 <p class="text-left text-dark mb-2 font-weight-bold">
                   Código inventario
                 </p>
-                <ArgonInput id="InventoryCode" name="InventoryCode" type="text" v-model="formData.inventoryCode"
+                <ArgonInput id="InventoryCode" name="InventoryCode" type="text" v-model="formData.InventoryCode"
                   placeholder="Código de inventario" aria-label="Inventario" />
               </div>
               <div class="form-group col-md-6">

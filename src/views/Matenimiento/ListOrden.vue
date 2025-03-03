@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import Swal from "sweetalert2";
-import Table from "../components/Table.vue";
 import { useStore } from 'vuex';
 import router from "../../router";
+import Cookies from "js-cookie";
+import AuthorsTable from "../components/AuthorsTable.vue";
 
 const store = useStore();
 const TABLE_ID = 'ordenes-trabajo';
@@ -17,10 +18,7 @@ const headers = ref([
   "Estado"
 ]);
 
-const icons = ref({
-  firstIcon: "fas fa-check",
-  secondIcon: "fas fa-trash",
-});
+
 
 const fields = ref({
   radicado: {
@@ -65,8 +63,8 @@ const formatDate = (dateString) => {
     .replace(".", "");
 };
 
-const formatWorkOrderStatus = (status) => {
-  return status === false ? "Sin Ejecutar" : "Ejecutado";
+const formatWorkOrderStatus = (state) => {
+  return state ? 'Ejecutada' : 'Sin ejecutar'
 };
 
 const fetchData = async () => {
@@ -84,8 +82,8 @@ const fetchData = async () => {
 const handleView = (row) => {
   try {
     const ordenId = row._id?.toString() || row.toString();
-    localStorage.setItem('OrdenId', ordenId);
-    router.push("/informes");
+    Cookies.set('OrdenId', ordenId);
+    router.push("/eje");
   } catch (error) {
     console.error("Error al navegar a la vista de detalles:", error);
     Swal.fire({
@@ -162,6 +160,15 @@ const handleDelete = async (row) => {
   }
 };
 
+
+const icons = ref([
+  { class: 'fas fa-check', method: handleView },
+  { class: 'fas fa-trash', method: handleDelete },
+  { class: 'fas fa-download'/* , method: handleDownload  */},
+  { class: 'fas fa-search'/* , method: handleSearch */ }
+]);
+
+
 onMounted(async () => {
   await fetchData();
 });
@@ -171,7 +178,7 @@ onMounted(async () => {
   <div class="py-4 container-fluid">
     <div class="row">
       <div class="col-12">
-        <Table
+        <AuthorsTable
           title="Ordenes de Trabajo"
           :headers="headers"
           :rows="rows"
