@@ -201,6 +201,28 @@ const routeName = computed(() => route.name);
             </li>
             <li>
               <sidenav-item
+                to="/mantenimiento"
+                :class="route.path === '/mantenimiento' ? 'active' : ''"
+                :navText="'Programas Mantimiento'"
+              >
+                <template v-slot:icon>
+                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+                </template>
+              </sidenav-item>
+            </li>
+            <li>
+              <sidenav-item
+                to="/mantenimientos/ordenes-trabajo"
+                :class="route.path === '/mantenimientos/ordenes-trabajo' ? 'active' : ''"
+                :navText="'Ordenes de Trabajo'"
+              >
+                <template v-slot:icon>
+                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+                </template>
+              </sidenav-item>
+            </li>
+            <li>
+              <sidenav-item
                 to="/mantenimientos/GestionActividaes"
                 :class="route.path === '/mantenimientos/planear-mantenimiento' ? 'active' : ''"
                 :navText="'Gestion Actual'"

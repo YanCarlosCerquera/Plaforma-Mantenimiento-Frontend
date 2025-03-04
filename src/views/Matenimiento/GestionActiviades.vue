@@ -1,13 +1,13 @@
 <script setup>
 import Swal from "sweetalert2";
-import { computed, onMounted, ref } from "vue";
-import { useStore } from "vuex";
+import { onMounted, ref } from "vue";
 import router from "../../router";
 import { commonFormatters } from "../../store/modules/tables";
-import Table from "../components/Table.vue";
+import AuthorsTable from "../components/AuthorsTable.vue";
+import apiService from "../../service/apiService";
 
-const store = useStore();
-const TABLE_ID = "maintenance-activities";
+const loading = ref(false);
+const activities = ref([]);
 
 const headers = ref([
   "Radicado de Solicitud",
@@ -33,6 +33,7 @@ const fields = ref({
     value: "createdAt",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
+    formatter: commonFormatters.date,
   },
   inventoryCode: {
     value: "InventoryCode",
@@ -48,34 +49,38 @@ const fields = ref({
     value: "workOrderStatus",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
+    formatter: commonFormatters.workOrderStatus,
   },
 });
 
-const rows = computed(() => store.getters["tables/getTableData"](TABLE_ID));
-const loading = computed(() =>
-  store.getters["tables/isTableLoading"](TABLE_ID)
-);
-
 const fetchData = async () => {
-  await store.dispatch("tables/fetchTableData", {
-    tableId: TABLE_ID,
-    endpoint: "/application-maintenance",
-    formatters: {
-      createdAt: commonFormatters.date,
-      workOrderStatus: commonFormatters.workOrderStatus,
-    },
-  });
-};
-
-const handleView = (row) => {
-  localStorage.setItem("selectedRequestId", row._id);
-  router.push("/mantenimientos/detalles");
+  try {
+    loading.value = true;
+    const data = await apiService.get("/application-maintenance");
+    activities.value = data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    Swal.fire({
+      title: "Error al cargar los datos",
+      text: "Hubo un problema al obtener las actividades",
+      icon: "error",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+    });
+  } finally {
+    loading.value = false;
+  }
 };
 
 const handleDelete = async (row) => {
   const result = await Swal.fire({
-    title: "¿Estás seguro de que quieres eliminar esta solicitud?",
-    text: "Esta acción no puede deshacerse.",
+    title: "¿Estás seguro de que quieres eliminar esta solicitud?",
+    text: "Esta acción no puede deshacerse.",
     showCancelButton: true,
     confirmButtonText: "Confirmar",
     cancelButtonText: "Cancelar",
@@ -89,21 +94,9 @@ const handleDelete = async (row) => {
 
   if (!result.isConfirmed) return;
 
-  const { success } = await store.dispatch("tables/deleteTableItem", {
-    endpoint: "application-maintenance",
-    itemId: row,
-    refreshConfig: {
-      tableId: TABLE_ID,
-      endpoint: "/application-maintenance",
-      formatters: {
-        createdAt: commonFormatters.date,
-        workOrderStatus: commonFormatters.workOrderStatus,
-      },
-    },
-  });
-  fetchData();
-
-  if (success) {
+  try {
+    await apiService.delete(`/application-maintenance/${row._id}`);
+    await fetchData();
     Swal.fire({
       title: "Solicitud eliminada correctamente",
       icon: "success",
@@ -115,10 +108,10 @@ const handleDelete = async (row) => {
       iconColor: "white",
       showConfirmButton: false,
     });
-  } else {
+  } catch (error) {
     Swal.fire({
       title: "Error al eliminar la Solicitud",
-      text: "Algo salió mal al intentar eliminar la solicitud.",
+      text: "Algo salió mal al intentar eliminar la solicitud.",
       icon: "error",
       position: "bottom-right",
       toast: true,
@@ -131,11 +124,21 @@ const handleDelete = async (row) => {
   }
 };
 
+const handleView = (row) => {
+  localStorage.setItem("selectedRequestId", row._id);
+  router.push("/mantenimientos/detalles");
+};
+
+const icons = ref([
+  { class: "fas fa-trash", method: handleDelete },
+  { class: "fas fa-eye", method: handleView },
+]);
+
 onMounted(() => {
   fetchData();
 });
 
-// Recargar datos cuando se regresa a la página
+// Recargar datos cuando se regresa a la página
 router.beforeEach((to, from, next) => {
   if (
     to.path === "/maintenance/requests" &&
@@ -156,20 +159,16 @@ router.beforeEach((to, from, next) => {
             <span class="visually-hidden">Cargando...</span>
           </div>
         </div>
-        <Table
-          v-else
-          :tableId="TABLE_ID"
-          title="Gestión de Actividades"
+        <AuthorsTable
           :headers="headers"
-          :rows="rows"
+          :rows="activities"
           :fields="fields"
-          @delete="handleDelete"
-          @view="handleView"
+          :icons="icons"
         >
           <template #cell-workOrderStatus="{ value }">
             <span v-html="value"></span>
           </template>
-        </Table>
+        </AuthorsTable>
       </div>
     </div>
   </div>

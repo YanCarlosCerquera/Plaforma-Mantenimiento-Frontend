@@ -82,8 +82,8 @@ const fetchData = async () => {
 const handleView = (row) => {
   try {
     const ordenId = row._id?.toString() || row.toString();
+    router.push(`/eje`);
     Cookies.set('OrdenId', ordenId);
-    router.push("/eje");
   } catch (error) {
     console.error("Error al navegar a la vista de detalles:", error);
     Swal.fire({
@@ -164,8 +164,6 @@ const handleDelete = async (row) => {
 const icons = ref([
   { class: 'fas fa-check', method: handleView },
   { class: 'fas fa-trash', method: handleDelete },
-  { class: 'fas fa-download'/* , method: handleDownload  */},
-  { class: 'fas fa-search'/* , method: handleSearch */ }
 ]);
 
 

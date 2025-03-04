@@ -160,152 +160,75 @@ const handleCancel = () => {
 
 <template>
   <main>
-    <div class="card shadow-lg mt-2" style="margin-top: -50px; margin-left: 8rem; margin-right: 8rem;">
-      <div
-        class="card-title d-flex align-items-center justify-content-center"
-        style="margin: 1rem"
-      >
-        <h3 class="mb-1 text-h4 text-succes">Agregar usuario</h3>
+    <div class="card shadow-lg mt-2 mx-2 mx-md-8">
+      <div class="card-title d-flex align-items-center justify-content-center" style="margin: 1rem">
+        <h3 class="mb-1 text-h4 text-success">Agregar usuario</h3>
       </div>
       <div class="card-body p-3">
         <form @submit.prevent="handleSubmit">
-          <div class="row">
-            <div class="col-md-6 d-flex align-items-center">
-              <div class="row" style="width: 100%">
-                <div
-                  class="d-flex align-items-center justify-content-center mb-4 mt-4"
-                  style="height: calc(3 * 70px)"
-                >
-                  <div class="text-center">
-                    <div
-                      class="image-upload"
-                      style="position: relative; display: inline-block"
-                    >
-                      <img
-                        :src="user.photoUrl"
-                        alt="Imagen de usuario"
-                        class="rounded-circle"
-                        style="
-                          width: 150px;
-                          height: 150px;
-                          object-fit: cover;
-                          border: 2px solid #ddd;
-                        "
-                      />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        @change="handleImageUpload"
-                        style="
-                          position: absolute;
-                          top: 0;
-                          left: 0;
-                          width: 100%;
-                          height: 100%;
-                          opacity: 0;
-                          cursor: pointer;
-                        "
-                      />
-                    </div>
-                    <h4 class="mt-2">Cargar imagen</h4>
-                  </div>
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Asignar rol</label
-                  >
-                  <argon-select
-                    id="assignedRol"
-                    :options="roles"
-                    v-model="user.assignedRol"
+          <div class="grid-container">
+            <!-- Columna izquierda -->
+            <div class="grid-item image-container">
+              <div class="text-center">
+                <div class="image-upload" style="position: relative; display: inline-block">
+                  <img
+                    :src="user.photoUrl"
+                    alt="Imagen de usuario"
+                    class="rounded-circle"
+                    style="width: 150px; height: 150px; object-fit: cover; border: 2px solid #ddd;"
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    @change="handleImageUpload"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;"
                   />
                 </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Asignar cargo</label
-                  >
-                  <argon-select
-                    id="assignedPosition"
-                    :options="assignedPosition"
-                    v-model="user.assignedPosition"
-                  />
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Contraseña</label
-                  >
-                  <argon-input
-                    id="password"
-                    type="password"
-                    v-model="user.password"
-                  />
-                </div>
+                <h4 class="mt-2">Cargar imagen</h4>
               </div>
             </div>
-            <div class="col-md-6 d-flex align-items-center">
-              <div class="row" style="width: 100%">
-                <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Nombre completo</label
-                  >
-                  <argon-input id="name" type="text" v-model="user.name" />
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Correo electrónico</label
-                  >
-                  <argon-input id="email" type="email" v-model="user.email" />
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Número de telefóno</label
-                  >
-                  <argon-input
-                    id="phone"
-                    prefix="+57"
-                    type="number"
-                    v-model="user.phone"
-                  />
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Tipo de documento</label
-                  >
-                  <argon-select
-                    id="typeDocument"
-                    :options="documentTypes"
-                    v-model="user.typeDocument"
-                  />
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Número de documento</label
-                  >
-                  <argon-input
-                    id="numberDocument"
-                    type="number"
-                    v-model="user.numberDocument"
-                  />
-                </div>
-                <div>
-                  <label for="example-text-input" class="form-control-label"
-                    >Confirmar contraseña</label
-                  >
-                  <argon-input
-                    id="confirmPassword"
-                    type="password"
-                    v-model="user.password"
-                  />
-                </div>
-              </div>
+            <div class="grid-item">
+              <label for="assignedRol" class="form-control-label">Asignar rol</label>
+              <argon-select id="assignedRol" :options="roles" v-model="user.assignedRol" />
+            </div>
+            <div class="grid-item">
+              <label for="assignedPosition" class="form-control-label">Asignar cargo</label>
+              <argon-select id="assignedPosition" :options="assignedPosition" v-model="user.assignedPosition" />
+            </div>
+            <div class="grid-item">
+              <label for="password" class="form-control-label">Contraseña</label>
+              <argon-input id="password" type="password" v-model="user.password" />
+            </div>
+            <!-- Columna derecha -->
+            <div class="grid-item">
+              <label for="name" class="form-control-label">Nombre completo</label>
+              <argon-input id="name" type="text" v-model="user.name" />
+            </div>
+            <div class="grid-item">
+              <label for="email" class="form-control-label">Correo electrónico</label>
+              <argon-input id="email" type="email" v-model="user.email" />
+            </div>
+            <div class="grid-item">
+              <label for="phone" class="form-control-label">Número de teléfono</label>
+              <argon-input id="phone" prefix="+57" type="number" v-model="user.phone" />
+            </div>
+            <div class="grid-item">
+              <label for="typeDocument" class="form-control-label">Tipo de documento</label>
+              <argon-select id="typeDocument" :options="documentTypes" v-model="user.typeDocument" />
+            </div>
+            <div class="grid-item">
+              <label for="numberDocument" class="form-control-label">Número de documento</label>
+              <argon-input id="numberDocument" type="number" v-model="user.numberDocument" />
+            </div>
+            <div class="grid-item">
+              <label for="confirmPassword" class="form-control-label">Confirmar contraseña</label>
+              <argon-input id="confirmPassword" type="password" v-model="user.password" />
             </div>
           </div>
-          <div
-            class="d-flex justify-content-center mt-4"
-            style="gap: 60px; padding-top: 20px"
-          >
+          <!-- Botones -->
+          <div class="d-flex flex-column flex-md-row justify-content-center mt-4 gap-3">
             <button
-              class="btn btn-danger"
+              class="btn btn-danger w-100 w-md-auto"
               type="button"
               style="padding: 15px 30px; font-size: 18px"
               @click="handleCancel"
@@ -313,7 +236,7 @@ const handleCancel = () => {
               Cancelar
             </button>
             <button
-              class="btn btn-success"
+              class="btn btn-success w-100 w-md-auto"
               style="padding: 15px 30px; font-size: 18px"
               type="submit"
             >
@@ -327,10 +250,68 @@ const handleCancel = () => {
 </template>
 
 <style scoped>
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(6, auto);
+  gap: 1rem;
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.image-container {
+  grid-row: span 3;
+}
+
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+  }
+
+  .image-container {
+    grid-row: span 1;
+  }
+}
+
 .v-card {
   border-radius: 16px;
 }
+
 .text-success {
   color: #39b54a !important;
+}
+
+.image-upload img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+@media (max-width: 768px) {
+  .card {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+  }
+
+  .image-upload img {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .btn {
+    width: 100% !important;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .btn {
+    font-size: 16px !important;
+    padding: 10px 20px !important;
+  }
 }
 </style>

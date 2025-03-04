@@ -2,20 +2,20 @@
   <div class="planear-mantenimiento-form">
     <header class="form-header">
       <div>
-        <h1 class="title">Gestión de actividades de mantenimiento</h1>
+        <h1 class="title">Gestión de actividades de mantenimiento</h1>
         <h2 class="subtitle">Solicitud de mantenimiento</h2>
       </div>
     </header>
 
     <form class="form-container" v-if="requestData">
       <section class="form-section">
-        <h3 class="section-title">Información del bien</h3>
+        <h3 class="section-title">Información del bien</h3>
 
         <div class="details-container">
           <div class="details-info">
             <div class="info-group">
               <div class="info-item">
-                <label>Centro de formación</label>
+                <label>Centro de formación</label>
                 <p>
                   {{
                     requestData.assetInfo?.trainingCenterId.name ||
@@ -25,7 +25,7 @@
               </div>
 
               <div class="info-item">
-                <label>Ubicación</label>
+                <label>Ubicación</label>
                 <p>{{ requestData.assetInfo?.location || "No disponible" }}</p>
               </div>
             </div>
@@ -44,7 +44,7 @@
 
             <div class="info-group">
               <div class="info-item">
-                <label>Número de serie</label>
+                <label>Número de serie</label>
                 <p>
                   {{ requestData.assetInfo?.serialNumber || "No disponible" }}
                 </p>
@@ -60,7 +60,7 @@
 
             <div class="info-group">
               <div class="info-item">
-                <label>Fecha de adquisición</label>
+                <label>Fecha de adquisición</label>
                 <p>{{ formatDate(requestData.assetInfo?.acquisitionDate) }}</p>
               </div>
 
@@ -92,7 +92,7 @@
               @click="handleSubmit"
             >
               <i class="fas fa-cog"></i>
-              Especificaciones técnicas
+              Especificaciones técnicas
             </button>
 
             <div class="report-buttons">
@@ -107,7 +107,7 @@
           </div>
         </div>
 
-        <h3 class="section-title">Información Proveedor</h3>
+        <h3 class="section-title">Información Proveedor</h3>
 
         <div class="form-grid">
           <div class="form-group">
@@ -118,7 +118,7 @@
           </div>
 
           <div class="form-group">
-            <label>Número de serie</label>
+            <label>Número de serie</label>
             <p>
               {{ requestData.assetInfo?.manufacturer.phone || "No disponible" }}
             </p>
@@ -134,7 +134,7 @@
           </div>
         </div>
 
-        <h3 class="section-title">Información Accesorios</h3>
+        <h3 class="section-title">Información Accesorios</h3>
 
         <div class="form-grid">
           <div class="form-group">
@@ -143,7 +143,7 @@
           </div>
 
           <div class="form-group">
-            <label>Número de serie</label>
+            <label>Número de serie</label>
             <p>
               {{ requestData.assetInfo?.supplier.phone || "No disponible" }}
             </p>
@@ -221,6 +221,7 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import apiService from "../../service/apiService";
+import Cookies from "js-cookie";
 
 const router = useRouter();
 const isLoading = ref(false);
@@ -231,12 +232,12 @@ const requestData = ref({
 
 const loadMaintenanceHistory = async (serialNumber) => {
   if (!serialNumber) {
-    console.error("No hay número de serie disponible");
+    console.error("No hay número de serie disponible");
     return [];
   }
 
   try {
-    console.log("Cargando historial para número de serie:", serialNumber);
+    console.log("Cargando historial para número de serie:", serialNumber);
     const response = await apiService.get(
       `/work-report/maintenanceHistory/${serialNumber}`
     );
@@ -260,11 +261,11 @@ const loadMaintenanceHistory = async (serialNumber) => {
   }
 };
 
-// Función principal para cargar los datos del activo
+// Función principal para cargar los datos del activo
 const loadAssetData = async () => {
-  const assetId = localStorage.getItem("selectedAssetId");
+  const assetId = Cookies.get("editAssetId");
   if (!assetId) {
-    console.error("No se encontró ID del activo");
+    console.error("No se encontró ID del activo");
     router.push("/assets");
     return;
   }
@@ -321,11 +322,11 @@ const handleSubmit = async () => {
     );
     router.push("/detalles");
   } else {
-    console.error("No hay número de serie disponible");
+    console.error("No hay número de serie disponible");
   }
 };
 
-// Función para ver detalles del mantenimiento
+// Función para ver detalles del mantenimiento
 const viewMaintenanceDetail = (maintenance) => {
   console.log("Detalles del mantenimiento:", {
     tipo: maintenance?.orderId?.solicitud?.solicitudId?.maintenanceType,
@@ -417,7 +418,7 @@ const downloadExcel = () => {
   margin-bottom: 1.5rem;
   margin: initial;
   align-content: center;
-  text-align: center; /* Añade esta línea para centrar el texto */
+  text-align: center; /* Añade esta línea para centrar el texto */
 }
 .form-grid {
   display: grid;

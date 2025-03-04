@@ -23,7 +23,7 @@ const formData = ref({
   requesterName: "",
   requesterPhone: "",
   serialNumber: "",
-  trackingNumber: "",
+  trackingNumber: "12313123",
   issueDescription: "",
   InventoryCode: "",
   maintenanceType: "",
@@ -39,6 +39,15 @@ const handleLoginClick = () => {
 const handleSignup = () => {
   router.push("/signup");
 };
+
+const handleActivos = () => {
+  router.push("/activos")
+};
+
+const handleSolicitud = () => {
+  router.push("/solicitud")
+}
+
 
 const handleSubmit = async (event) => {
   event.preventDefault();
@@ -175,13 +184,13 @@ const backgroundStyle = computed(() => ({
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-md-6 text-center">
-            <ArgonButton color="success" class="w-100 mb-3">
+            <ArgonButton color="success" class="w-100 mb-3"  @clik="handleActivos" >
               <i class="fa fa-database fa-4x position-static my-3 mr-10" aria-hidden="true"></i>
               <p class="text-3xl font-weight-bold">Consulta de bienes registrados</p>
             </ArgonButton>
           </div>
           <div class="col-md-6 text-center">
-            <ArgonButton color="success" class="w-100 mb-3">
+            <ArgonButton  color="success" class="w-100 mb-3" @clik="handleSolicitud" >
               <i class="fa fa-search fa-4x position-static my-3 mr-10" aria-hidden="true"></i>
               <p class="text-3xl font-weight-bold">Consulta el estado de tu solicitud</p>
             </ArgonButton>

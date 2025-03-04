@@ -305,9 +305,22 @@ const getFieldValue = (obj, path) => {
 const filteredRows = computed(() => {
   return rows.value.filter(row => {
     return filters.value.every(filter => {
-      if (!filter.selectedOption) return true;  
-      const fieldValue = getFieldValue(row, filter.field); 
-      return fieldValue === filter.selectedOption; 
+      if (!filter.selectedOption) return true;
+
+      const fieldValue = getFieldValue(row, filter.field);
+
+      if (filter.type === 'date') {
+        const selectedDate = new Date(filter.selectedOption);
+        const rowDate = new Date(fieldValue);
+
+        // Comparar las fechas con un margen de +/- 1 día
+        const timeDifference = Math.abs(rowDate.getTime() - selectedDate.getTime());
+        const dayDifference = timeDifference / (1000 * 3600 * 24);
+
+        return dayDifference <= 1; // Aceptar fechas dentro de un margen de 1 día
+      }
+
+      return fieldValue === filter.selectedOption;
     });
   });
 });
@@ -332,6 +345,12 @@ const filters = ref([
     ],
     selectedOption: "",
   },
+  {
+    field: "createdAt", // Campo de fecha en tus datos
+    label: "Fecha",
+    type: "date",
+    selectedOption: "",
+  },
 ])
 
 onMounted(async () => {
@@ -341,165 +360,180 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="py-4 container-fluid">
-      <div class="row">
-        <div class="col-12">
-          <AuthorsTable
-            :title="'Gestion de usuarios'"
-            :headers="headers"
-            :rows="filteredRows"
-            :fields="fields"
-            :icons="icons"
-            :filters="filters"
-          />
-        </div>
+  <div class="py-4 container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <AuthorsTable
+          :title="'Gestion de usuarios'"
+          :headers="headers"
+          :rows="filteredRows"
+          :fields="fields"
+          :icons="icons"
+          :filters="filters"
+        />
       </div>
-      <v-dialog
-        v-model="dialog"
-        :fullscreen="mobile"
-        scrollable
-        persistent
-        max-width="800px"
-      >
-        <v-card class="bg-white">
-          <v-card-title
-            class="card-title d-flex align-items-center justify-content-center text-h4 text-succes"
-            style="margin: 1rem"
-          >
-            Editar usuario
-          </v-card-title>
-          <v-card-text class="card-body p-3">
-            <v-container>
-              <form @submit.prevent="handleSubmit">
-                <div class="row">
-                  <div class="col-md-6 d-flex align-items-center">
-                    <div class="row" style="width: 100%">
-                      <div
-                        class="d-flex align-items-center justify-content-center"
-                        style="height: calc(3 * 70px)"
-                      >
-                        <div class="text-center">
-                          <div
-                            class="image-upload"
-                            style="position: relative; display: inline-block"
-                          >
-                            <img
-                              :src="
-                                user.photoUrl || 'https://via.placeholder.com/150'
-                              "
-                              alt="Imagen de usuario"
-                              class="rounded-circle"
-                              style="
-                                width: 150px;
-                                height: 150px;
-                                object-fit: cover;
-                                border: 2px solid #ddd;
-                              "
-                            />
-                            <input
-                              type="file"
-                              accept="image/*"
-                              @change="handleImageUpload"
-                              style="
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                opacity: 0;
-                                cursor: pointer;
-                              "
-                            />
-                          </div>
-                          <h4 class="mt-2">Cargar imagen</h4>
-                        </div>
-                      </div>
-                      <div>
-                        <label for="example-text-input" class="form-control-label"
-                          >Asignar rol</label
-                        >
-                        <argon-select
-                          id="assignedRol"
-                          :options="availableRoles"
-                          v-model="user.assignedRol"
-                        />
-                      </div>
-                      <div>
-                        <label for="example-text-input" class="form-control-label"
-                          >Asignar cargo</label
-                        >
-                        <argon-select
-                          id="assignedPosition"
-                          :options="assignedPosition"
-                          v-model="user.assignedPosition"
-                        />
-                      </div>
+    </div>
+    <v-dialog
+      v-model="dialog"
+      :fullscreen="mobile"
+      scrollable
+      persistent
+      max-width="800px"
+    >
+      <v-card class="bg-white">
+        <v-card-title
+          class="card-title d-flex align-items-center justify-content-center text-h4 text-succes"
+          style="margin: 1rem"
+        >
+          Editar usuario
+        </v-card-title>
+        <v-card-text class="card-body p-3">
+          <v-container>
+            <form @submit.prevent="handleSubmit">
+              <div class="grid-container">
+                <!-- Columna izquierda -->
+                <div class="grid-item image-container">
+                  <div class="text-center">
+                    <div
+                      class="image-upload"
+                      style="position: relative; display: inline-block"
+                    >
+                      <img
+                        :src="user.photoUrl || 'https://via.placeholder.com/150'"
+                        alt="Imagen de usuario"
+                        class="rounded-circle"
+                        style="
+                          width: 150px;
+                          height: 150px;
+                          object-fit: cover;
+                          border: 2px solid #ddd;
+                        "
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        @change="handleImageUpload"
+                        style="
+                          position: absolute;
+                          top: 0;
+                          left: 0;
+                          width: 100%;
+                          height: 100%;
+                          opacity: 0;
+                          cursor: pointer;
+                        "
+                      />
                     </div>
-                  </div>
-                  <div class="col-md-6 d-flex align-items-center mt-4">
-                    <div class="row" style="width: 100%">
-                      <div>
-                        <label for="example-text-input" class="form-control-label"
-                          >Nombre completo</label
-                        >
-                        <argon-input id="name" type="text" v-model="user.name" />
-                      </div>
-                      <div>
-                        <label for="example-text-input" class="form-control-label"
-                          >Número de telefóno</label
-                        >
-                        <argon-input
-                          id="phone"
-                          prefix="+57"
-                          type="number"
-                          v-model="user.phone"
-                        />
-                      </div>
-                      <div>
-                        <label for="example-text-input" class="form-control-label"
-                          >Tipo de documento</label
-                        >
-                        <argon-select
-                          id="typeDocument"
-                          :options="documentTypes"
-                          v-model="user.typeDocument"
-                        />
-                      </div>
-                      <div>
-                        <label for="example-text-input" class="form-control-label"
-                          >Número de documento</label
-                        >
-                        <argon-input
-                          id="numberDocument"
-                          type="number"
-                          v-model="user.numberDocument"
-                        />
-                      </div>
-                    </div>
+                    <h4 class="mt-2">Cargar imagen</h4>
                   </div>
                 </div>
-                <v-card-actions
-                  class="d-flex justify-content-center mt-4"
-                  style="gap: 60px; padding-top: 20px"
-                >
-                  <button
-                    class="btn btn-danger"
-                    type="button"
-                    @click="handleCancel"
+                <div class="grid-item">
+                  <label for="assignedRol" class="form-control-label"
+                    >Asignar rol</label
                   >
-                    Cancelar
-                  </button>
-                  <button class="btn btn-success" type="submit">Registrar</button>
-                </v-card-actions>
-              </form>
-            </v-container>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
+                  <argon-select
+                    id="assignedRol"
+                    :options="availableRoles"
+                    v-model="user.assignedRol"
+                  />
+                </div>
+                <div class="grid-item">
+                  <label for="assignedPosition" class="form-control-label"
+                    >Asignar cargo</label
+                  >
+                  <argon-select
+                    id="assignedPosition"
+                    :options="assignedPosition"
+                    v-model="user.assignedPosition"
+                  />
+                </div>
+                <!-- Columna derecha -->
+                <div class="grid-item">
+                  <label for="name" class="form-control-label"
+                    >Nombre completo</label
+                  >
+                  <argon-input id="name" type="text" v-model="user.name" />
+                </div>
+                <div class="grid-item">
+                  <label for="phone" class="form-control-label"
+                    >Número de teléfono</label
+                  >
+                  <argon-input
+                    id="phone"
+                    prefix="+57"
+                    type="number"
+                    v-model="user.phone"
+                  />
+                </div>
+                <div class="grid-item">
+                  <label for="typeDocument" class="form-control-label"
+                    >Tipo de documento</label
+                  >
+                  <argon-select
+                    id="typeDocument"
+                    :options="documentTypes"
+                    v-model="user.typeDocument"
+                  />
+                </div>
+                <div class="grid-item">
+                  <label for="numberDocument" class="form-control-label"
+                    >Número de documento</label
+                  >
+                  <argon-input
+                    id="numberDocument"
+                    type="number"
+                    v-model="user.numberDocument"
+                  />
+                </div>
+              </div>
+              <v-card-actions
+                class="d-flex justify-content-center mt-4"
+                style="gap: 60px; padding-top: 20px"
+              >
+                <button
+                  class="btn btn-danger"
+                  type="button"
+                  @click="handleCancel"
+                >
+                  Cancelar
+                </button>
+                <button class="btn btn-success" type="submit">Registrar</button>
+              </v-card-actions>
+            </form>
+          </v-container>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <style scoped>
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(4, auto);
+  gap: 1rem;
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.image-container {
+  grid-row: span 2;
+}
+
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+  }
+
+  .image-container {
+    grid-row: span 1;
+  }
+}
+
 .v-card {
   color: rgba(0, 0, 0, 0.87);
 }

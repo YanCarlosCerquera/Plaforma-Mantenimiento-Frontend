@@ -1,38 +1,53 @@
 <script setup>
 import Swal from "sweetalert2";
-import { computed, onMounted, ref } from "vue";
-import { useStore } from "vuex";
+import { onMounted, ref } from "vue";
 import router from "../../router";
 import apiService from "../../service/apiService";
-import Table from "../components/Table.vue";
+import AuthorsTable from "../components/AuthorsTable.vue";
+import Cookies from "js-cookie";
+import jsPDF from "jspdf";
 
-const store = useStore();
-const TABLE_ID = "assets-list";
+const loading = ref(false);
+const assets = ref([]);
 
 const headers = ref([
-  "Codigo de Inventario",
-  "Numero de Serie",
+  "Código",
   "Nombre",
-  "Ubicacion",
-  "Fecha de adquisicion",
-  "Categoria",
+  "Marca",
+  "Modelo",
+  "Serial",
   "Estado",
+  "Ubicación",
 ]);
 
 const fields = ref({
-  inventoryCode: {
+  code: {
     value: "inventoryCode",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
-    filterable: true,
+  },
+  name: {
+    value: "name",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold mb-0",
+  },
+  brand: {
+    value: "brand",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold",
+  },
+  model: {
+    value: "modelo",
+    class: "align-middle",
+    textClass: "text-xs font-weight-bold",
   },
   serialNumber: {
     value: "serialNumber",
     class: "align-middle",
-    textClass: "text-xs font-weight-bold mb-0",
+    textClass: "text-xs font-weight-bold",
   },
-  name: {
-    value: "name",
+  status: {
+    value: "status",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
   },
@@ -40,188 +55,158 @@ const fields = ref({
     value: "location",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
-    filterable: true,
-  },
-  createdAt: {
-    value: "createdAt",
-    class: "align-middle",
-    textClass: "text-xs font-weight-bold",
-  },
-  categoryId: {
-    value: "categoryId",
-    class: "align-middle",
-    textClass: "text-xs font-weight-bold",
-    filterable: true,
-  },
-  status: {
-    value: "status",
-    class: "align-middle",
-    textClass: "text-xs font-weight-bold",
-    filterable: true,
   },
 });
 
-const formatDate = (dateString) => {
-  if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-};
-
-const formatStatus = (status) => {
-  return status ? "Bueno" : "Dañado";
-};
-
-const formatCategory = (categoryId) => {
-  return categoryId?.name;
-};
-
-const rows = computed(() => store.getters["tables/getTableData"](TABLE_ID));
-const loading = computed(() =>
-  store.getters["tables/isTableLoading"](TABLE_ID)
-);
-
-// Configuración de filtros
-const filterOptions = ref([
-  {
-    field: "status",
-    label: "Estado",
-    type: "select",
-    options: ["Activo", "Inactivo"],
-  },
-  {
-    field: "location",
-    label: "Ubicación",
-    type: "select",
-    options: [],
-  },
-  {
-    field: "categoryId",
-    label: "Categoría",
-    type: "select",
-    options: [],
-  },
-]);
-
-const updateFilterOptions = (data) => {
-  const locations = new Set();
-  const categories = new Set();
-
-  data.forEach((item) => {
-    if (item.location) locations.add(item.location);
-    if (item.categoryId?.name) categories.add(item.categoryId.name);
-  });
-
-  filterOptions.value = filterOptions.value.map((filter) => {
-    if (filter.field === "location") {
-      filter.options = Array.from(locations).sort();
-    } else if (filter.field === "categoryId") {
-      filter.options = Array.from(categories).sort();
-    }
-    return filter;
-  });
-};
-
 const fetchData = async () => {
-  await store.dispatch("tables/fetchTableData", {
-    tableId: TABLE_ID,
-    endpoint: "/assets",
-    formatters: {
-      createdAt: formatDate,
-      status: formatStatus,
-      categoryId: formatCategory,
-    },
-  });
-
-  // Actualizar opciones de filtros después de cargar los datos
-  updateFilterOptions(rows.value);
+  try {
+    loading.value = true;
+    const data = await apiService.get("/assets");
+    assets.value = data;
+  } catch (error) {
+    console.error("Error fetching assets:", error);
+    showAlert({
+      title: "Error al cargar los datos",
+      text: "Hubo un problema al obtener la lista de equipos",
+      icon: "error",
+    });
+  } finally {
+    loading.value = false;
+  }
 };
 
-const handleEdit = (row) => {
-  localStorage.setItem("editAssetId", row._id);
-  router.push("/assets/edit");
+const showAlert = ({ title, text, icon }) => {
+  Swal.fire({
+    title,
+    text,
+    icon,
+    position: "bottom-right",
+    toast: true,
+    timer: 3000,
+    background: icon === "success" ? "#28a745" : "#dc3545",
+    color: "white",
+    iconColor: "white",
+    showConfirmButton: false,
+  });
 };
 
 const handleView = (row) => {
-  localStorage.setItem("selectedAssetId", row._id);
+
+try {
+  Cookies.set('editAssetId', row._id, { expires: 1/24 });
   router.push("/assets/detail");
+} catch (error) {
+  showAlert({
+    title: "Error",
+    text: "No se pudo navegar a la vista de detalles del equipo",
+    icon: "error"
+  });
+} 
 };
-const handleDelete = async (id) => {
+;
+
+const handleEdit = (row) => {
+  try {
+    // Guardar ID en cookie con expiración de 1 hora
+    Cookies.set('editAssetId', row._id, { expires: 1/24 });
+    router.push("/assets/edit");
+  } catch (error) {
+    showAlert({
+      title: "Error",
+      text: "No se pudo iniciar la edición del equipo",
+      icon: "error"
+    });
+  }
+};
+
+const handleDelete = async (row) => {
   const result = await Swal.fire({
-    title: "¿Estás seguro de que quieres eliminar este activo?",
-    text: "Esta acción no puede deshacerse.",
+    title: "¿Estás seguro de que quieres eliminar este equipo?",
+    text: "Esta acción no puede deshacerse.",
     showCancelButton: true,
     confirmButtonText: "Confirmar",
     cancelButtonText: "Cancelar",
     reverseButtons: true,
     customClass: {
-      title: "text-succes",
+      title: "text-success",
       confirmButton: "btn-success",
       cancelButton: "btn-danger",
     },
   });
 
-  if (!result.isConfirmed) {
-    return;
-  }
+  if (!result.isConfirmed) return;
 
   try {
-    await apiService.delete(`assets/${id}`);
-    Swal.fire({
-      title: "activo eliminado correctamente",
-      icon: "success",
-      position: "bottom-right",
-      toast: true,
-      timer: 3000,
-      background: "#28a745",
-      color: "white",
-      iconColor: "white",
-      showConfirmButton: false,
-      customClass: {
-        title: "swal-title-white",
-      },
-    });
+    await apiService.delete(`/assets/${row._id}`);
     await fetchData();
+    showAlert({
+      title: "Equipo eliminado correctamente",
+      text: "El equipo ha sido eliminado de la base de datos",
+      icon: "success",
+    });
   } catch (error) {
-    Swal.fire({
-      title: "Error al eliminar activo",
-      text: error.response?.data?.message || "Algo salió mal.",
+    showAlert({
+      title: "Error al eliminar el equipo",
+      text: "Algo salió mal al intentar eliminar el equipo",
       icon: "error",
-      position: "bottom-right",
-      toast: true,
-      timer: 3000,
-      background: "#dc3545",
-      color: "white",
-      iconColor: "white",
-      showConfirmButton: false,
-      customClass: {
-        title: "swal-title-white",
-      },
+    });
+  }
+};
+const handleInfo = async (row) => {
+  try {
+    const response = await apiService.get(`/assets/${row._id}`);
+    const assetData = response.data;
+    const pdfData = {
+      name: assetData.name,
+      brand: assetData.brand,
+      model: assetData.modelo,
+      serialNumber: assetData.serialNumber,
+      location: assetData.location,
+      status: assetData.status,
+    };
+
+    const pdf = new jsPDF();
+    pdf.setFontStyle("bold");
+    pdf.setFontSize(16);
+    pdf.text("Informaci n del Equipo", 15, 15);
+
+    pdf.setFontStyle("normal");
+    pdf.setFontSize(12);
+    Object.keys(pdfData).forEach((key, index) => {
+      pdf.text(`${key}: ${pdfData[key]}`, 15, 20 + (index * 5));
+    });
+
+    const pdfBlob = new Blob([pdf.output("blob")], { type: "application/pdf" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(pdfBlob);
+    link.setAttribute("download", `${pdfData.name}.pdf`);
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(link.href);
+      document.body.removeChild(link);
+    }, 0);
+  } catch (error) {
+    showAlert({
+      title: "Error al generar el PDF",
+      text: "Algo salió mal al intentar generar el PDF",
+      icon: "error",
     });
   }
 };
 
-// Manejar cambios en los filtros
-const handleFilterChange = (filters) => {
-  store.dispatch("tables/applyFilters", {
-    tableId: TABLE_ID,
-    filters,
-  });
-};
+const icons = ref([
+  { class: "fas fa-eye", method: handleView },
+  { class: "fas fa-edit", method: handleEdit },
+  { class: "fas fa-trash", method: handleDelete },
+  { class: "fas fa-info-circle", method: handleInfo },
+]);
 
 onMounted(() => {
   fetchData();
 });
 
-// Recargar datos cuando se regresa a la página
-router.beforeEach((to, from, next) => {
-  if (to.path === "/assets" && from.path.startsWith("/assets/")) {
-    fetchData();
-  }
-  next();
-});
 </script>
 
 <template>
@@ -233,20 +218,17 @@ router.beforeEach((to, from, next) => {
             <span class="visually-hidden">Cargando...</span>
           </div>
         </div>
-        <Table
-          v-else
-          :tableId="TABLE_ID"
+        <AuthorsTable
           title="Maquinas y Equipos"
           :headers="headers"
-          :rows="rows"
+          :rows="assets"
           :fields="fields"
-          :filters="true"
-          :filterOptions="filterOptions"
-          @edit="handleEdit"
-          @delete="handleDelete"
-          @view="handleView"
-          @filter-change="handleFilterChange"
-        />
+          :icons="icons"
+        >
+          <template #cell-status="{ value }">
+            <span :class="value === 'Activo' ? 'text-success' : 'text-danger'">{{ value }}</span>
+          </template>
+        </AuthorsTable>
       </div>
     </div>
   </div>

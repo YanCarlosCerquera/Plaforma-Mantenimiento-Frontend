@@ -54,7 +54,6 @@
               <div class="right-column">
                 <img 
                   :src="assetInfo?.image || '/placeholder.svg?height=180&width=120'"
-                  :alt="assetInfo?.name || 'Imagen del equipo'"
                   class="device-image"
                 />
                 <button class="view-report-btn">Ver informe</button>
@@ -64,7 +63,7 @@
             <div class="trabajo-section">
               <label>Descripción del problema</label>
               <div class="trabajo-input">
-                <p>{{ workOrder.issueDescription || 'No disponible' }}</p>
+                <p>{{ workOrder.maintenances?.[0]?.description || 'No disponible' }}</p>
               </div>
             </div>
           </div>
@@ -124,7 +123,7 @@
       const assetInfo = ref(null);
   
       const workOrderStatusText = computed(() =>
-  workOrder.value?.state     ? 'Ejecutada' : 'Sin ejecutar'
+      workOrder.value?.state     ? 'Ejecutada' : 'Sin ejecutar'
 );
 
       const fetchData = async () => {
@@ -133,7 +132,7 @@
           console.log('OrdenId:', Id);
           
           const response = await apiService.get(`/word-orden/${Id}` );
-          workOrder.value = response.data || response;
+          workOrder.value = response;
           console.log('Work Order:', workOrder.value);
   
           if (workOrder.value?.solicitud?.solicitudId) {
