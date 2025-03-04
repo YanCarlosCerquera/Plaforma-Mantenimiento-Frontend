@@ -14,6 +14,10 @@ const props = defineProps({
     type: String,
     default: "Selecciona una opción",
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -58,6 +62,7 @@ function onSelect(item) {
       item-title="title"
       item-value="value"
       :placeholder="placeholder"
+      :disabled="disabled"
       return-object
       @update:model-value="onSelect"
       variant="outlined"

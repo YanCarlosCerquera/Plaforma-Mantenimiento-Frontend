@@ -1,21 +1,24 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import AuthorsTable from "./components/AuthorsTable.vue";
-import apiService from "../service/apiService";
+import AuthorsTable from "../components/AuthorsTable.vue";
+import apiService from "../../service/apiService";
 import Swal from "sweetalert2";
 import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonSelect from "@/components/ArgonSelect.vue";
+import ArgonAutocomplete from "@/components/ArgonAutocomplete.vue";
 
-const rol = ref({
+const ruta = ref({
     name: "",
+    route: "",
     description: "",
+    moduloId: "",
     state: true,
 });
-const rolId = ref("");
+const rutaId = ref("");
 const headers = ref([
-    { text: "Nombre del rol", value: "rol.name" },
-    { text: "Descripción", value: "rol.description" },
-    { text: "Estado", value: "rol.state" },
+    { text: "Nombre de la ruta", value: "ruta.name" },
+    { text: "URL", value: "ruta.route" },
+    { text: "Estado", value: "ruta.state" },
 ]);
 
 const states = [
@@ -24,13 +27,13 @@ const states = [
 ];
 
 const fields = ref({
-    rol: {
+    ruta: {
         value: "name",
         class: "align-middle",
         textClass: "text-xs font-weight-bold mb-0",
     },
     descripción: {
-        value: "description",
+        value: "route",
         class: "align-middle",
         textClass: "text-xs font-weight-bold",
     },
@@ -42,19 +45,36 @@ const fields = ref({
 });
 
 const rows = ref([]);
+const modulos = ref([]);
 const dialog = ref(false);
-const isEditing = ref(false);
+const isEditing = ref(false); // Nuevo estado para distinguir entre editar y crear
 const isLoading = ref(false);
+
+const fetchModulos = async () => {
+    try {
+        const response = await apiService.get(
+            "/modulos",
+            {},
+        );
+        modulos.value = response.map((modulo) => ({
+            value: modulo._id,
+            title: modulo.name,
+        }));
+    } catch (error) {
+        console.error("Error fetching modulos:", error);
+        alert("Error al cargar los modulos");
+    }
+}
 
 const fetchData = async () => {
     try {
         const response = await apiService.get(
-            "/rol",
+            "/views",
             {},
         );
-        rows.value = response.map((rol) => ({
-            ...rol,
-            state: rol.state ? "Activo" : "Inactivo",
+        rows.value = response.map((view) => ({
+            ...view,
+            state: view.state ? "Activo" : "Inactivo",
         }));
     } catch (error) {
         console.error("Error fetching rols:", error);
@@ -63,23 +83,24 @@ const fetchData = async () => {
 };
 
 const handleEdit = (row) => {
-    rol.value = { ...row };
-    rol.value.state = row.state === "Activo" ? true : false;
-    rolId.value = row._id;
+    ruta.value = { ...row };
+    ruta.value.state = row.state === "Activo" ? true : false;
+    ruta.value.moduloId = row.moduloId._id;
+    rutaId.value = row._id;
     isEditing.value = true;
     dialog.value = true;
 };
 
 const handleCancel = () => {
-    Object.keys(rol.value).forEach((key) => (rol.value[key] = ""));
-    rolId.value = "";
+    Object.keys(ruta.value).forEach((key) => (ruta.value[key] = ""));
+    rutaId.value = "";
     isEditing.value = false;
     dialog.value = false;
 };
 
 const handleDelete = async (id) => {
     const result = await Swal.fire({
-        title: "¿Estás seguro de que quieres eliminar este rol?",
+        title: "¿Estás seguro de que quieres eliminar esta ruta?",
         text: "Esta acción no puede deshacerse.",
         showCancelButton: true,
         confirmButtonText: "Confirmar",
@@ -97,9 +118,9 @@ const handleDelete = async (id) => {
     }
 
     try {
-        await apiService.delete(`rol/${id}`);
+        await apiService.delete(`views/${id}`);
         Swal.fire({
-            title: "Rol eliminado correctamente",
+            title: "Ruta eliminada correctamente",
             icon: "success",
             position: "bottom-right",
             toast: true,
@@ -115,7 +136,7 @@ const handleDelete = async (id) => {
         await fetchData();
     } catch (error) {
         Swal.fire({
-            title: "Error al eliminar rol.",
+            title: "Error al eliminar ruta.",
             text: error.response?.data?.message || "Algo salió mal.",
             icon: "error",
             position: "bottom-right",
@@ -137,16 +158,17 @@ const handleSubmit = async () => {
         isLoading.value = true;
 
         const data = {
-            name: rol.value.name,
-            description: rol.value.description,
-            state: rol.value.state,
+            name: ruta.value.name,
+            route: ruta.value.route,
+            moduloId: ruta.value.moduloId,
+            state: ruta.value.state,
         };
 
         if (isEditing.value) {
-            await apiService.patch(`rol/${rolId.value}`, data, );
+            await apiService.patch(`views/${rutaId.value}`, data,);
 
             Swal.fire({
-                title: "Rol editado exitosamente",
+                title: "Ruta editada exitosamente",
                 icon: "success",
                 position: "bottom-right",
                 toast: true,
@@ -160,10 +182,10 @@ const handleSubmit = async () => {
                 },
             });
         } else {
-            await apiService.post(`rol`, data,);
+            await apiService.post(`views`, ruta.value, );
 
             Swal.fire({
-                title: "Rol creado exitosamente",
+                title: "Ruta creada exitosamente",
                 icon: "success",
                 position: "bottom-right",
                 toast: true,
@@ -182,7 +204,7 @@ const handleSubmit = async () => {
         await fetchData();
     } catch (error) {
         Swal.fire({
-            title: "Error al " + (isEditing.value ? "editar" : "crear") + " rol: ",
+            title: "Error al " + (isEditing.value ? "editar" : "crear") + " ruta: ",
             text: error.response?.data?.message || "Algo salió mal.",
             icon: "error",
             position: "bottom-right",
@@ -202,9 +224,9 @@ const handleSubmit = async () => {
 };
 
 const openCreateDialog = () => {
-    rol.value = {
+    ruta.value = {
         name: "",
-        description: "",
+        route: "",
         state: true,
     };
     isEditing.value = false;
@@ -218,6 +240,7 @@ const icons = ref([
 
 onMounted(async () => {
     await fetchData();
+    await fetchModulos()
 });
 </script>
 
@@ -225,24 +248,23 @@ onMounted(async () => {
     <div class="py-4 container-fluid">
         <div class="row">
             <div class="col-12">
-                
-                <AuthorsTable :title="'Parametrización roles'" :headers="headers" :rows="rows" :fields="fields"
-                :icons="icons" >
-                    <template #add-button >
-                        <button class="btn btn-custom " @click="openCreateDialog">
-                            <i class="fas fa-plus me-2"></i>Agregar Nuevo Rol
+                <AuthorsTable :title="'Parametrización rutas'" :headers="headers" :rows="rows" :fields="fields"
+                    :icons="icons">
+                    <template #add-button>
+                        <button class="btn btn-custom" @click="openCreateDialog">
+                            <i class="fas fa-plus me-2"></i>Agregar Nueva Ruta
                         </button>
                     </template>
                 </AuthorsTable>
             </div>
         </div>
 
-        <!-- Diálogo para crear/editar roles -->
+        <!-- Diálogo para crear/editar rutas -->
         <v-dialog v-model="dialog" :fullscreen="mobile" scrollable persistent max-width="800px">
             <v-card class="bg-white">
                 <v-card-title class="card-title d-flex align-items-center justify-content-center text-h4 text-succes"
                     style="margin: 1rem">
-                    {{ isEditing ? 'Editar rol' : 'Crear nuevo rol' }}
+                    {{ isEditing ? 'Editar ruta' : 'Crear nueva ruta' }}
                 </v-card-title>
                 <v-card-text class="card-body p-3">
                     <v-container>
@@ -251,16 +273,24 @@ onMounted(async () => {
                                 <div class="row" style="width: 100%">
                                     <div>
                                         <label for="example-text-input" class="form-control-label">Nombre
-                                            del rol</label>
-                                        <argon-input id="name" type="text" v-model="rol.name" />
+                                            de la ruta</label>
+                                        <argon-input id="name" type="text" v-model="ruta.name" />
                                     </div>
                                     <div>
                                         <label for="example-text-input" class="form-control-label">Descripción</label>
-                                        <argon-input id="description" type="text" v-model="rol.description" />
+                                        <argon-input id="description" type="text" v-model="ruta.description" />
+                                    </div>
+                                    <div>
+                                        <label for="example-text-input" class="form-control-label">URL</label>
+                                        <argon-input id="route" type="text" v-model="ruta.route" />
+                                    </div>
+                                    <div>
+                                        <label for="example-text-input" class="form-control-label">Modulo</label>
+                                        <ArgonAutocomplete id="moduloId" type="text" v-model="ruta.moduloId" :items="modulos"/>
                                     </div>
                                     <div>
                                         <label for="example-text-input" class="form-control-label">Estado</label>
-                                        <argon-select id="state" :options="states" v-model="rol.state" />
+                                        <argon-select id="state" :options="states" v-model="ruta.state" />
                                     </div>
                                 </div>
                             </div>
@@ -270,7 +300,7 @@ onMounted(async () => {
                                     Cancelar
                                 </button>
                                 <button class="btn btn-success" type="submit">
-                                    {{ isEditing ? 'Guardar cambios' : 'Crear rol' }}
+                                    {{ isEditing ? 'Guardar cambios' : 'Crear ruta' }}
                                 </button>
                             </v-card-actions>
                         </form>
@@ -282,21 +312,19 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Estilos personalizados para el botón */
 .btn-custom {
-    background-color: white; /* Fondo blanco */
-    color: #28a745; /* Letra verde */
-    border: 1px solid #28a745; /* Borde verde */
-    transition: all 0.3s ease; /* Transición suave */
+    background-color: white;
+    color: #28a745;
+    border: 1px solid #28a745;
+    transition: all 0.3s ease;
     margin-bottom: 0%;
 }
 
 .btn-custom:hover {
-    background-color: #28a745; /* Fondo verde al pasar el mouse */
-    color: white; /* Letra blanca al pasar el mouse */
+    background-color: #28a745;
+    color: white;
 }
 
-/* Estilos para la tarjeta del diálogo */
 .v-card {
     color: rgba(0, 0, 0, 0.87);
 }

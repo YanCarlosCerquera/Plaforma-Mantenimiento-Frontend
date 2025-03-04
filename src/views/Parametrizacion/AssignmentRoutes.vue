@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import AuthorsTable from "./components/AuthorsTable.vue";
-import apiService from "../service/apiService";
+import AuthorsTable from "../components/AuthorsTable.vue";
+import apiService from "../../service/apiService";
 import Swal from "sweetalert2";
-import ArgonAutocomplete from "../components/ArgonAutocomplete.vue";
+import ArgonAutocomplete from "@/components/ArgonAutocomplete.vue";
 
 const rol = ref({
     views: [],
@@ -54,6 +54,7 @@ const isDeleting = ref(false);
 const dialog = ref(false);
 const isEditing = ref(false);
 const isLoading = ref(false);
+const originalData = ref(null);
 
 const fetchData = async () => {
     try {
@@ -68,6 +69,7 @@ const fetchData = async () => {
                 name: rol.name,
                 state: rol.state ? "Activo" : "Inactivo",
                 views: rol.views,
+                _id: rol._id,
             }))
         );
 
@@ -100,11 +102,17 @@ const fetchViews = async () => {
 
 const handleEdit = (row) => {
     rol.value = { ...row };
-    rol.value.view = row.view || { id: "", name: "", route: "" }; // Asegurar que view esté definido
+    rol.value.view = row.view || { id: "", name: "", route: "" }; 
     rol.value.state = row.state === "Activo" ? true : false;
+    rol.value.id = row._id;
     rolId.value = row._id;
     isEditing.value = true;
     dialog.value = true;
+    
+    originalData.value = {
+        rolId: row._id,
+        viewId: row.view.id
+    };
 };
 
 const handleCancel = () => {
@@ -112,11 +120,12 @@ const handleCancel = () => {
     rolId.value = "";
     isEditing.value = false;
     dialog.value = false;
+    originalData.value = null;
 };
 
-const handleDelete = async (id) => {
+const handleDelete = async (row) => {
     const result = await Swal.fire({
-        title: "¿Estás seguro de que quieres eliminar esta ruta del rol?",
+        title: "¿Estás seguro de que quieres eliminar esta vista del rol?",
         text: "Esta acción no puede deshacerse.",
         showCancelButton: true,
         confirmButtonText: "Confirmar",
@@ -134,30 +143,17 @@ const handleDelete = async (id) => {
     }
 
     try {
-        // Marcar que estamos en modo de eliminación
         isDeleting.value = true;
-        rolId.value = id;
 
-        // Obtener el rol seleccionado y la vista seleccionada
-        const selectedRole = roles.value.find(role => role.value === rol.value.id);
-        const selectedView = views.value.find(view => view.value === rol.value.view.id);
+        const roleId = row._id; 
+        const viewIdToDelete = row.view.id; 
 
-        if (!selectedRole || !selectedView) {
-            throw new Error("Selecciona un rol y una vista válidos.");
-        }
+        const updatedViews = row.views.filter(view => view._id !== viewIdToDelete);
 
-        // Obtener el arreglo actual de views del rol
-        const currentRole = rows.value.find(row => row.name === selectedRole.title);
-        const currentViews = currentRole ? currentRole.views.map(view => view.id) : [];
-
-        // Quitar la ruta del arreglo
-        const updatedViews = currentViews.filter(viewId => viewId !== selectedView.value);
-
-        // Enviar la petición PATCH con el arreglo actualizado
-        await apiService.patch(`/rol/${selectedRole.value}`, { views: updatedViews });
+        await apiService.patch(`/rol/${roleId}`, { views: updatedViews });
 
         Swal.fire({
-            title: "Ruta eliminada exitosamente",
+            title: "Vista eliminada exitosamente",
             icon: "success",
             position: "bottom-right",
             toast: true,
@@ -174,7 +170,23 @@ const handleDelete = async (id) => {
         handleCancel();
         await fetchData();
     } catch (error) {
-        console.error("Error al eliminar la ruta:", error);
+        console.error("Error al eliminar la vista:", error);
+
+        Swal.fire({
+            title: "Error al eliminar la vista",
+            text: error.message || "Algo salió mal.",
+            icon: "error",
+            position: "bottom-right",
+            toast: true,
+            timer: 3000,
+            background: "#dc3545",
+            color: "white",
+            iconColor: "white",
+            showConfirmButton: false,
+            customClass: {
+                title: "swal-title-white",
+            },
+        });
     } finally {
         isDeleting.value = false;
     }
@@ -184,33 +196,90 @@ const handleSubmit = async () => {
     try {
         isLoading.value = true;
 
-        // Verificar que rol.value.view esté definido
-        if (!rol.value.view) {
-            throw new Error("La vista no está definida.");
+        if (!rol.value.view || !rol.value.view.id) {
+            throw new Error("Debes seleccionar una vista válida.");
         }
 
-        // Obtener el rol seleccionado y la vista seleccionada
-        const selectedRole = roles.value.find(role => role.value === rol.value.id);
-        const selectedView = views.value.find(view => view.value === rol.value.view.id);
-
-        if (!selectedRole || !selectedView) {
-            throw new Error("Selecciona un rol y una vista válidos.");
+        if (!rol.value.id) {
+            throw new Error("Debes seleccionar un rol válido.");
         }
 
-        // Obtener el arreglo actual de views del rol
-        const currentRole = rows.value.find(row => row.name === selectedRole.title);
-        const currentViews = currentRole ? currentRole.views.map(view => view.id) : [];
+        if (isEditing.value && originalData.value) {
+            const newRolId = rol.value.id;
+            const newViewId = rol.value.view.id;
+            const originalRolId = originalData.value.rolId;
+            const originalViewId = originalData.value.viewId;
+            
+            if (newRolId !== originalRolId && newViewId === originalViewId) {
+                const originalRolData = rows.value.find(row => row._id === originalRolId);
+                
+                if (originalRolData) {
+                    const updatedOriginalViews = originalRolData.views.filter(view => view._id !== originalViewId);
+                    await apiService.patch(`/rol/${originalRolId}`, { views: updatedOriginalViews });
+                }
+                
+                const newRolData = rows.value.find(row => row._id === newRolId);
+                const newRolViews = newRolData ? [...newRolData.views.map(view => view._id)] : [];
+                
+                if (!newRolViews.includes(originalViewId)) {
+                    newRolViews.push(originalViewId);
+                }
+                
+                await apiService.patch(`/rol/${newRolId}`, { views: newRolViews });
+            }
+            else if (newRolId === originalRolId && newViewId !== originalViewId) {
+                const rolData = rows.value.find(row => row._id === originalRolId);
+                
+                if (rolData) {
+                    const updatedViews = rolData.views.filter(view => view._id !== originalViewId);
+                    
+                    if (!updatedViews.some(view => view._id === newViewId)) {
+                        updatedViews.push({ _id: newViewId });
+                    }
+                    
+                    await apiService.patch(`/rol/${originalRolId}`, { 
+                        views: updatedViews.map(view => view._id || view) 
+                    });
+                }
+            }
+            else if (newRolId !== originalRolId && newViewId !== originalViewId) {
+                const originalRolData = rows.value.find(row => row._id === originalRolId);
+                if (originalRolData) {
+                    const updatedOriginalViews = originalRolData.views.filter(view => view._id !== originalViewId);
+                    await apiService.patch(`/rol/${originalRolId}`, { views: updatedOriginalViews });
+                }
+                
+                const newRolData = rows.value.find(row => row._id === newRolId);
+                const newRolViews = newRolData ? [...newRolData.views.map(view => view._id || view)] : [];
+                
+                if (!newRolViews.includes(newViewId)) {
+                    newRolViews.push(newViewId);
+                }
+                
+                await apiService.patch(`/rol/${newRolId}`, { views: newRolViews });
+            }
+        } 
+        else {
+            const selectedRole = roles.value.find(role => role.value === rol.value.id);
+            if (!selectedRole) {
+                throw new Error("Rol seleccionado no válido.");
+            }
 
-        // Reemplazar la ruta antigua con la nueva
-        const updatedViews = currentViews.map(viewId => 
-            viewId === rol.value.view.id ? selectedView.value : viewId
-        );
+            const selectedViewId = rol.value.view.id;
 
-        // Enviar la petición PATCH con el arreglo actualizado
-        await apiService.patch(`/rol/${selectedRole.value}`, { views: updatedViews });
+            const currentRole = rows.value.find(row => row._id === selectedRole.value);
+            
+            const currentViewIds = currentRole ? currentRole.views.map(view => view._id) : [];
+
+            if (!currentViewIds.includes(selectedViewId)) {
+                currentViewIds.push(selectedViewId);
+            }
+
+            await apiService.patch(`/rol/${selectedRole.value}`, { views: currentViewIds });
+        }
 
         Swal.fire({
-            title: "Rol editado exitosamente",
+            title: isEditing.value ? "Permiso actualizado correctamente" : "Vista agregada correctamente",
             icon: "success",
             position: "bottom-right",
             toast: true,
@@ -227,9 +296,10 @@ const handleSubmit = async () => {
         handleCancel();
         await fetchData();
     } catch (error) {
+        console.error("Error:", error);
         Swal.fire({
-            title: "Error al editar la ruta: ",
-            text: error.response?.data?.message || "Algo salió mal.",
+            title: isEditing.value ? "Error al actualizar el permiso" : "Error al agregar la vista",
+            text: error.response?.data?.message || error.message || "Algo salió mal.",
             icon: "error",
             position: "bottom-right",
             toast: true,
@@ -260,6 +330,7 @@ const openCreateDialog = () => {
     };
     isEditing.value = false;
     dialog.value = true;
+    originalData.value = null;
 };
 
 const icons = ref([
@@ -293,7 +364,7 @@ onMounted(async () => {
             <v-card class="bg-white">
                 <v-card-title class="card-title d-flex align-items-center justify-content-center text-h4 text-succes"
                     style="margin: 1rem">
-                    Asignar permiso
+                    {{ isEditing ? 'Editar permiso' : 'Asignar permiso' }}
                 </v-card-title>
                 <v-card-text class="card-body p-3">
                     <v-container>
@@ -316,7 +387,7 @@ onMounted(async () => {
                                     Cancelar
                                 </button>
                                 <button class="btn btn-success" type="submit">
-                                    Registrar
+                                    {{ isEditing ? 'Actualizar' : 'Registrar' }}
                                 </button>
                             </v-card-actions>
                         </form>

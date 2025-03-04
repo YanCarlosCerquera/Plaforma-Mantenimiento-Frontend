@@ -18,8 +18,8 @@ import ListOrden from "../views/Matenimiento/ListOrden.vue";
 import Detalles from "../views/Matenimiento/detalles.vue";
 import PlanearMantenimiento from "../views/PlanearMantenimiento.vue";
 import Profile from "../views/Profile.vue";
-import Roles from "../views/Roles.vue";
-import Routes from "../views/Routes.vue";
+import Roles from "../views/Parametrizacion/Roles.vue";
+import Routes from "../views/Parametrizacion/Routes.vue";
 import Save_User from "../views/Save_User.vue";
 import Signin from "../views/Signin.vue";
 import Signup from "../views/Signup.vue";
@@ -27,7 +27,10 @@ import Users from "../views/Users.vue";
 import Password from "../views/password.vue";
 import ResetPassword from "../views/resetpassword.vue";
 import Bienes from "../views/Home/Bienes/Bienes.vue";
-import AssignmentRoutes from "../views/AssignmentRoutes.vue";
+import AssignmentRoutes from "../views/Parametrizacion/AssignmentRoutes.vue";
+import TrainingCenter from "../views/Parametrizacion/TrainingCenter.vue";
+import Dependences from "../views/Parametrizacion/dependences.vue";
+import ActionLog from "../views/Parametrizacion/ActionLog.vue";
 
 const routes = [
   {
@@ -60,6 +63,21 @@ const routes = [
     path: "/ruta",
     name: "Ruta",
     component: Routes,
+  },
+  {
+    path: "/centroEntrenamiento",
+    name: "centro Entrenamiento",
+    component: TrainingCenter,
+  },
+  {
+    path: "/dependence",
+    name: "Dependencia",
+    component: Dependences,
+  },
+  {
+    path: "/action-log",
+    name: "ActionLog",
+    component: ActionLog,
   },
   {
     path: "/assignmentRoutes",

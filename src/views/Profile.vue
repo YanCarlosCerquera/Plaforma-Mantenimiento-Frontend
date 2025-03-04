@@ -10,6 +10,7 @@ import Swal from "sweetalert2";
 import apiService from "../service/apiService";
 import ArgonSelect from "@/components/ArgonSelect.vue";
 import ArgonAutocomplete from "../components/ArgonAutocomplete.vue";
+import CardsAdminstrador from "./components/CardsAdministrador.vue";
 import Cookies from "js-cookie";
 const dialogVisible = ref(false);
 const documentTypes = [
@@ -309,30 +310,24 @@ onMounted(() => {
 });
 onBeforeMount(() => {
   store.state.imageLayout = "profile-overview";
-  store.state.showNavbar = false;
+  // store.state.showNavbar = false;
   store.state.showFooter = true;
-  store.state.hideConfigButton = true;
+  // store.state.hideConfigButton = true;
   body.classList.add("profile-overview");
 });
 onBeforeUnmount(() => {
   store.state.isAbsolute = false;
   store.state.imageLayout = "default";
-  store.state.showNavbar = true;
+  // store.state.showNavbar = true;
   store.state.showFooter = true;
-  store.state.hideConfigButton = false;
+  // store.state.hideConfigButton = false;
   body.classList.remove("profile-overview");
 });
 </script>
 <template>
   <main>
-    <div class="container-fluid">
-      <div class="page-header min-height-300" style="
-          margin-right: -24px;
-          margin-left: -34%;
-        ">
-        <span class="mask opacity-6"></span>
-      </div>
-      <h3 class="mt-3 mb-1 text-success">Configuraciones</h3>
+    <div class="py-6 container-fluid">
+      <h3 class="mt-3 mb-1 text-white">Configuraciones</h3>
       <h5 class="mb-1">Perfil de {{ userRole }}</h5>
       <div class="card shadow-lg mt-2" style="margin-top: -50px; margin-right: 24px">
         <div class="card-body p-3">
@@ -412,6 +407,24 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
+    <div class="container-fluid">
+      <!-- Contenido específico según el rol -->
+      <div class="contentRole"  v-if="userRole === 'administrador'">
+        <CardsAdminstrador/>
+      </div>
+      <div v-else-if="userRole === 'almacenista'">
+        <h2>Contenido para Almacenista</h2>
+        <p>Este contenido solo es visible para almacenistas.</p>
+      </div>
+      <div v-else-if="userRole === 'usuario'">
+        <h2>Contenido para Usuario</h2>
+        <p>Este contenido solo es visible para usuarios.</p>
+      </div>
+      <div v-else>
+        <h2>Rol no reconocido</h2>
+        <p>No se ha podido determinar el rol del usuario.</p>
+      </div>
+    </div>
     <v-dialog v-model="dialogVisible" max-width="500">
       <v-card>
         <v-card-title class="d-flex justify-content-center">
@@ -452,6 +465,13 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+
+.contentRole{
+  display:flex;
+  align-items: center;
+  flex-direction: column;
+}
+
 .custom-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr); /* 4 columnas con el mismo ancho */

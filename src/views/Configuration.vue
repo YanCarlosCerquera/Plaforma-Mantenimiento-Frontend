@@ -2,12 +2,12 @@
 import { createApp } from "vue";
 import App from "../App.vue";
 import { createVuetify } from "vuetify";
-import "vuetify/styles"; // Importar estilos de Vuetify
+import "vuetify/styles"; 
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { useRouter } from "vue-router";
 import 'font-awesome/css/font-awesome.min.css'
-import '@fortawesome/fontawesome-free/css/all.css' // Ensure your project is capable of handling css files
+import '@fortawesome/fontawesome-free/css/all.css' 
 
 const router = useRouter();
 router.push("/configuration");
@@ -39,7 +39,7 @@ app.use(vuetify);
         </v-col>
 
         <v-col cols="12" md="6">
-          <router-link to="/rol" outlined block class="py-6 text-body-1 custom-btn mb-3">
+          <router-link to="/centroEntrenamiento" outlined block class="py-6 text-body-1 custom-btn mb-3">
             <span>Gestión de centro de formación</span>
             <i class="fa fa-chevron-right icon-end"></i>
           </router-link>
@@ -51,7 +51,7 @@ app.use(vuetify);
           </router-link>
         </v-col>
         <v-col cols="12" md="6">
-          <router-link to="/rol" outlined block class="py-6 text-body-1 custom-btn mb-3">
+          <router-link to="/dependence" outlined block class="py-6 text-body-1 custom-btn mb-3">
             <span>Gestión de dependencias</span>
             <i class="fa fa-chevron-right icon-end"></i>
           </router-link>
@@ -77,7 +77,7 @@ app.use(vuetify);
         </v-col>
         
         <v-col cols="12">
-          <router-link to="/rol" outlined block class="py-6 text-body-1 custom-btn mb-3">
+          <router-link to="/action-log" outlined block class="py-6 text-body-1 custom-btn mb-3">
             <span>Eventos del sistema</span>
             <i class="fa fa-chevron-right icon-end"></i>
           </router-link>
