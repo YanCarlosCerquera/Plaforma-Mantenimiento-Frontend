@@ -30,6 +30,7 @@ import Ejecucioens from "../views/Matenimiento/Ordenes/Ejecucioens.vue";
 import Maintenance from "../views/Matenimiento/Mantenimiento/Maintenance.vue";
 import Informacion from "../views/Matenimiento/Informacion/Informacion.vue";
 import RealizarInforme from "../views/Matenimiento/Informacion/RealizarInforme.vue";
+import AssignmentRoutes from "../views/AssignmentRoutes.vue";
 
 const routes = [
   {
@@ -62,6 +63,11 @@ const routes = [
     path: "/ruta",
     name: "Ruta",
     component: Routes,
+  },
+  {
+    path: "/assignmentRoutes",
+    name: "permiso de rutas",
+    component: AssignmentRoutes,
   },
   {
     path: "/ResetPassword",

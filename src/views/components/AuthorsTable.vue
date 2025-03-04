@@ -1,168 +1,198 @@
-<script setup>
-import { defineProps, ref, computed, watch } from "vue";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
-import * as XLSX from "xlsx";
+<script>
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import Pagination from "./Pagination.vue";
 import ArgonInput from "../../components/ArgonInput.vue";
-// import ArgonSelect from "@/components/ArgonSelect.vue";
 
-const { headers, rows, title, icons, fields, filters } = defineProps({
-  headers: {
-    type: Array,
-    required: true,
+export default {
+  components:{
+    ArgonInput,
+    Pagination,
   },
-  rows: {
-    type: Array,
-    required: true,
+  props: {
+    title: {
+      type: String,
+      default: ''
+    },
+    fields: {
+      type: Object,
+      required: true
+    },
+    headers: {
+      type: Array,
+      required: true
+    },
+    rows: {
+      type: Array,
+      required: true
+    },
+    icons: {
+      type: Array,
+      default: () => []
+    },
+    filters: {
+      type: Array,
+      default: () => []
+    }
   },
-  fields: {
-    type: Object,
-    required: true,
+  data() {
+    return {
+      search: '',
+      page: 1,
+      itemsPerPage: 10,
+      activeAccordion: null
+    }
   },
-  title: {
-    type: String,
-    required: false,
+  computed: {
+    tableHeaders()  {
+    return this.headers.map((header, index) => ({
+      title: header.text || header,
+      key: Object.keys(this.fields)[index] || "actions",
+      value: header.value || null,
+      align: "start",
+      sortable: false,
+    }));
   },
-  icons: {
-    type: Array,
-    required: false,
-    default: () => [],
-  },
-  filters: {
-    type: Array,
-    required: false,
-    default: () => [],
-  },
-});
-
-const emit = defineEmits(['filter-change']);
-const search = ref('');
-const itemsPerPage = ref(10);
-const page = ref(1);
-
-const getFieldValue = (obj, path) => {
-  return path.split(".").reduce((prev, curr) => {
-    return prev ? prev[curr] : null;
-  }, obj);
-};
-
-const tableHeaders = computed(() => {
-  return headers.map((header, index) => ({
-    title: header.text || header,
-    key: Object.keys(fields)[index] || "actions",
-    value: header.value || null,
-    align: "start",
-    sortable: false,
-  }));
-});
-
-const allHeaders = computed(() => {
-  const headers = [...tableHeaders.value];
-  if (icons.length > 0) {
-    headers.push({ title: "Acciones", key: "actions", sortable: false, align: "center" });
+    allHeaders() {
+      const headers = [...this.tableHeaders];
+      if (this.icons.length > 0) {
+      headers.push({ title: "Acciones", key: "actions", sortable: false, align: "center" });
   }
   return headers;
-});
-
-
-const exportToPDF = (rows) => {
-  const doc = new jsPDF();
-
-  const tableColumn = headers.map((header) => header.text || header);
-
-  const tableRows = rows.map((row) =>
-    Object.keys(fields).map((field) => {
-      const fieldConfig = fields[field];
-      if (fieldConfig.showAvatar) {
-        return getFieldValue(row, fieldConfig.main);
+    },
+    filteredRows() {
+      if (!this.search) return this.rows;
+      
+      return this.rows.filter(item => {
+        return Object.keys(this.fields).some(field => {
+          const value = this.getFieldValue(item, this.fields[field].value);
+          if (value === null || value === undefined) return false;
+          
+          if (Array.isArray(value)) {
+            return value.some(v => String(v).toLowerCase().includes(this.search.toLowerCase()));
+          }
+          
+          return String(value).toLowerCase().includes(this.search.toLowerCase());
+        });
+      });
+    },
+    paginatedRows() {
+      const start = (this.page - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredRows.slice(start, end);
+    }
+  },
+  methods: {
+    getFieldValue(item, path) {
+      if (!path) return '';
+      
+      if (typeof path === 'function') {
+        return path(item);
       }
-      if (fieldConfig.sub) {
-        return getFieldValue(row, fieldConfig.sub);
+      
+      const keys = path.split('.');
+      let value = item;
+      
+      for (const key of keys) {
+        if (value === null || value === undefined) return '';
+        value = value[key];
       }
-      return getFieldValue(row, fieldConfig.value);
-    })
-  );
+      
+      return value;
+    },
+    exportToPDF(rows) {
+      const doc = new jsPDF();
 
-  doc.text(title || "Exportación de Tabla", 14, 15);
+      const tableColumn = this.allHeaders.map((header) => header.title);
 
-  doc.autoTable({
-    head: [tableColumn],
-    body: tableRows,
-    startY: 20,
-  });
+      const tableRows = rows.map((row) =>
+        Object.keys(this.fields).map((field) => {
+          const fieldConfig = this.fields[field];
+          if (fieldConfig.showAvatar) {
+            return this.getFieldValue(row, fieldConfig.main);
+          }
+          if (fieldConfig.sub) {
+            return this.getFieldValue(row, fieldConfig.sub);
+          }
+          return this.getFieldValue(row, fieldConfig.value);
+        })
+      );
 
-  doc.save(`${title || "tabla"}.pdf`);
-};
+      doc.text(this.title || "Exportación de Tabla", 14, 15);
 
-const exportToExcel = (rows) => {
-  const tableHeaders = headers.map((header) => header.text || header);
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 20,
+      });
 
-  const tableRows = rows.map((row) =>
-    Object.keys(fields).map((field) => {
-      const fieldConfig = fields[field];
-      if (fieldConfig.showAvatar) {
-        return getFieldValue(row, fieldConfig.main);
-      }
-      if (fieldConfig.sub) {
-        return getFieldValue(row, fieldConfig.sub);
-      }
-      return getFieldValue(row, fieldConfig.value);
-    })
-  );
+      doc.save(`${this.title || "tabla"}.pdf`);
+    },
+    exportToExcel(rows) {
+      const tableHeaders = this.allHeaders.map((header) => header.title);
 
-  const worksheet = XLSX.utils.aoa_to_sheet([tableHeaders, ...tableRows]);
-  const workbook = XLSX.utils.book_new();
+      const tableRows = rows.map((row) =>
+        Object.keys(this.fields).map((field) => {
+          const fieldConfig = this.fields[field];
+          if (fieldConfig.showAvatar) {
+            return this.getFieldValue(row, fieldConfig.main);
+          }
+          if (fieldConfig.sub) {
+            return this.getFieldValue(row, fieldConfig.sub);
+          }
+          return this.getFieldValue(row, fieldConfig.value);
+        })
+      );
 
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+      const worksheet = XLSX.utils.aoa_to_sheet([tableHeaders, ...tableRows]);
+      const workbook = XLSX.utils.book_new();
 
-  XLSX.writeFile(workbook, `${title || "tabla"}.xlsx`);
-};
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
 
-const resetFilters = () => {
-  console.log(filters);
-  
-  filters.forEach(filter => {
-    filter.selectedOption = "";
-    filter.value = "";
-  });
-  emit('filter-change', filters.value);
-};
-
-const customFilter = (value, search, item) => {
-  if (!search) return true;
-
-  const rawItem = item.raw;
-  const searchTerm = search.toLowerCase();
-
-  // Función recursiva para buscar en campos anidados
-  const searchInObject = (obj, term) => {
-    return Object.keys(obj).some(key => {
-      const fieldValue = obj[key];
-      if (typeof fieldValue === 'object' && fieldValue !== null) {
-        return searchInObject(fieldValue, term); // Búsqueda recursiva
-      }
-      return String(fieldValue).toLowerCase().includes(term);
-    });
+      XLSX.writeFile(workbook, `${this.title || "tabla"}.xlsx`);
+    },
+    resetFilters() {
+      this.filters.forEach(filter => {
+        filter.selectedOption = '';
+      });
+    },
+    customFilter(value, search, item) {
+      if (!search) return true;
+      const searchTerm = search.toLowerCase();
+      const searchInObject = (obj) => {
+      return Object.keys(obj).some(key => {
+        const fieldValue = obj[key];
+        if (typeof fieldValue === 'object' && fieldValue !== null) {
+          return searchInObject(fieldValue); // Búsqueda recursiva
+        }
+        return String(fieldValue).toLowerCase().includes(searchTerm);
+      });
   };
 
-  return searchInObject(rawItem, searchTerm);
-};
-
-watch(() => filters.value, (newFilters) => {
-  emit('filter-change', newFilters);
-}, { deep: true });
-
+  return searchInObject(item);
+    },
+    toggleAccordion(index) {
+      this.activeAccordion = this.activeAccordion === index ? null : index;
+    },
+    getMainField() {
+      const mainField = Object.keys(this.fields).find(key => this.fields[key].main);
+    
+      return mainField || Object.keys(this.fields)[0];
+    }
+  }
+}
 </script>
 
 <template>
-  <div class="row justify-content-space-between py-2" style="background: linear-gradient(to bottom right, rgb(255 255 255), rgb(213 213 213)); border-radius: 8px; padding: 10px;">
+  <div class="row justify-content-space-between py-2" style="border-radius: 8px; padding: 10px;">
     <div class="justify-content-space-between py-2">
-      <h2 v-if="title" class="text-xl font-semibold" style="color: #28a745;">{{ title }}</h2>
+      <h2 v-if="title" class="text-xl font-semibold" style="color: #fff;">{{ title }}</h2>
       <div class="py-2">
         <!-- Contenedor flex para alinear botones y filtros -->
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between w-100 gap-2">
           <!-- Botones y componente personalizado (lado izquierdo) -->
+          <slot name="componentes-extra"></slot> 
           <div class="d-flex flex-wrap align-items-center gap-2">
             <!-- Slot para el componente personalizado -->
             <slot name="add-button"></slot>
@@ -203,14 +233,15 @@ watch(() => filters.value, (newFilters) => {
         </div>
       </div>
     </div>
-    <div class="card bg-white rounded-lg shadow-sm ">
+    <div class="card bg-white rounded-lg shadow-sm">
       <div class="d-flex justify-end">
         <div class="search-container">
           <ArgonInput v-model="search" placeholder="Buscar..." class="row input-search" IconDir="right" icon="fa-solid fa-magnifying-glass"/>
         </div>
       </div>
       <div class="card-body px-0 pt-0 pb-2">
-        <div class="table-responsive p-0">
+        <!-- Vista de tabla para pantallas medianas y grandes -->
+        <div class="table-responsive p-0 d-none d-md-block">
           <v-data-table v-model:items-per-page="itemsPerPage" v-model:page="page" :headers="allHeaders" :items="rows"
             :items-per-page-options="[5, 10, 25]" :search="search" :custom-filter="customFilter" class="elevation-1">
             <!-- Custom item slot -->
@@ -270,6 +301,78 @@ watch(() => filters.value, (newFilters) => {
                 @page-change="page = $event" />
             </template>
           </v-data-table>
+        </div>
+
+        <!-- Vista de acordeón para pantallas pequeñas -->
+        <div class="accordion-container d-md-none">
+          <div v-if="filteredRows.length === 0" class="text-center p-3">
+            La tabla no tiene datos para mostrar
+          </div>
+          <div v-else>
+            <div v-for="(item, itemIndex) in paginatedRows" :key="itemIndex" class="accordion-item mb-3">
+              <div class="accordion-header" @click="toggleAccordion(itemIndex)">
+                <div class="d-flex justify-content-between align-items-center p-3">
+                  <div class="d-flex align-items-center">
+                    <div v-if="fields[getMainField()].showAvatar">
+                      <img :src="getFieldValue(item, fields[getMainField()].avatar) || '../../assets/img/team-2.jpg'"
+                          class="avatar avatar-sm me-3 rounded-circle" alt="user" />
+                    </div>
+                    <div>
+                      <h6 class="mb-0 text-sm">
+                        {{ getFieldValue(item, fields[getMainField()].main || fields[getMainField()].value) }}
+                      </h6>
+                      <p class="text-xs text-secondary mb-0" v-if="fields[getMainField()].sub">
+                        {{ getFieldValue(item, fields[getMainField()].sub) }}
+                      </p>
+                    </div>
+                  </div>
+                  <i :class="activeAccordion === itemIndex ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                </div>
+              </div>
+              <div class="accordion-content" :class="{ 'active': activeAccordion === itemIndex }">
+                <div class="p-3">
+                  <div v-for="(field, fieldIndex) in Object.keys(fields)" :key="fieldIndex" class="mb-2">
+                    <!-- Omitir el campo principal que ya se muestra en el encabezado -->
+                    <template v-if="fieldIndex !== 0 || !fields[field].main">
+                      <div class="d-flex flex-column">
+                        <strong class="text-xs text-uppercase">{{ allHeaders.find(h => h.key === field)?.title || field }}</strong>
+                        
+                        <!-- Renderizar arreglos -->
+                        <div v-if="Array.isArray(getFieldValue(item, fields[field].value))" class="mt-1">
+                          <div class="d-flex flex-wrap gap-1">
+                            <div v-for="(value, idx) in getFieldValue(item, fields[field].value)" :key="idx"
+                              class="badge text-dark rounded-pill p-2">
+                              {{ value }}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Renderizar valores normales -->
+                        <div v-else class="mt-1">
+                          <span :class="fields[field].textClass || 'text-xs font-weight-bold'">
+                            {{ getFieldValue(item, fields[field].value) }}
+                          </span>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                  
+                  <!-- Botones de acción -->
+                  <div v-if="icons.length > 0" class="d-flex flex-wrap gap-2 mt-3">
+                    <button v-for="(icon, iconIndex) in icons" :key="iconIndex"
+                      @click="icon.method(item)"
+                      class="btn btn-sm btn-icon btn-active-color-green px-3 py-2 btn-table">
+                      <i :class="icon.class"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Paginación para el acordeón -->
+            <Pagination class="py-2" :totalPages="Math.ceil(filteredRows.length / itemsPerPage)" :currentPage="page"
+              @page-change="page = $event" />
+          </div>
         </div>
       </div>
     </div>
@@ -454,7 +557,7 @@ watch(() => filters.value, (newFilters) => {
 }
 
 .btn-table i {
-  font-size: 3rem;
+  font-size: 1.2rem;
 }
 
 .search-container {
@@ -475,6 +578,39 @@ watch(() => filters.value, (newFilters) => {
   width: 100% !important;
   height: auto !important;
   margin: 0 !important;
+}
+
+/* Estilos para el acordeón */
+.accordion-container {
+  padding: 0 1rem;
+}
+
+.accordion-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+}
+
+.accordion-header {
+  cursor: pointer;
+  background-color: #f9fafb;
+  transition: background-color 0.3s ease;
+}
+
+.accordion-header:hover {
+  background-color: #f3f4f6;
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background-color: white;
+}
+
+.accordion-content.active {
+  max-height: 1000px; /* Valor alto para asegurar que todo el contenido sea visible */
 }
 
 @media (max-width: 768px) {
@@ -509,4 +645,66 @@ watch(() => filters.value, (newFilters) => {
   }
 }
 
+.accordion-container {
+  padding: 0 1rem;
+}
+
+.accordion-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+}
+
+.accordion-header {
+  cursor: pointer;
+  background-color: #f9fafb;
+  transition: background-color 0.3s ease;
+}
+
+.accordion-header:hover {
+  background-color: #f3f4f6;
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background-color: white;
+}
+
+.accordion-content.active {
+  max-height: 1000px;
+}
+
+@media (max-width: 768px) {
+  .filter-select-wrapper {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .btn-reset {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .search-container {
+    max-width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .btn-sm {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
 </style>

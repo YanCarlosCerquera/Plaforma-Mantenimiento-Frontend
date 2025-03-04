@@ -3,34 +3,40 @@ import { ref, onMounted } from "vue";
 import AuthorsTable from "./components/AuthorsTable.vue";
 import apiService from "../service/apiService";
 import Swal from "sweetalert2";
-import ArgonInput from "@/components/ArgonInput.vue";
-import ArgonSelect from "@/components/ArgonSelect.vue";
+import ArgonAutocomplete from "../components/ArgonAutocomplete.vue";
 
 const rol = ref({
+    views: [],
+    view: {
+        id: "",
+        name: "",
+        route: "",
+    },
     name: "",
-    description: "",
     state: true,
+    id: "",
 });
 const rolId = ref("");
 const headers = ref([
-    { text: "Nombre del rol", value: "rol.name" },
-    { text: "Descripción", value: "rol.description" },
+    { text: "Nombre de la vista", value: "rol.view.name" },
+    { text: "Ruta", value: "rol.view.route" },
+    { text: "Rol asignado", value: "rol.name" },
     { text: "Estado", value: "rol.state" },
 ]);
 
-const states = [
-    { value: true, label: "Activo" },
-    { value: false, label: "Inactivo" },
-];
-
 const fields = ref({
-    rol: {
-        value: "name",
+    nameView: {
+        value: "view.name",
         class: "align-middle",
         textClass: "text-xs font-weight-bold mb-0",
     },
-    descripción: {
-        value: "description",
+    route: {
+        value: "view.route",
+        class: "align-middle",
+        textClass: "text-xs font-weight-bold",
+    },
+    nameRol: {
+        value: "name",
         class: "align-middle",
         textClass: "text-xs font-weight-bold",
     },
@@ -42,19 +48,32 @@ const fields = ref({
 });
 
 const rows = ref([]);
+const roles = ref([]);
+const views = ref([]);
+const isDeleting = ref(false);
 const dialog = ref(false);
 const isEditing = ref(false);
 const isLoading = ref(false);
 
 const fetchData = async () => {
     try {
-        const response = await apiService.get(
-            "/rol",
-            {},
+        const response = await apiService.get("/rol", {});
+        rows.value = response.flatMap(rol => 
+            rol.views.map(view => ({
+                view: {
+                    id: view._id,
+                    name: view.name,
+                    route: view.route,
+                },
+                name: rol.name,
+                state: rol.state ? "Activo" : "Inactivo",
+                views: rol.views,
+            }))
         );
-        rows.value = response.map((rol) => ({
-            ...rol,
-            state: rol.state ? "Activo" : "Inactivo",
+
+        roles.value = response.map((assignedRol) => ({
+            value: assignedRol._id,
+            title: assignedRol.name,
         }));
     } catch (error) {
         console.error("Error fetching rols:", error);
@@ -62,8 +81,26 @@ const fetchData = async () => {
     }
 };
 
+const fetchViews = async () => {
+    try {
+        const response = await apiService.get(
+            "/views",
+            {},
+        );
+        views.value = response.map((view) => ({
+            value: view._id,
+            title: view.name,
+            subtitle: view.route,
+        }));
+    } catch (error) {
+        console.error("Error fetching views:", error);
+        alert("Error al cargar las vistas");
+    }
+}
+
 const handleEdit = (row) => {
     rol.value = { ...row };
+    rol.value.view = row.view || { id: "", name: "", route: "" }; // Asegurar que view esté definido
     rol.value.state = row.state === "Activo" ? true : false;
     rolId.value = row._id;
     isEditing.value = true;
@@ -79,7 +116,7 @@ const handleCancel = () => {
 
 const handleDelete = async (id) => {
     const result = await Swal.fire({
-        title: "¿Estás seguro de que quieres eliminar este rol?",
+        title: "¿Estás seguro de que quieres eliminar esta ruta del rol?",
         text: "Esta acción no puede deshacerse.",
         showCancelButton: true,
         confirmButtonText: "Confirmar",
@@ -97,9 +134,30 @@ const handleDelete = async (id) => {
     }
 
     try {
-        await apiService.delete(`rol/${id}`);
+        // Marcar que estamos en modo de eliminación
+        isDeleting.value = true;
+        rolId.value = id;
+
+        // Obtener el rol seleccionado y la vista seleccionada
+        const selectedRole = roles.value.find(role => role.value === rol.value.id);
+        const selectedView = views.value.find(view => view.value === rol.value.view.id);
+
+        if (!selectedRole || !selectedView) {
+            throw new Error("Selecciona un rol y una vista válidos.");
+        }
+
+        // Obtener el arreglo actual de views del rol
+        const currentRole = rows.value.find(row => row.name === selectedRole.title);
+        const currentViews = currentRole ? currentRole.views.map(view => view.id) : [];
+
+        // Quitar la ruta del arreglo
+        const updatedViews = currentViews.filter(viewId => viewId !== selectedView.value);
+
+        // Enviar la petición PATCH con el arreglo actualizado
+        await apiService.patch(`/rol/${selectedRole.value}`, { views: updatedViews });
+
         Swal.fire({
-            title: "Rol eliminado correctamente",
+            title: "Ruta eliminada exitosamente",
             icon: "success",
             position: "bottom-right",
             toast: true,
@@ -112,23 +170,13 @@ const handleDelete = async (id) => {
                 title: "swal-title-white",
             },
         });
+
+        handleCancel();
         await fetchData();
     } catch (error) {
-        Swal.fire({
-            title: "Error al eliminar rol.",
-            text: error.response?.data?.message || "Algo salió mal.",
-            icon: "error",
-            position: "bottom-right",
-            toast: true,
-            timer: 3000,
-            background: "#dc3545",
-            color: "white",
-            iconColor: "white",
-            showConfirmButton: false,
-            customClass: {
-                title: "swal-title-white",
-            },
-        });
+        console.error("Error al eliminar la ruta:", error);
+    } finally {
+        isDeleting.value = false;
     }
 };
 
@@ -136,53 +184,51 @@ const handleSubmit = async () => {
     try {
         isLoading.value = true;
 
-        const data = {
-            name: rol.value.name,
-            description: rol.value.description,
-            state: rol.value.state,
-        };
-
-        if (isEditing.value) {
-            await apiService.patch(`rol/${rolId.value}`, data, );
-
-            Swal.fire({
-                title: "Rol editado exitosamente",
-                icon: "success",
-                position: "bottom-right",
-                toast: true,
-                timer: 3000,
-                background: "#28a745",
-                color: "white",
-                iconColor: "white",
-                showConfirmButton: false,
-                customClass: {
-                    title: "swal-title-white",
-                },
-            });
-        } else {
-            await apiService.post(`rol`, data,);
-
-            Swal.fire({
-                title: "Rol creado exitosamente",
-                icon: "success",
-                position: "bottom-right",
-                toast: true,
-                timer: 3000,
-                background: "#28a745",
-                color: "white",
-                iconColor: "white",
-                showConfirmButton: false,
-                customClass: {
-                    title: "swal-title-white",
-                },
-            });
+        // Verificar que rol.value.view esté definido
+        if (!rol.value.view) {
+            throw new Error("La vista no está definida.");
         }
+
+        // Obtener el rol seleccionado y la vista seleccionada
+        const selectedRole = roles.value.find(role => role.value === rol.value.id);
+        const selectedView = views.value.find(view => view.value === rol.value.view.id);
+
+        if (!selectedRole || !selectedView) {
+            throw new Error("Selecciona un rol y una vista válidos.");
+        }
+
+        // Obtener el arreglo actual de views del rol
+        const currentRole = rows.value.find(row => row.name === selectedRole.title);
+        const currentViews = currentRole ? currentRole.views.map(view => view.id) : [];
+
+        // Reemplazar la ruta antigua con la nueva
+        const updatedViews = currentViews.map(viewId => 
+            viewId === rol.value.view.id ? selectedView.value : viewId
+        );
+
+        // Enviar la petición PATCH con el arreglo actualizado
+        await apiService.patch(`/rol/${selectedRole.value}`, { views: updatedViews });
+
+        Swal.fire({
+            title: "Rol editado exitosamente",
+            icon: "success",
+            position: "bottom-right",
+            toast: true,
+            timer: 3000,
+            background: "#28a745",
+            color: "white",
+            iconColor: "white",
+            showConfirmButton: false,
+            customClass: {
+                title: "swal-title-white",
+            },
+        });
 
         handleCancel();
         await fetchData();
     } catch (error) {
         Swal.fire({
-            title: "Error al " + (isEditing.value ? "editar" : "crear") + " rol: ",
+            title: "Error al editar la ruta: ",
             text: error.response?.data?.message || "Algo salió mal.",
             icon: "error",
             position: "bottom-right",
@@ -203,8 +249,13 @@ const handleSubmit = async () => {
 
 const openCreateDialog = () => {
     rol.value = {
+        views: [],
+        view: {
+            id: "",
+            name: "",
+            route: "",
+        },
         name: "",
-        description: "",
         state: true,
     };
     isEditing.value = false;
@@ -218,6 +269,7 @@ const icons = ref([
 
 onMounted(async () => {
     await fetchData();
+    await fetchViews();
 });
 </script>
 
@@ -225,12 +277,11 @@ onMounted(async () => {
     <div class="py-4 container-fluid">
         <div class="row">
             <div class="col-12">
-                
-                <AuthorsTable :title="'Parametrización roles'" :headers="headers" :rows="rows" :fields="fields"
+                <AuthorsTable :title="'Asignación de permisos'" :headers="headers" :rows="rows" :fields="fields"
                 :icons="icons" >
                     <template #add-button >
                         <button class="btn btn-custom " @click="openCreateDialog">
-                            <i class="fas fa-plus me-2"></i>Agregar Nuevo Rol
+                            <i class="fas fa-plus me-2"></i>Asignar permiso
                         </button>
                     </template>
                 </AuthorsTable>
@@ -242,7 +293,7 @@ onMounted(async () => {
             <v-card class="bg-white">
                 <v-card-title class="card-title d-flex align-items-center justify-content-center text-h4 text-succes"
                     style="margin: 1rem">
-                    {{ isEditing ? 'Editar rol' : 'Crear nuevo rol' }}
+                    Asignar permiso
                 </v-card-title>
                 <v-card-text class="card-body p-3">
                     <v-container>
@@ -250,17 +301,12 @@ onMounted(async () => {
                             <div class="row">
                                 <div class="row" style="width: 100%">
                                     <div>
-                                        <label for="example-text-input" class="form-control-label">Nombre
-                                            del rol</label>
-                                        <argon-input id="name" type="text" v-model="rol.name" />
+                                        <label for="example-text-input" class="form-control-label">Seleccionar una ruta</label>
+                                        <ArgonAutocomplete id="route" type="text" :items="views" v-model="rol.view.id" />
                                     </div>
                                     <div>
-                                        <label for="example-text-input" class="form-control-label">Descripción</label>
-                                        <argon-input id="description" type="text" v-model="rol.description" />
-                                    </div>
-                                    <div>
-                                        <label for="example-text-input" class="form-control-label">Estado</label>
-                                        <argon-select id="state" :options="states" v-model="rol.state" />
+                                        <label for="example-text-input" class="form-control-label">Seleccionar un rol</label>
+                                        <ArgonAutocomplete id="rol" type="text" :items="roles" v-model="rol.id" />
                                     </div>
                                 </div>
                             </div>
@@ -270,7 +316,7 @@ onMounted(async () => {
                                     Cancelar
                                 </button>
                                 <button class="btn btn-success" type="submit">
-                                    {{ isEditing ? 'Guardar cambios' : 'Crear rol' }}
+                                    Registrar
                                 </button>
                             </v-card-actions>
                         </form>

@@ -57,7 +57,7 @@ app.use(vuetify);
           </router-link>
         </v-col>  
         <v-col cols="12" md="6">
-          <router-link to="/rol" outlined block class="py-6 text-body-1 custom-btn mb-3">
+          <router-link to="/assignmentRoutes" outlined block class="py-6 text-body-1 custom-btn mb-3">
             <span>Asignación de permisos</span>
             <i class="fa fa-chevron-right icon-end"></i>
           </router-link>
