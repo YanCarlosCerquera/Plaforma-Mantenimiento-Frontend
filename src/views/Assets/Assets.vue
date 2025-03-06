@@ -44,23 +44,32 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="categoryId">Categoría</label>
-            <select
-              id="categoryId"
-              v-model="formData.categoryId"
-              class="form-select"
-            >
-              <option value="">Seleccionar...</option>
-              <option
-                v-for="categoria in categories"
-                :key="categoria.value"
-                :value="categoria.value"
-              >
-                {{ categoria.text }}
-              </option>
-            </select>
-          </div>
+          <div class="form-group category-group">
+      <label for="categoryId">Categoría</label>
+      <div class="category-input-group">
+        <select
+          id="categoryId"
+          v-model="formData.categoryId"
+          class="form-select"
+        >
+          <option value="">Seleccionar...</option>
+          <option
+            v-for="categoria in categories"
+            :key="categoria.value"
+            :value="categoria.value"
+          >
+            {{ categoria.text }}
+          </option>
+        </select>
+        <button 
+          type="button"
+          class="add-category-btn"
+          @click="openCategoryModal"
+        >
+          +
+        </button>
+      </div>
+    </div>
 
           <div class="form-group">
             <label for="equipmentType">Tipo de equipo</label>
@@ -285,6 +294,12 @@
       </div>
     </form>
   </div>
+  <CategoryModal
+      :is-open="showCategoryModal"
+      @close="closeCategoryModal"
+      @save="handleCategoryModalSave"
+    />
+    
 </template>
 
 <script setup>
@@ -292,9 +307,11 @@ import Swal from "sweetalert2";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import apiService from "../../service/apiService";
+import CategoryModal from "../Category/CategoryModal.vue";
 
 const router = useRouter();
 const isEditMode = ref(false);
+const requert = ref(false);
 
 const formData = ref({
   name: '',
@@ -320,11 +337,64 @@ const formData = ref({
     phone: "",
   },
 });
+const showCategoryModal = ref(false);
 
+const openCategoryModal = () => {
+  showCategoryModal.value = true;
+};
+
+const closeCategoryModal = () => {
+  showCategoryModal.value = false;
+};
 const imagePreview = ref(null);
 const trainingCenters = ref([]);
 const categories = ref([]);
 
+const handleCategoryModalSave = async (categoryData) => {
+  try {
+    // Here you would typically save the category data to your API
+    const response = await apiService.post('/categories', {
+      ...categoryData,
+      name: formData.value.name // or however you want to structure your category data
+    });
+    requert.value = response
+    // Refresh categories list
+    const categoriesResponse = await apiService.get("/Categorias");
+    categories.value = (categoriesResponse.data || categoriesResponse).map(
+      (category) => ({
+        value: category._id,
+        text: category.name,
+      })
+    );
+
+    // Show success message
+    Swal.fire({
+      title: "Categoría creada",
+      icon: "success",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#28a745",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.error("Error saving category:", error);
+    Swal.fire({
+      title: "Error",
+      text: "No se pudo guardar la categoría",
+      icon: "error",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+    });
+  }
+};
 // Cargar datos si estamos en modo edición
 const loadAssetData = async () => {
   const assetId = localStorage.getItem("editAssetId");
@@ -688,5 +758,24 @@ label {
   .preview-side {
     width: 100%;
   }
+  .category-group {
+  position: relative;
+}
+
+.category-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.add-category-btn {
+  background-color: #2ea12e;
+  color: white;
+ 
+}
+
+.add-category-btn:hover {
+  background-color: #248f24;
+}
 }
 </style>

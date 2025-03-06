@@ -12,8 +12,6 @@ import Dashboard from "../views/Dashboard.vue";
 import Index from "../views/Index.vue";
 import GestionActiviades from "../views/Matenimiento/GestionActiviades.vue";
 import HistoryMateni from "../views/Matenimiento/History/HistoryMateni.vue";
-import Informacion from "../views/Matenimiento/Informacion/Informacion.vue";
-import RealizarInforme from "../views/Matenimiento/Informacion/RealizarInforme.vue";
 import ListOrden from "../views/Matenimiento/ListOrden.vue";
 import Detalles from "../views/Matenimiento/detalles.vue";
 import PlanearMantenimiento from "../views/PlanearMantenimiento.vue";
@@ -27,7 +25,14 @@ import Users from "../views/Users.vue";
 import Password from "../views/password.vue";
 import ResetPassword from "../views/resetpassword.vue";
 import Bienes from "../views/Home/Bienes/Bienes.vue";
+import Solicitudes from "../views/Home/Solicitudes/Solicitudes.vue";
+import Ejecucioens from "../views/Matenimiento/Ordenes/Ejecucioens.vue";
+import Maintenance from "../views/Matenimiento/Mantenimiento/Maintenance.vue";
+import Informacion from "../views/Matenimiento/Informacion/Informacion.vue";
+import RealizarInforme from "../views/Matenimiento/Informacion/RealizarInforme.vue";
 import AssignmentRoutes from "../views/Parametrizacion/AssignmentRoutes.vue";
+import GestionInformes from "../views/Matenimiento/Informacion/GestionInformes.vue";
+import TecnicoGestion from "../views/Matenimiento/Mantenimiento/TecnicoGestion.vue";
 import TrainingCenter from "../views/Parametrizacion/TrainingCenter.vue";
 import Dependences from "../views/Parametrizacion/dependences.vue";
 import ActionLog from "../views/Parametrizacion/ActionLog.vue";
@@ -212,7 +217,35 @@ const routes = [
     name: "Consultar activo",
     path: "/activo",
     component: Bienes,
+  },
+  {
+    name:"Consular Solicitudes",
+    path:"/solicitud",
+    component : Solicitudes
+  },
+  {
+    name:"ejecu",
+    path:"/eje",
+    component : Ejecucioens
+  },
+  {
+    name:"Mantenimetos",
+    path:"/mantenimiento",
+    component: Maintenance
+  },
+  {
+    name:"Gestions Informes",
+    path:"/gestiones",
+    component: GestionInformes
+  },
+  {
+    name:"Tecnicos Gestion",
+    path:"/Tecnico",
+    component : TecnicoGestion
   }
+  
+  
+ 
 ];
 
 const router = createRouter({

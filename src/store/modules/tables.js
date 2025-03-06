@@ -127,17 +127,13 @@ export default {
 
 // Funciones de formato comunes
 export const commonFormatters = {
-  date: (dateString) => {
-    if (!dateString) return "";
-    const options = { day: "2-digit", month: "short", year: "numeric" };
-    return new Date(dateString)
-      .toLocaleDateString("es-ES", options)
-      .replace(".", "");
+  workOrderStatus(value) {
+    if (value === true || value === "true") {
+      return `<span style="color: green;">Asignado</span>`;
+    } else {
+      return `<span style="color: red;">No asignada</span>`;
+    }
   },
-  
-  status: (status) => status === false ? "Inactivo" : "Activo",
-  
-  workOrderStatus: (status) => status === false ? "No Asignado" : "Asignado",
-  
-  categoryName: (category) => category?.name || 'Sin categoría'
+  // Otros formatters...
 };
+

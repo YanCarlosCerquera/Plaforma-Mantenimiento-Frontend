@@ -2,9 +2,9 @@
 import Swal from "sweetalert2";
 import { onMounted, ref } from "vue";
 import router from "../../router";
-import { commonFormatters } from "../../store/modules/tables";
 import AuthorsTable from "../components/AuthorsTable.vue";
 import apiService from "../../service/apiService";
+import { commonFormatters } from "../../store/modules/tables";
 
 const loading = ref(false);
 const activities = ref([]);
@@ -160,6 +160,7 @@ router.beforeEach((to, from, next) => {
           </div>
         </div>
         <AuthorsTable
+          title="Solicitudes de mantenimiento generales"
           :headers="headers"
           :rows="activities"
           :fields="fields"
