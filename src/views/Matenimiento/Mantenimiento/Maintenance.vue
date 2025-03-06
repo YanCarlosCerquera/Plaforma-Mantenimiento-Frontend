@@ -273,8 +273,8 @@ const fetchData = async () => {
     const response = await apiService.get(`/word-orden/${Id}`)
     workOrder.value = response
     
-    if (workOrder.value?.solicitud?.solicitudId) {
-      await fetchAssetInfo(workOrder.value.solicitud.solicitudId)
+    if (workOrder.value?.solicitud) {
+      await fetchAssetInfo(workOrder.value.solicitud)
     }
     
     mapWorkOrderToForm()

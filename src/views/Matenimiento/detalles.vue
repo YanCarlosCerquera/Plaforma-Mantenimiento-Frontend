@@ -1,168 +1,172 @@
 <template>
-  <div class="planear-mantenimiento-form">
-    <header class="form-header">
-      <div>
-        <h1 class="title">Gestión de actividades de mantenimiento</h1>
-        <h2 class="subtitle">Solicitud de mantenimiento</h2>
-      </div>
-    </header>
-
+  <div class="maintenance-form">
     <form @submit.prevent="handleSubmit" class="form-container" v-if="requestData">
-      <section class="form-section">
-        <h3 class="section-title">Información de la planeación</h3>
-
-        <div class="form-section-content">
+      <!-- Programming Information Card -->
+      <div class="form-card">
+        <h2 class="section-title">Información de la programación</h2>
+        
+        <div class="form-content">
           <div class="form-grid">
-            <div class="form-group">
-              <label>Establecer prioridad</label>
-              <select 
-                class="form-select"
-                v-model="priority"
-              >
-                <option selected>Seleccionar...</option>
-                <option>alta</option>
-                <option>media</option>
-                <option>baja</option>
-                <option>Sin Terminar</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Fecha de Inicio</label>
-              <input 
-              type="date"
-              class="form-input"
-                :value="formatDate(requestData.createdAt)"
-                x
-              />
-            </div>
-
-            <div class="form-group">
-              <label>Fecha sugerida mantenimiento</label>
-              <input 
-                type="date"
-                class="form-input"
-                v-model="maintenanceDate"
-              /> 
-            </div>
-
-            <div class="form-group tracking-number-container">
-              <label>Orden de trabajo No:</label>
-              <div class="input-with-button">
+            <!-- Left side form fields -->
+            <div class="form-column">
+              <div class="form-group">
+                <label>Establecer prioridad</label>
+                <select class="form-control" v-model="priority">
+                  <option selected>Seleccionar...</option>
+                  <option>Urgente</option>
+                  <option>alta</option>
+                  <option>media</option>
+                  <option>baja</option>
+                  <option>Sin Terminar</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label>Fecha sugerida mantenimiento</label>
+                <input 
+                  type="date"
+                  class="form-control"
+                  v-model="maintenanceDate"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label>Autorizada por</label>
                 <input 
                   type="text"
-                  class="form-input"
-                  :value="workOrderNumber"
-                  placeholder="OT-MT-2025-f00"
+                  class="form-control"
+                  :value="userName"
                   readonly
                 />
-                <button 
-                  type="button" 
-                  class="generate-button"
-                  @click="generateNewTrackingNumber"
-                  title="Generar nuevo número"
-                >
-                  <i class="fas fa-cog"></i>
-                </button>
               </div>
             </div>
-
-            <div class="form-group">
-              <label>Autorizada por</label>
-              <input 
-                type="text"
-                class="form-input"
-                :value="userName"
-                readonly
+            
+            <!-- Right side form fields -->
+            <div class="form-column">
+              <div class="form-group">
+                <label>Fecha de solicitud:</label>
+                <input 
+                  type="date"
+                  class="form-control"
+                  :value="formatDate(requestData.createdAt)"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label>Orden de trabajo No:</label>
+                <div class="input-with-button">
+                  <input 
+                    type="text"
+                    class="form-control"
+                    :value="workOrderNumber"
+                    placeholder="OT-20-2024"
+                    readonly
+                  />
+                  <button 
+                    type="button" 
+                    class="refresh-button"
+                    @click="generateNewTrackingNumber"
+                    title="Generar nuevo número"
+                  >
+                    <i class="fas fa-sync-alt"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>Asignada a</label>
+                <select 
+                  class="form-control"
+                  v-model="selectedTechnician"
+                >
+                  <option value="" disabled selected>Técnico</option>
+                  <option 
+                    v-for="tech in technicians" 
+                    :key="tech.id" 
+                    :value="tech.value"
+                  >
+                    {{ tech.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- Device image -->
+            <div class="device-image-container">
+              <img
+                :src="requestData.assetInfo?.image"
+                alt="Planear mantenimiento"
+                class="device-image"
               />
             </div>
-
-            <div class="form-group">
-              <label>Técnico Asignado</label>
-              <select 
-                class="form-select"
-                v-model="selectedTechnician"
-              >
-                <option value="" disabled selected>Seleccionar Técnico...</option>
-                <option 
-                  v-for="tech in technicians" 
-                  :key="tech.id" 
-                  :value="tech.value"
-                >
-                  {{ tech.label }}
-                </option>
-              </select>
-
-            </div>
           </div>
-          <img
-            class="form-section-content-image"
-            src="../../assets/img/image-planear-mantenimiento.png"
-            alt="Planear mantenimiento"
-          >
+          
+          <!-- Tracking number field -->
+          <div class="tracking-number">
+            <label>Radicado de solicitud</label>
+            <input 
+              type="text"
+              class="form-control"
+              :value="requestData?.trackingNumber"
+              readonly
+            />
+          </div>
         </div>
-        <div class="form">
-          <label>Radicado de solicitud </label>
-          <input 
-            type="text"
-            class="form-input short-input"
-            :value="requestData?.trackingNumber"
-            readonly
-          />
-        </div>
-      </section>
-
-      <section class="form-section">
-        <h3 class="section-title">Información del bien</h3>
-
-        <div class="form-grid">
-          <div class="form-group">
+      </div>
+      
+      <!-- Asset Information Card -->
+      <div class="form-card">
+        <h2 class="section-title">Información del bien</h2>
+        
+        <div class="asset-info-grid">
+          <div class="info-group">
             <label>Centro de formación</label>
-            <p>{{ requestData.assetInfo?.trainingCenterId.name || 'No disponible' }}</p>
+            <p>{{ requestData.assetInfo?.trainingCenterId?.[0]?.name }}</p>
           </div>
 
-          <div class="form-group">
+          <div class="info-group">
             <label>Ubicación</label>
-            <p>{{ requestData.assetInfo?.location || 'No disponible' }}</p>
+            <p>{{ requestData.assetInfo?.location  }}</p>
           </div>
-
-          <div class="form-group">
+          
+          <div class="info-group">
             <label>Fecha de adquisición</label>
-            <p>{{ formatDate(requestData.assetInfo?.acquisitionDate) }}</p>
+            <p>{{ formatDate(requestData.assetInfo?.acquisitionDate)  }}</p>
           </div>
-
-          <div class="form-group">
+          
+          <div class="info-group">
             <label>Marca</label>
-            <p>{{ requestData.assetInfo?.brand || 'No disponible' }}</p>
+            <p>{{ requestData.assetInfo?.brand  }}</p>
           </div>
-
-          <div class="form-group">
+          
+          <div class="info-group">
             <label>Modelo</label>
-            <p>{{ requestData.assetInfo?.modelo || 'No disponible' }}</p>
+            <p>{{ requestData.assetInfo?.modelo }}</p>
           </div>
-
-          <div class="form-group">
+          
+          <div class="info-group">
             <label>Cuentadante</label>
-            <p>{{ requestData.assetInfo?.accountHolder || 'No disponible' }}</p>
+            <p>{{ requestData.assetInfo?.accountHolder }}</p>
           </div>
-
-          <div class="form-group">
+          
+          <div class="info-group">
             <label>Número de serie</label>
-            <p>{{ requestData.assetInfo?.serialNumber || 'No disponible' }}</p>
+            <p>{{ requestData.assetInfo?.serialNumber  }}</p>
           </div>
-
-          <div class="form-group">
+          
+          <div class="info-group">
             <label>Tipo de equipo</label>
-            <p>{{ requestData.assetInfo?.equipmentType || 'No disponible' }}</p>
+            <p>{{ requestData.assetInfo?.equipmentType  }}</p>
           </div>
-
-          <div class="form-group">
+          
+          <div class="info-group">
             <label>Estado</label>
             <p>{{ requestData.assetInfo?.status ? 'Bueno' : 'Malo' }}</p>
           </div>
         </div>
-      </section>
-
+      </div>
+      
+      <!-- Submit button -->
       <div class="form-actions">
         <button 
           type="submit"
@@ -178,6 +182,7 @@
     </form>
   </div>
 </template>
+
 <script setup>
 import { onMounted, ref } from 'vue';
 import apiService from '../../service/apiService';
@@ -209,13 +214,18 @@ const fetchUserName = async (userId) => {
 const generateNewTrackingNumber = () => {
   const year = new Date().getFullYear();
   const counter = currentCounter.value.toString().padStart(2, '0');
-  workOrderNumber.value = `OT-MT-${year}-f${counter}`;
+  workOrderNumber.value = `OT-${counter}-${year}`;
   currentCounter.value = (currentCounter.value + 1) % 100; 
 };
 
 const formatDate = (dateString) => {
   if (!dateString) return 'No disponible';
-  return new Date(dateString).toLocaleDateString();
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  }).replace(/\//g, '-');
 };
 
 const resetForm = () => {
@@ -288,38 +298,41 @@ const handleView = async () => {
     const response = await apiService.get(`application-maintenance/Consultar/${id}`);
     requestData.value = Array.isArray(response) ? response[0] : response;
     console.log('Datos de la API:', requestData.value);
+    
+    // Generate initial work order number
+    generateNewTrackingNumber();
   } catch (error) {
     console.error('Error al obtener los datos de la vista:', error);
   }
 }
 
 const handleSUser = async () => {
-    try {
-        const token = Cookies.get('authToken');
-        console.log('Token encontrado:', token);
+  try {
+    const token = Cookies.get('authToken');
+    console.log('Token encontrado:', token);
 
-        if (!token) {
-            console.error('No se encontró el token de autenticación');
-            return null;
-        }
-
-        const decodedToken = jwtDecode(token);
-        console.log('Token decodificado:', decodedToken);
-
-        if (!decodedToken.sub) {
-            console.error('El token no contiene el ID del usuario');
-            return null;
-        }
-
-        userId.value = decodedToken.sub;
-        // Fetch and set user name
-        userName.value = await fetchUserName(decodedToken.sub);
-        
-        return decodedToken.sub;
-    } catch (error) {
-        console.error('Error al decodificar el token:', error);
-        return null;
+    if (!token) {
+      console.error('No se encontró el token de autenticación');
+      return null;
     }
+
+    const decodedToken = jwtDecode(token);
+    console.log('Token decodificado:', decodedToken);
+
+    if (!decodedToken.sub) {
+      console.error('El token no contiene el ID del usuario');
+      return null;
+    }
+
+    userId.value = decodedToken.sub;
+    // Fetch and set user name
+    userName.value = await fetchUserName(decodedToken.sub);
+    
+    return decodedToken.sub;
+  } catch (error) {
+    console.error('Error al decodificar el token:', error);
+    return null;
+  }
 };
 
 const handleSubmit = async () => {
@@ -335,9 +348,7 @@ const handleSubmit = async () => {
       fechaInicio: new Date(requestData.value.createdAt).toISOString(),
       fechaFin: new Date(maintenanceDate.value).toISOString(),
       prioridad: priority.value,
-      solicitud: {
-        solicitudId: requestData.value._id
-      }
+      solicitud: requestData.value._id
     };
 
     const response = await apiService.post("/word-orden", workOrderData);
@@ -365,172 +376,136 @@ const handleSubmit = async () => {
 };
 
 onMounted(async () => {
-    const userData = await handleSUser();
-    if (userData) {
-        console.log('ID del usuario:', userData);
-    } else {
-        console.error('No se pudo obtener el ID del usuario');
-    }
-
-    
-    await handleView();
-    await fetchTenico();
-
+  const userData = await handleSUser();
+  if (userData) {
+    console.log('ID del usuario:', userData);
+  } else {
+    console.error('No se pudo obtener el ID del usuario');
+  }
   
-    
+  await handleView();
+  await fetchTenico();
+  
+  // Set default date to today if not already set
+  if (!maintenanceDate.value) {
+    const today = new Date();
+    maintenanceDate.value = today.toISOString().split('T')[0];
+  }
 });
 </script>
+
 <style scoped>
-.planear-mantenimiento-form {
+.maintenance-form {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  font-family: Arial, sans-serif;
-}
-
-.form {
-  margin-bottom: 2rem;
-
-}
-
-.form-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-}
-
-.title {
-  color: #0f610f;
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin: 0;
-}
-
-.subtitle {
-  color: rgba(#0f610f, 0.7);
-  font-size: 1.25rem;
-  font-weight: 500;
-  margin: 0;
-}
-
-.sena-logo {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: #fff;
-  padding: 6px;
+  padding: 20px;
+  color: #333;
 }
 
 .form-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
 
-.form-section {
-  margin-bottom: 2rem;
+.form-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  position: relative;
+  overflow: hidden;
 }
 
-.form-section-content {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-}
-
-.form-section-content-image {
-  margin: auto;
+.form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(144, 238, 144, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .section-title {
-  color: #2EA12E;
-  font-size: 1.25rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  position: relative;
+  color: #4CAF50;
+  border-bottom: 2px solid #4CAF50;
+  text-align: center; /* Centra el texto */
+}
+
+
+.form-content {
+  position: relative;
+  z-index: 1;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 15px;
 }
 
-.form-group p {
-  margin-left: 1rem;
-}
-
-label {
+.form-group label {
   display: block;
-  margin-bottom: 0.5rem;
-  color: #666;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #555;
 }
 
-textarea {
-  color: rgb(103, 116, 142);
-}
-
-.form-input,
-.form-select {
+.form-control {
   width: 100%;
-  padding: 0.5rem;
+  padding: 12px 15px;
   border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.875rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
 }
 
-.form-input:focus,
-.form-select:focus {
+.form-control:focus {
   outline: none;
-  border-color: #2EA12E;
-  box-shadow: 0 0 0 2px rgba(46, 161, 46, 0.1);
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
 }
 
-.form-actions {
-  margin-top: 2rem;
-  text-align: center;
-}
-
-.btn-submit {
-  background-color: #2EA12E;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.btn-submit:hover {
-  background-color: #248f24;
-}
-
-.btn-submit:disabled {
-  background-color: #cccccc;
+.form-control:read-only {
+  background-color: #f5f5f5;
   cursor: not-allowed;
-}
-
-.tracking-number-container {
-  position: relative;
 }
 
 .input-with-button {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px;
 }
 
-.generate-button {
-  background-color: #2EA12E;
+.refresh-button {
+  background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 4px;
-  width: 36px;
-  height: 36px;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -538,29 +513,126 @@ textarea {
   transition: background-color 0.2s;
 }
 
-.generate-button:hover {
-  background-color: #248f24;
+.refresh-button:hover {
+  background-color: #388E3C;
 }
 
-.generate-button i {
+.refresh-button i {
   font-size: 1.2rem;
 }
 
-.fa-spinner {
-  margin-right: 8px;
+.device-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.device-image {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.tracking-number {
+  margin-top: 20px;
+  max-width: 300px;
+}
+
+.asset-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.info-group {
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.info-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.info-group p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.form-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-submit {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 40px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-submit:hover {
+  background-color: #388E3C;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-submit:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 992px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .device-image-container {
+    grid-column: span 2;
+    margin-top: 20px;
+  }
+  
+  .asset-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
-  .planear-mantenimiento-form {
-    padding: 1rem;
-  }
-
-  .form-container {
-    padding: 1rem;
-  }
-
   .form-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .device-image-container {
+    grid-column: span 1;
+  }
+  
+  .asset-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .maintenance-form {
+    padding: 10px;
+  }
+  
+  .form-card {
+    padding: 20px;
   }
 }
 </style>

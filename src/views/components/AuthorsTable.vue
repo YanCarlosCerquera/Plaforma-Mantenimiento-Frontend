@@ -46,20 +46,20 @@ export default {
   },
   computed: {
     tableHeaders()  {
-    return this.headers.map((header, index) => ({
-      title: header.text || header,
-      key: Object.keys(this.fields)[index] || "actions",
-      value: header.value || null,
-      align: "start",
-      sortable: false,
-    }));
-  },
+      return this.headers.map((header, index) => ({
+        title: header.text || header,
+        key: Object.keys(this.fields)[index] || "actions",
+        value: header.value || null,
+        align: "start",
+        sortable: false,
+      }));
+    },
     allHeaders() {
       const headers = [...this.tableHeaders];
       if (this.icons.length > 0) {
-      headers.push({ title: "Acciones", key: "actions", sortable: false, align: "center" });
-  }
-  return headers;
+        headers.push({ title: "Acciones", key: "actions", sortable: false, align: "center" });
+      }
+      return headers;
     },
     filteredRows() {
       if (!this.search) return this.rows;
@@ -161,23 +161,22 @@ export default {
       if (!search) return true;
       const searchTerm = search.toLowerCase();
       const searchInObject = (obj) => {
-      return Object.keys(obj).some(key => {
-        const fieldValue = obj[key];
-        if (typeof fieldValue === 'object' && fieldValue !== null) {
-          return searchInObject(fieldValue); // Búsqueda recursiva
-        }
-        return String(fieldValue).toLowerCase().includes(searchTerm);
-      });
-  };
+        return Object.keys(obj).some(key => {
+          const fieldValue = obj[key];
+          if (typeof fieldValue === 'object' && fieldValue !== null) {
+            return searchInObject(fieldValue); // Búsqueda recursiva
+          }
+          return String(fieldValue).toLowerCase().includes(searchTerm);
+        });
+      };
 
-  return searchInObject(item);
+      return searchInObject(item);
     },
     toggleAccordion(index) {
       this.activeAccordion = this.activeAccordion === index ? null : index;
     },
     getMainField() {
       const mainField = Object.keys(this.fields).find(key => this.fields[key].main);
-    
       return mainField || Object.keys(this.fields)[0];
     }
   }
@@ -248,7 +247,7 @@ export default {
             <template v-slot:item="{ item }">
               <tr class="hover:bg-gray-50">
                 <td v-for="(field, index) in Object.keys(fields)" :key="field">
-                  <!-- Renderizar campos normales -->
+                  <!-- Renderizamos el campo principal con avatar y demás -->
                   <div v-if="index === 0 && fields[field].main" class="d-flex px-2 py-1">
                     <div v-if="fields[field].showAvatar">
                       <img :src="getFieldValue(item, fields[field].avatar) || '../../assets/img/team-2.jpg'"
@@ -264,7 +263,7 @@ export default {
                     </div>
                   </div>
 
-                  <!-- Renderizar arreglos de manera especial -->
+                  <!-- Renderizamos arreglos de manera especial -->
                   <div v-else-if="Array.isArray(getFieldValue(item, fields[field].value))" :class="fields[field].class || 'px-2 py-1'">
                     <div class="d-flex flex-wrap gap-1">
                       <div v-for="(value, idx) in getFieldValue(item, fields[field].value)" :key="idx"
@@ -274,9 +273,13 @@ export default {
                     </div>
                   </div>
 
-                  <!-- Renderizar campos normales -->
+                  <!-- Renderizamos campos normales aplicando el formatter si existe -->
                   <div v-else :class="fields[field].class || 'px-2 py-1'">
-                    <span :class="fields[field].textClass || 'text-xs font-weight-bold'">
+                    <span v-if="fields[field].formatter" 
+                          :class="fields[field].textClass || 'text-xs font-weight-bold'" 
+                          v-html="fields[field].formatter(getFieldValue(item, fields[field].value))">
+                    </span>
+                    <span v-else :class="fields[field].textClass || 'text-xs font-weight-bold'">
                       {{ getFieldValue(item, fields[field].value) }}
                     </span>
                   </div>
@@ -336,7 +339,6 @@ export default {
                     <template v-if="fieldIndex !== 0 || !fields[field].main">
                       <div class="d-flex flex-column">
                         <strong class="text-xs text-uppercase">{{ allHeaders.find(h => h.key === field)?.title || field }}</strong>
-                        
                         <!-- Renderizar arreglos -->
                         <div v-if="Array.isArray(getFieldValue(item, fields[field].value))" class="mt-1">
                           <div class="d-flex flex-wrap gap-1">
@@ -346,10 +348,13 @@ export default {
                             </div>
                           </div>
                         </div>
-                        
-                        <!-- Renderizar valores normales -->
+                        <!-- Renderizar valores normales aplicando el formatter si existe -->
                         <div v-else class="mt-1">
-                          <span :class="fields[field].textClass || 'text-xs font-weight-bold'">
+                          <span v-if="fields[field].formatter" 
+                                :class="fields[field].textClass || 'text-xs font-weight-bold'" 
+                                v-html="fields[field].formatter(getFieldValue(item, fields[field].value))">
+                          </span>
+                          <span v-else :class="fields[field].textClass || 'text-xs font-weight-bold'">
                             {{ getFieldValue(item, fields[field].value) }}
                           </span>
                         </div>
@@ -507,10 +512,10 @@ export default {
   background-color: #ffffff;
   color: #495057;
   cursor: pointer;
-  appearance: none; /* Elimina el estilo por defecto del select */
-  -webkit-appearance: none; /* Para navegadores basados en WebKit */
-  -moz-appearance: none; /* Para Firefox */
-  border: none; /* Añade un borde para que coincida con el select */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: none;
 }
 
 .filter-select:hover {
@@ -524,7 +529,6 @@ export default {
   box-shadow: 0 0 0 3px rgba(116, 192, 252, 0.3);
 }
 
-/* Estilo para el ícono del select (opcional) */
 .filter-select-wrapper {
   position: relative;
   display: inline-block;
@@ -580,71 +584,7 @@ export default {
   margin: 0 !important;
 }
 
-/* Estilos para el acordeón */
-.accordion-container {
-  padding: 0 1rem;
-}
-
-.accordion-item {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: white;
-}
-
-.accordion-header {
-  cursor: pointer;
-  background-color: #f9fafb;
-  transition: background-color 0.3s ease;
-}
-
-.accordion-header:hover {
-  background-color: #f3f4f6;
-}
-
-.accordion-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-  background-color: white;
-}
-
-.accordion-content.active {
-  max-height: 1000px; /* Valor alto para asegurar que todo el contenido sea visible */
-}
-
-@media (max-width: 768px) {
-  .filter-select-wrapper {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
-
-  .filter-select {
-    width: 100%;
-  }
-
-  .btn-reset {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    margin-bottom: 0.5rem;
-  }
-
-  .search-container {
-    max-width: 100%;
-    min-width: auto;
-  }
-}
-
-/* Estilos para los botones en pantallas pequeñas */
-@media (max-width: 576px) {
-  .btn-sm {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
-}
-
+/* Acordeón y responsive */
 .accordion-container {
   padding: 0 1rem;
 }
@@ -682,11 +622,9 @@ export default {
     width: 100%;
     margin-bottom: 0.5rem;
   }
-
   .filter-select {
     width: 100%;
   }
-
   .btn-reset {
     width: 100%;
     display: flex;
@@ -694,7 +632,6 @@ export default {
     text-align: center;
     margin-bottom: 0.5rem;
   }
-
   .search-container {
     max-width: 100%;
     min-width: auto;

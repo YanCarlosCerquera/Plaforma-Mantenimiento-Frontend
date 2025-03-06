@@ -1,13 +1,25 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import Swal from "sweetalert2";
-import { useStore } from 'vuex';
+import { useStore } from "vuex";
 import router from "../../router";
 import Cookies from "js-cookie";
 import AuthorsTable from "../components/AuthorsTable.vue";
 
+// Definición de formateadores local (sin export)
+const commonFormatters = {
+  state(value) {
+    if (value === true || value === false) {
+      return `<span style="color: green;">Asignado</span>`;
+    } else {
+      return `<span style="color: red;">No asignada</span>`;
+    }
+  },
+  // Otros formatters...
+};
+
 const store = useStore();
-const TABLE_ID = 'ordenes-trabajo';
+const TABLE_ID = "ordenes-trabajo";
 
 const headers = ref([
   "Orden de Trabajo",
@@ -17,8 +29,6 @@ const headers = ref([
   "Prioridad",
   "Estado"
 ]);
-
-
 
 const fields = ref({
   radicado: {
@@ -50,10 +60,11 @@ const fields = ref({
     value: "state",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
+    formatter: commonFormatters.state,
   }
 });
 
-const rows = computed(() => store.getters['tables/getTableData'](TABLE_ID));
+const rows = computed(() => store.getters["tables/getTableData"](TABLE_ID));
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -64,18 +75,18 @@ const formatDate = (dateString) => {
 };
 
 const formatWorkOrderStatus = (state) => {
-  return state ? 'Ejecutada' : 'Sin ejecutar'
+  return state ? "Ejecutada" : "Sin ejecutar";
 };
 
 const fetchData = async () => {
-  await store.dispatch('tables/fetchTableData', {
+  await store.dispatch("tables/fetchTableData", {
     tableId: TABLE_ID,
     endpoint: "/word-orden",
     formatters: {
       fechaInicio: formatDate,
       fechaFin: formatDate,
-      state: formatWorkOrderStatus
-    }
+      state: formatWorkOrderStatus,
+    },
   });
 };
 
@@ -83,7 +94,7 @@ const handleView = (row) => {
   try {
     const ordenId = row._id?.toString() || row.toString();
     router.push(`/eje`);
-    Cookies.set('OrdenId', ordenId);
+    Cookies.set("OrdenId", ordenId);
   } catch (error) {
     console.error("Error al navegar a la vista de detalles:", error);
     Swal.fire({
@@ -122,10 +133,10 @@ const handleDelete = async (row) => {
 
   try {
     const ordenId = row._id?.toString() || row.toString();
-    const result = await store.dispatch('tables/deleteTableItem', {
+    const result = await store.dispatch("tables/deleteTableItem", {
       tableId: TABLE_ID,
-      endpoint: '/word-orden',
-      itemId: ordenId
+      endpoint: "/word-orden",
+      itemId: ordenId,
     });
 
     if (result.success) {
@@ -160,12 +171,56 @@ const handleDelete = async (row) => {
   }
 };
 
+const handleEdit = (row) => {
+  try {
+    const ordenId = row._id?.toString() || row.toString();
+    router.push(`/editar-orden`);
+    Cookies.set("OrdenId", ordenId);
+  } catch (error) {
+    console.error("Error al navegar a la vista de edición:", error);
+    Swal.fire({
+      title: "Error al cargar la vista de edición",
+      text: error.message || "Algo salió mal.",
+      icon: "error",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+    });
+  }
+};
+
+const handlConsultar = (row) => {
+  try {
+    const ordenId = row._id?.toString() || row.toString();
+    router.push(`/Informes`);
+    Cookies.set("OrdenId", ordenId);
+  } catch (error) {
+    console.error("Error al navegar a la vista de informes:", error);
+    Swal.fire({
+      title: "Error al cargar la vista de informes",
+      text: error.message || "Algo salió mal.",
+      icon: "error",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+    });
+  }
+};
 
 const icons = ref([
-  { class: 'fas fa-check', method: handleView },
-  { class: 'fas fa-trash', method: handleDelete },
+  { class: "fas fa-check", method: handleView },
+  { class: "fas fa-trash", method: handleDelete },
+  { class: "fas fa-edit", method: handleEdit },
+  { class: "fas fa-search", method: handlConsultar },
 ]);
-
 
 onMounted(async () => {
   await fetchData();
@@ -184,6 +239,7 @@ onMounted(async () => {
           :icons="icons"
           @view="handleView"
           @delete="handleDelete"
+          @Consultar="handlConsultar"
         />
       </div>
     </div>

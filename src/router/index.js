@@ -31,6 +31,8 @@ import Maintenance from "../views/Matenimiento/Mantenimiento/Maintenance.vue";
 import Informacion from "../views/Matenimiento/Informacion/Informacion.vue";
 import RealizarInforme from "../views/Matenimiento/Informacion/RealizarInforme.vue";
 import AssignmentRoutes from "../views/AssignmentRoutes.vue";
+import GestionInformes from "../views/Matenimiento/Informacion/GestionInformes.vue";
+import TecnicoGestion from "../views/Matenimiento/Mantenimiento/TecnicoGestion.vue";
 
 const routes = [
   {
@@ -213,7 +215,18 @@ const routes = [
     path:"/mantenimiento",
     component: Maintenance
   },
-
+  {
+    name:"Gestions Informes",
+    path:"/gestiones",
+    component: GestionInformes
+  },
+  {
+    name:"Tecnicos Gestion",
+    path:"/Tecnico",
+    component : TecnicoGestion
+  }
+  
+  
  
 ];
 

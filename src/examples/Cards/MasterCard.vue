@@ -31,10 +31,9 @@ defineProps({
     <div
       class="overflow-hidden position-relative border-radius-xl"
       :style="{
-        backgroundImage: 'url(' + require('@/assets/img/card-visa.jpg') + ')',
+        background: 'url(' + require('@/assets/img/card-visa.jpg') + ')',
       }"
     >
-      <span class="mask" :class="`bg-gradient-${card.background}`"></span>
       <div class="card-body position-relative z-index-1 p-3">
         <i class="fas fa-wifi text-white p-2" aria-hidden="true"></i>
         <h5 class="text-white mt-4 mb-5 pb-2">

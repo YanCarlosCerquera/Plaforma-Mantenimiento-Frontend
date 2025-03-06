@@ -1,0 +1,96 @@
+erDiagram
+    USERS {
+        uuid id PK
+        string email
+        string password_hash
+        string first_name
+        string last_name
+        enum role
+        string phone_number
+        timestamp created_at
+        timestamp updated_at
+        boolean is_active
+        string region
+        int age
+        enum gender
+    }
+    
+    CANDIDATES {
+        uuid id PK
+        string name
+        uuid department_id FK
+        int age
+        text bio
+        string image_url
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    DEPARTMENTS {
+        uuid id PK
+        string name
+        text description
+        string flag_image_url
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    VOTES {
+        uuid id PK
+        uuid candidate_id FK
+        uuid department_id FK
+        uuid voter_id FK
+        string voter_ip
+        string voter_region
+        int voter_age
+        enum voter_gender
+        timestamp created_at
+        boolean is_valid
+    }
+    
+    VOTE_LOGS {
+        uuid id PK
+        uuid vote_id FK
+        string action
+        json metadata
+        timestamp created_at
+    }
+    
+    SESSIONS {
+        uuid id PK
+        uuid user_id FK
+        string token
+        timestamp expires_at
+        timestamp created_at
+        string ip_address
+        string user_agent
+    }
+    
+    SETTINGS {
+        string key PK
+        string value
+        string description
+        timestamp updated_at
+    }
+    
+    REPORTS {
+        uuid id PK
+        string name
+        string description
+        enum type
+        json parameters
+        uuid created_by FK
+        timestamp created_at
+        timestamp scheduled_for
+        boolean is_recurring
+        string recurrence_pattern
+    }
+    
+    USERS ||--o{ VOTES : "emite"
+    DEPARTMENTS ||--o{ CANDIDATES : "tiene"
+    DEPARTMENTS ||--o{ VOTES : "recibe"
+    CANDIDATES ||--o{ VOTES : "recibe"
+    VOTES ||--o{ VOTE_LOGS : "genera"
+    USERS ||--o{ SESSIONS : "tiene"
+    USERS ||--o{ REPORTS : "crea"

@@ -142,8 +142,8 @@ const fetchOrdenData = async () => {
     
     if (ordenData.value) {
       // Si tenemos el ID de la solicitud, buscamos la información del activo
-      if (ordenData.value.solicitud?.solicitudId) {
-        await fetchAssetInfo(ordenData.value.solicitud.solicitudId);
+      if (ordenData.value.solicitud) {
+        await fetchAssetInfo(ordenData.value.solicitud);
       }
     }
   } catch (error) {

@@ -241,7 +241,7 @@ export default {
         };
         
         // Enviar datos
-        const response = await apiService.post('/workreports', reportData);
+        const response = await apiService.post('/work-report', reportData);
         
         if (response.success) {
           Swal.fire({
