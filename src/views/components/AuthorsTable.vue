@@ -34,6 +34,14 @@ export default {
     filters: {
       type: Array,
       default: () => []
+    },
+    searchOption: {
+      type: Boolean,
+      default: true
+    },
+    exportOption: {
+      type: Boolean,
+      default: true
     }
   },
   data() {
@@ -45,6 +53,12 @@ export default {
     }
   },
   computed: {
+    shouldShowSearch() {
+    return this.searchOption;
+  },
+  shouldShowExport() {
+    return this.exportOption;
+  },
     tableHeaders()  {
     return this.headers.map((header, index) => ({
       title: header.text || header,
@@ -198,12 +212,12 @@ export default {
             <slot name="add-button"></slot>
 
             <!-- Botones de PDF y Excel -->
-            <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
+            <button v-if="shouldShowExport" class="btn btn-sm btn-icon btn-bg-white btn-active-color-green btn-active-bg-warning mx-lg-2 my-2"
               style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
               @click="exportToPDF(rows)">
               <i class="fas fa-file-pdf" style="color: red; font-size: 1.5rem;"></i>
             </button>
-            <button class="btn btn-sm btn-icon btn-bg-white btn-active-color-alert btn-active-bg-warning my-2"
+            <button v-if="shouldShowExport" class="btn btn-sm btn-icon btn-bg-white btn-active-color-alert btn-active-bg-warning my-2"
               style="width: auto; padding-right: 1rem; padding-left: 1rem; background-color: white; min-width: 60px;"
               @click="exportToExcel(rows)">
               <i class="fas fa-file-excel" style="color: green; font-size: 1.5rem;"></i>
@@ -235,7 +249,7 @@ export default {
     </div>
     <div class="card bg-white rounded-lg shadow-sm">
       <div class="d-flex justify-end">
-        <div class="search-container">
+        <div v-if="shouldShowSearch" class="search-container">
           <ArgonInput v-model="search" placeholder="Buscar..." class="row input-search" IconDir="right" icon="fa-solid fa-magnifying-glass"/>
         </div>
       </div>

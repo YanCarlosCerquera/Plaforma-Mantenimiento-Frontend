@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, onMounted, onBeforeUnmount } from "vue";
+import { onBeforeMount, onMounted, onBeforeUnmount, computed } from "vue";
 import { useStore } from "vuex";
 import { ref } from "vue";
 import setNavPills from "@/assets/js/nav-pills.js";
@@ -12,6 +12,8 @@ import ArgonSelect from "@/components/ArgonSelect.vue";
 import ArgonAutocomplete from "../components/ArgonAutocomplete.vue";
 import CardsAdminstrador from "./components/CardsAdministrador.vue";
 import Cookies from "js-cookie";
+import TableAlmacenista from "./components/TableAlmacenista.vue";
+import TableInstructor from "./components/TableInstructor.vue";
 const dialogVisible = ref(false);
 const documentTypes = [
   { value: "", label: "Selecciona tu tipo de documento" },
@@ -47,6 +49,7 @@ const decodedToken = jwt_decode.jwtDecode(token);
 userId = decodedToken.sub;
 const roles = ref([]);
 const selectedRoleId = ref('')
+const isAdmin = computed(() => userRole.value === 'administrador');
 
 async function getRoles() {
   try {
@@ -326,7 +329,7 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <main>
-    <div class="py-6 container-fluid">
+    <div class="pt-6 pb-4 container-fluid">
       <h3 class="mt-3 mb-1 text-white">Configuraciones</h3>
       <h5 class="mb-1">Perfil de {{ userRole }}</h5>
       <div class="card shadow-lg mt-2" style="margin-top: -50px; margin-right: 24px">
@@ -393,11 +396,11 @@ onBeforeUnmount(() => {
               <p class="text-sm">Cargos</p>
               <div class="mb-3">
                 <label for="example-text-input" class="form-control-label">Cargo desempeñado</label>
-                <argon-select id="position" :options="positions" v-model="userData.position" />
+                <argon-select id="position" :options="positions" v-model="userData.position" :disabled="!isAdmin"/>
               </div>
               <div class="mb-3">
                 <label for="example-text-input" class="form-control-label">Rol asignado</label>
-                <ArgonAutocomplete type="text" v-model="userData.role" :items="roles" />
+                <ArgonAutocomplete  type="text" v-model="userData.role" :items="roles" :disabled="!isAdmin"/>
               </div>
               <div class="mb-3 column-button">
                 <argon-button color="success" class="ms-auto mt-2 mb-3 w-100" @click="dialogVisible = true">Cambiar contraseña</argon-button>
@@ -407,20 +410,17 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
-    <div class="container-fluid">
-      <!-- Contenido específico según el rol -->
+    <div class="">
       <div class="contentRole"  v-if="userRole === 'administrador'">
         <CardsAdminstrador/>
       </div>
-      <div v-else-if="userRole === 'almacenista'">
-        <h2>Contenido para Almacenista</h2>
-        <p>Este contenido solo es visible para almacenistas.</p>
+      <div class="container-fluid" v-else-if="userRole === 'almacenista'">
+        <TableAlmacenista/>
       </div>
-      <div v-else-if="userRole === 'usuario'">
-        <h2>Contenido para Usuario</h2>
-        <p>Este contenido solo es visible para usuarios.</p>
+      <div class="container-fluid" v-else-if="userRole === 'instructor' || userRole === 'tecnico'">
+        <TableInstructor :userData="{userId: userId, role: userRole}" />
       </div>
-      <div v-else>
+      <div class="container-fluid" v-else>
         <h2>Rol no reconocido</h2>
         <p>No se ha podido determinar el rol del usuario.</p>
       </div>

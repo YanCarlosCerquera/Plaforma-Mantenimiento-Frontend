@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import Swal from "sweetalert2";
 import AuthorsTable from "../components/AuthorsTable.vue";
 import apiService from "../../service/apiService";
 
@@ -59,6 +60,61 @@ const formatTime = (dateString) => {
     return date.toLocaleTimeString('es-ES', options);
 };
 
+const handleDelete = async (row) => {
+    const result = await Swal.fire({
+        title: "¿Estás seguro de que quieres eliminar este registro?",
+        text: "Esta acción no puede deshacerse.",
+        showCancelButton: true,
+        confirmButtonText: "Confirmar",
+        cancelButtonText: "Cancelar",
+        reverseButtons: true,
+        customClass: {
+            title: "text-succes",
+            confirmButton: "btn-success",
+            cancelButton: "btn-danger",
+        },
+    });
+
+    if (!result.isConfirmed) {
+        return;
+    }
+
+    try {
+        await apiService.delete(`action-log/${row._id}`);
+        Swal.fire({
+            title: "Registro eliminado correctamente",
+            icon: "success",
+            position: "bottom-right",
+            toast: true,
+            timer: 3000,
+            background: "#28a745",
+            color: "white",
+            iconColor: "white",
+            showConfirmButton: false,
+            customClass: {
+                title: "swal-title-white",
+            },
+        });
+        await fetchData();
+    } catch (error) {
+        Swal.fire({
+            title: "Error al eliminar rol.",
+            text: error.response?.data?.message || "Algo salió mal.",
+            icon: "error",
+            position: "bottom-right",
+            toast: true,
+            timer: 3000,
+            background: "#dc3545",
+            color: "white",
+            iconColor: "white",
+            showConfirmButton: false,
+            customClass: {
+                title: "swal-title-white",
+            },
+        });
+    }
+};
+
 const fetchData = async () => {
     try {
         const response = await apiService.get(
@@ -76,12 +132,8 @@ const fetchData = async () => {
     }
 };
 
-const handleDetail = () => {
-    console.log("Detalle");
-};
-
 const icons = ref([
-{ class: 'fa-solid fa-magnifying-glass', method:  handleDetail},
+{ class: 'fas fa-trash', method: handleDelete },
 ]);
 
 onMounted(async () => {

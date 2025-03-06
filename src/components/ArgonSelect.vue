@@ -46,6 +46,10 @@ defineProps({
         type: Boolean,
         default: false,
     },
+    disabled: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const getClasses = (size, success, error) => {
@@ -74,7 +78,7 @@ const hasIcon = (icon) => (icon ? "input-group" : null);
             <span v-if="iconDir === 'left'" class="input-group-text">
                 <i :class="getIcon(icon)"></i>
             </span>
-            <select :id="id" class="form-control" :class="getClasses(size, success, error)" :name="name"
+            <select :id="id" class="form-control" :class="getClasses(size, success, error)" :name="name" :disabled="disabled"
                 :required="isRequired" :value="modelValue" @change="emit('update:modelValue', $event.target.value)">
                 <option disabled value="">{{ placeholder }}</option>
                 <option v-for="(option, index) in options" :key="index" :value="option.value">

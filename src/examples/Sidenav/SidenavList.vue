@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
 
@@ -19,16 +19,15 @@ const store = useStore();
 const route = useRoute();
 const router = useRouter();
 
-const isEquiposOpen = ref(false);
 const isNavItemOpen = ref({
   [NavItemsEnum.Users]: false,
   [NavItemsEnum.Mantenimientos]: false,
   [NavItemsEnum.Inventario]: false,
 });
 
-const toggleEquipos = () => {
-  isEquiposOpen.value = !isEquiposOpen.value;
-};
+const menuData = ref(null);
+const role = ref('');
+
 
 const toggleNavItem = (navItemKey) => {
   isNavItemOpen.value[navItemKey] = !isNavItemOpen.value[navItemKey];
@@ -47,6 +46,16 @@ const logout = () => {
   Cookies.remove("menu")
   router.push("/signin")
 }
+
+// Parsear la cookie del menú al montar el componente
+onMounted(() => {
+  const menuCookie = Cookies.get('menu');
+  if (menuCookie) {
+    const parsedMenu = JSON.parse(menuCookie);
+    menuData.value = parsedMenu.menu;
+    role.value = parsedMenu.role;
+  }
+});
 
 watch(route.path, () => updateNavItemOpen());
 const isRTL = computed(() => store.state.isRTL);
@@ -74,173 +83,36 @@ const routeName = computed(() => route.name);
           </sidenav-item>
         </li>
 
-        <li class="nav-item">
-          <div 
-            @click="toggleNavItem(NavItemsEnum.Users)"
-            class="nav-link"
-            :class="{ 'active': routeName === 'users' || isNavItemOpen[NavItemsEnum.Users] }"
-          >
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="fa fa-users text-success text-sm "></i>
+        <!-- Menú dinámico basado en la cookie -->
+        <template v-if="menuData">
+          <li class="nav-item" v-for="(modulo, index) in menuData" :key="index">
+            <div 
+              @click="toggleNavItem(modulo.modulo)"
+              class="nav-link"
+              :class="{ 'active': isNavItemOpen[modulo.modulo] }"
+            >
+              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="ni ni-box-2 text-info text-sm opacity-10"></i>
+              </div>
+              <span class="nav-link-text ms-1">{{ modulo.modulo }}</span>
+              <ChevronDown v-if="!isNavItemOpen[modulo.modulo]" class="ml-auto" />
+              <ChevronUp v-else class="ml-auto" />
             </div>
-            <span class="nav-link-text ms-1">Usuarios</span>
-            <ChevronDown v-if="!isNavItemOpen[NavItemsEnum.Users]" class="ml-auto" />
-            <ChevronUp v-else class="ml-auto" />
-          </div>
-          <ul v-if="isNavItemOpen[NavItemsEnum.Users]" class="nav-item-dropdown">
-            <li>
-              <sidenav-item
-                to="/users/access"
-                :class="route.path === '/users/access' ? 'active' : ''"
-                :navText="'Control de acceso'"
-              >
-                <template v-slot:icon>
-                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
-                </template>
-              </sidenav-item>
-            </li>
-            <li>
-              <sidenav-item
-                to="/users/add"
-                :class="route.path === '/users/add' ? 'active' : ''"
-                :navText="'Agregar usuarios'"
-              >
-                <template v-slot:icon>
-                  <i class="ni ni-fat-add text-success text-sm "></i>
-                </template>
-              </sidenav-item>
-            </li>
-            <li>
-              <sidenav-item
-                to="/users/control"
-                :class="route.path === '/machineandteams/add' ? 'active' : ''"
-                :navText="'Gestión de usuarios'"
-              >
-                <template v-slot:icon>
-                  <i class="fa fa-user text-success text-sm "></i>
-                </template>
-              </sidenav-item>
-            </li>
-          </ul>
-        </li>
-
-        <li class="nav-item">
-          <div 
-            @click="toggleEquipos"
-            class="nav-link"
-            :class="{ 'active': routeName === 'machineandteams' || isEquiposOpen }"
-          >
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-credit-card text-success text-sm "></i>
-            </div>
-            <span class="nav-link-text ms-1">Maquinarias</span>
-            <ChevronDown v-if="!isEquiposOpen" class="ml-auto" />
-            <ChevronUp v-else class="ml-auto" />
-          </div>
-          <ul v-if="isEquiposOpen" class="nav-item-dropdown">
-            <li>
-              <sidenav-item
-                to="/machineandteams/list"
-                :class="route.path === '/machineandteams/list' ? 'active' : ''"
-                :navText="'Agregar Categoria'"
-              >
-                <template v-slot:icon>
-                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
-                </template>
-              </sidenav-item>
-            </li>
-            <li>
-              <sidenav-item
-                to="/machineandteams/add"
-                :class="route.path === '/machineandteams/add' ? 'active' : ''"
-                :navText="'Categorias'"
-              >
-                <template v-slot:icon>
-                  <i class="ni ni-fat-add text-success text-sm "></i>
-                </template>
-              </sidenav-item>
-            </li>
-            <li>
-              <sidenav-item
-                to="/assets"
-                :class="route.path === '/Bienes' ? 'active' : ''"
-                :navText="'Bienes '"
-              >
-                <template v-slot:icon>
-                  <i class="ni ni-fat-add text-success text-sm "></i>
-                </template>
-              </sidenav-item>
-            </li>
-          </ul>
-        </li>
-
-        <li class="nav-item">
-          <div 
-            @click="toggleNavItem(NavItemsEnum.Mantenimientos)"
-            class="nav-link"
-            :class="{ 'active': routeName === 'mantenimientos' || isNavItemOpen[NavItemsEnum.Mantenimientos] }"
-          >
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-settings text-info text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Mantenimientos</span>
-            <ChevronDown v-if="!isNavItemOpen[NavItemsEnum.Mantenimientos]" class="ml-auto" />
-            <ChevronUp v-else class="ml-auto" />
-          </div>
-          <ul v-if="isNavItemOpen[NavItemsEnum.Mantenimientos]" class="nav-item-dropdown">
-            <li>
-              <sidenav-item
-                to="/mantenimientos/planear-mantenimiento"
-                :class="route.path === '/mantenimientos/planear-mantenimiento' ? 'active' : ''"
-                :navText="'Planear Mantenimiento'"
-              >
-                <template v-slot:icon>
-                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
-                </template>
-              </sidenav-item>
-            </li>
-            <li>
-              <sidenav-item
-                to="/mantenimientos/GestionActividaes"
-                :class="route.path === '/mantenimientos/planear-mantenimiento' ? 'active' : ''"
-                :navText="'Gestion Actual'"
-              >
-                <template v-slot:icon>
-                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
-                </template>
-              </sidenav-item>
-            </li>
-          </ul>
-        </li>
-
-        <!-- Menú de Inventario -->
-        <li class="nav-item">
-          <div 
-            @click="toggleNavItem(NavItemsEnum.Inventario)"
-            class="nav-link"
-            :class="{ 'active': routeName === 'assets' || isNavItemOpen[NavItemsEnum.Inventario] }"
-          >
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-box-2 text-info text-sm opacity-10"></i>
-            </div>
-            <span class="nav-link-text ms-1">Inventario</span>
-            <ChevronDown v-if="!isNavItemOpen[NavItemsEnum.Inventario]" class="ml-auto" />
-            <ChevronUp v-else class="ml-auto" />
-          </div>
-          <ul v-if="isNavItemOpen[NavItemsEnum.Inventario]" class="nav-item-dropdown">
-            <li>
-              <sidenav-item
-                to="/assets/new"
-                :class="route.path === '/assets/new' ? 'active' : ''"
-                :navText="'Agregar bienes'"
-              >
-                <template v-slot:icon>
-                  <i class="ni ni-bullet-list-67 text-success text-sm "></i>
-                </template>
-              </sidenav-item>
-            </li>
-          </ul>
-        </li>
+            <ul v-if="isNavItemOpen[modulo.modulo]" class="nav-item-dropdown">
+              <li v-for="(view, viewIndex) in modulo.views" :key="viewIndex">
+                <sidenav-item
+                  :to="view.route"
+                  :class="route.path === view.route ? 'active' : ''"
+                  :navText="view.name"
+                >
+                  <template v-slot:icon>
+                    <i class="ni ni-bullet-list-67 text-success text-sm "></i>
+                  </template>
+                </sidenav-item>
+              </li>
+            </ul>
+          </li>
+        </template>
 
         <!-- Sección de "Perfil y Configuraciones" -->
         <li class="mt-12 nav-item">
@@ -264,7 +136,8 @@ const routeName = computed(() => route.name);
           </sidenav-item>
         </li>
 
-        <li class="nav-item">
+        <!-- Mostrar "Configuraciones" solo si el rol es administrador -->
+        <li class="nav-item" v-if="role === 'administrador'">
           <sidenav-item
             to="/configuration"
             :class="routeName === 'configuration' ? 'active' : ''"
@@ -291,7 +164,6 @@ const routeName = computed(() => route.name);
       </ul>
     </div>
   </div>
-
 </template>
 
 <style scoped>
@@ -344,5 +216,4 @@ const routeName = computed(() => route.name);
   overflow-y: auto; 
   max-height: calc(100vh - 200px);
 }
-
 </style>

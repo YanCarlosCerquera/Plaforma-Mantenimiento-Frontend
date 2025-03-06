@@ -51,7 +51,7 @@ const props = defineProps({
   isRequired: {
     type: Boolean,
     default: false,
-  },
+  },  
 });
 
 const isPasswordVisible = ref(false);

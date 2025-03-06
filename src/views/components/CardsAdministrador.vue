@@ -26,10 +26,10 @@ onMounted(async () => {
     }
 
     try {
-        const response = await apiService.get("/work-order");
-        workOrders.value.total = response.length;
-        workOrders.value.executed = response.filter((wo) => wo.status === "Ejecutada").length;
-        workOrders.value.expired = response.filter((wo) => wo.status === "Vencida").length;
+        const response = await apiService.get("/word-orden/statics");
+        workOrders.value.total = response.All;
+        workOrders.value.executed = response.Executed;
+        workOrders.value.expired = response.Expired;
     } catch (error) {
         console.error("Error fetching work orders:", error);
     }
@@ -38,14 +38,14 @@ onMounted(async () => {
 </script>
 
 <template>
-<h4 class="text-success text-center mb-4">Solicitudes de actividades de mantenimiento</h4>
+<h4 class="text-success text-center my-4">Solicitudes de actividades de mantenimiento</h4>
         
         <div class="dashboard-cards">
           <div class="dashboard-card">
             <div class="card-content">
               <div class="card-info">
                 <p class="card-title">Total Solicitudes</p>
-                <h2 class="card-value">124</h2>
+                <h2 class="card-value">{{ maintenances.total  }}</h2>
               </div>
               <div class="card-icon green-bg">
                 <i class="fas fa-chart-line"></i>
@@ -57,7 +57,7 @@ onMounted(async () => {
             <div class="card-content">
               <div class="card-info">
                 <p class="card-title">Total Ejecutadas</p>
-                <h2 class="card-value">124</h2>
+                <h2 class="card-value">{{ maintenances.executed  }}</h2>
               </div>
               <div class="card-icon green-bg">
                 <i class="fas fa-chart-line"></i>
@@ -69,7 +69,7 @@ onMounted(async () => {
             <div class="card-content">
               <div class="card-info">
                 <p class="card-title">Total pendientes</p>
-                <h2 class="card-value">155</h2>
+                <h2 class="card-value">{{ maintenances.pending  }}</h2>
               </div>
               <div class="card-icon orange-bg">
                 <i class="fas fa-clock"></i>
@@ -85,7 +85,7 @@ onMounted(async () => {
             <div class="card-content">
               <div class="card-info">
                 <p class="card-title">Total Ordenes Trabajo</p>
-                <h2 class="card-value">124</h2>
+                <h2 class="card-value">{{ workOrders.total  }}</h2>
               </div>
               <div class="card-icon green-bg">
                 <i class="fas fa-chart-line"></i>
@@ -97,7 +97,7 @@ onMounted(async () => {
             <div class="card-content">
               <div class="card-info">
                 <p class="card-title">Total OT Ejecutadas</p>
-                <h2 class="card-value">124</h2>
+                <h2 class="card-value">{{ workOrders.executed  }}</h2>
               </div>
               <div class="card-icon green-bg">
                 <i class="fas fa-chart-line"></i>
@@ -109,7 +109,7 @@ onMounted(async () => {
             <div class="card-content">
               <div class="card-info">
                 <p class="card-title">Total Vencidas</p>
-                <h2 class="card-value">124</h2>
+                <h2 class="card-value">{{ workOrders.expired  }}</h2>
               </div>
               <div class="card-icon red-bg">
                 <i class="fas fa-times-circle"></i>
@@ -128,6 +128,7 @@ onMounted(async () => {
   gap: 20px;
   width: 100%;
   margin-bottom: 30px;
+  margin-top: 30px;
 }
 
 .dashboard-card {
