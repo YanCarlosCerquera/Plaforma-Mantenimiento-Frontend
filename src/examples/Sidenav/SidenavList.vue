@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
+import Swal from 'sweetalert2';
 
 import SidenavItem from "./SidenavItem.vue";
 import { watch } from "vue";
@@ -42,9 +43,27 @@ const updateNavItemOpen = () => {
 };
 
 const logout = () => {
-  Cookies.remove("authToken");
-  Cookies.remove("menu")
-  router.push("/signin")
+  Swal.fire({
+    title: '¿Estás seguro?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, cerrar sesión',
+    cancelButtonText: 'Cancelar',
+    customClass: {
+      title: "text-succes",
+      confirmButton: "btn-success",
+      cancelButton: "btn-danger",
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Cookies.remove("authToken");
+      Cookies.remove("menu");
+      store.commit("setAuthToken", null);
+      router.push("/signin");
+    }
+  });
 }
 
 // Parsear la cookie del menú al montar el componente
