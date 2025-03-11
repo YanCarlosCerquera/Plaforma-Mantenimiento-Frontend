@@ -168,7 +168,7 @@ if (workOrder.value?.maintenances && workOrder.value.maintenances.length > 0) {
 
         // Si hay solicitudId, obtener info adicional
         if (workOrder.value?.solicitud) {
-          await fetchAssetInfo(workOrder.value.solicitud);
+          await fetchAssetInfo(workOrder.value.solicitud._id);
         }
       } catch (error) {
         console.error("Error al obtener los datos de la orden:", error);
