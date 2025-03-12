@@ -2,12 +2,11 @@
   <div class="inventory-form">
     <header class="form-header">
       <div>
-        <h1 class="title">Inventarios</h1>
-        <h2 class="subtitle">
+        <h2 class="title">Inventarios</h2>
+        <h5 class="subtitle">
           {{ isEditMode ? "Editar bien" : "Registrar nuevo bien" }}
-        </h2>
+        </h5>
       </div>
-      <img src="../../assets/logoSena.jpg" alt="SENA Logo" class="sena-logo" />
     </header>
 
     <form @submit.prevent="handleSubmit" class="form-container">
@@ -562,8 +561,7 @@ onMounted(async () => {
 .inventory-form {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  font-family: Arial, sans-serif;
+  padding:0 2rem;
 }
 
 .form-header {
@@ -574,21 +572,13 @@ onMounted(async () => {
 }
 
 .title {
-  color: #2ea12e;
-  font-size: 1.5rem;
-  font-weight: 600;
+  color: #ffffff;
   margin: 0;
 }
 
 .subtitle {
-  color: #333;
-  font-size: 1.25rem;
-  font-weight: 500;
+  color: #494949;
   margin: 0;
-}
-
-.sena-logo {
-  height: 50px;
 }
 
 .form-container {

@@ -2,10 +2,9 @@
   <div class="planear-mantenimiento-form">
     <header class="form-header">
       <div>
-        <h1 class="title">Gestion de actividades de mantenimiento</h1>
-        <h2 class="subtitle">Solicitud de mantenimiento</h2>
+        <h2 class="title">Gestion de actividades de mantenimiento</h2>
+        <h5 class="subtitle">Solicitud de mantenimiento</h5>
       </div>
-      <img src="../assets/logoSena.jpg" alt="SENA Logo" class="sena-logo" />
     </header>
 
     <form @submit.prevent="handleSubmit" class="form-container">
@@ -313,8 +312,7 @@ onMounted(() => {
 .planear-mantenimiento-form {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  font-family: Arial, sans-serif;
+  padding: 0 2rem;
 }
 
 .form-header {
@@ -326,15 +324,11 @@ onMounted(() => {
 
 .title {
   color: #ffffff;
-  font-size: 1.5rem;
-  font-weight: 800;
   margin: 0;
 }
 
 .subtitle {
   color: #494949;
-  font-size: 1.25rem;
-  font-weight: 500;
   margin: 0;
 }
 
@@ -369,7 +363,7 @@ onMounted(() => {
 }
 
 .section-title {
-  color: #2EA12E;
+  color: #39A900;
   font-size: 1.25rem;
   margin-bottom: 1.5rem;
 }
@@ -417,7 +411,7 @@ textarea {
 .form-input:focus,
 .form-select:focus {
   outline: none;
-  border-color: #2EA12E;
+  border-color: #39A900;
   box-shadow: 0 0 0 2px rgba(46, 161, 46, 0.1);
 }
 
@@ -427,7 +421,7 @@ textarea {
 }
 
 .btn-submit {
-  background-color: #2EA12E;
+  background-color: #39A900;
   color: white;
   border: none;
   border-radius: 4px;
@@ -438,7 +432,7 @@ textarea {
 }
 
 .btn-submit:hover {
-  background-color: #248f24;
+  background-color: #2d8000;
 }
 
 @media (max-width: 768px) {

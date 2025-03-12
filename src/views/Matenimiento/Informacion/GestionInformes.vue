@@ -29,7 +29,7 @@ export default {
       Horas: { value: "Horas", class: "align-middle", textClass: "text-xs font-weight-bold" },
       Costos: { value: "Costos", class: "align-middle", textClass: "text-xs font-weight-bold" },
       TrabajoRealizado: { value: "TrabajoRealizado", class: "align-middle", textClass: "text-xs font-weight-bold" },
-      EjecutadoPor: { value: "EjecutadoPor", class: "align-middle", textClass: "text-xs font-weight-bold" },
+      EjecutadoPor: { value: "Ejecutado Por", class: "align-middle", textClass: "text-xs font-weight-bold" },
     });
 
     // Iconos de acciones
@@ -80,7 +80,7 @@ export default {
 </script>
 
 <template>
-  <div class="py-4 container-fluid">
+  <div class="container-fluid">
     <div class="row">
       <div class="col-12">
         <div v-if="isLoading" class="text-center my-4">

@@ -396,10 +396,9 @@ onMounted(async () => {
 
 <style scoped>
 .maintenance-form {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding:0 20px;
   color: #333;
 }
 
@@ -436,8 +435,8 @@ onMounted(async () => {
   margin-bottom: 25px;
   padding-bottom: 10px;
   position: relative;
-  color: #4CAF50;
-  border-bottom: 2px solid #4CAF50;
+  color: #39A900;
+  border-bottom: 2px solid #39A900;
   text-align: center; /* Centra el texto */
 }
 
@@ -500,7 +499,7 @@ onMounted(async () => {
 }
 
 .refresh-button {
-  background-color: #4CAF50;
+  background-color: #39A900;
   color: white;
   border: none;
   border-radius: 8px;
@@ -574,7 +573,7 @@ onMounted(async () => {
 }
 
 .btn-submit {
-  background-color: #4CAF50;
+  background-color: #39A900;
   color: white;
   border: none;
   border-radius: 8px;

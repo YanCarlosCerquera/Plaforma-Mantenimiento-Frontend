@@ -142,7 +142,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="py-4 container-fluid">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-12">
                 <AuthorsTable :title="'Historial de acciones'" :headers="headers" :rows="rows" :fields="fields"
@@ -156,14 +156,14 @@ onMounted(async () => {
 
 .btn-custom {
     background-color: white; 
-    color: #28a745; 
-    border: 1px solid #28a745; 
+    color: #39A900; 
+    border: 1px solid #2d8000; 
     transition: all 0.3s ease; 
     margin-bottom: 0%;
 }
 
 .btn-custom:hover {
-    background-color: #28a745; 
+    background-color: #2d8000; 
     color: white; 
 }
 

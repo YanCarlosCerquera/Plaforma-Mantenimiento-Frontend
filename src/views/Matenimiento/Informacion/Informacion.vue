@@ -206,8 +206,7 @@ onMounted(async () => {
 .orden-trabajo-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding:0 20px;
   position: relative;
   overflow: hidden;
 }
@@ -220,7 +219,7 @@ onMounted(async () => {
 }
 
 .main-title {
-  color: #39a900;
+  color: #39A900;
   font-size: 28px;
   font-weight: 600;
   margin: 0;
@@ -241,7 +240,7 @@ onMounted(async () => {
 }
 
 .section-title {
-  color: #39a900;
+  color: #39A900;
   font-size: 22px;
   font-weight: 600;
   text-align: center;
@@ -296,7 +295,7 @@ onMounted(async () => {
 }
 
 .order-number {
-  color: #39a900;
+  color: #39A900;
   font-weight: 600;
 }
 
@@ -304,7 +303,7 @@ onMounted(async () => {
   display: inline-block;
   padding: 4px 12px;
   background-color: #d4edda;
-  color: #155724;
+  color: #39A900;
   border-radius: 4px;
   font-weight: 500;
 }

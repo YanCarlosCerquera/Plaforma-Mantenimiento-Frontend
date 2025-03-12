@@ -162,12 +162,12 @@ const handleCancel = () => {
   <main>
     <div class="card shadow-lg mt-2 mx-2 mx-md-8">
       <div class="card-title d-flex align-items-center justify-content-center" style="margin: 1rem">
-        <h3 class="mb-1 text-h4 text-success">Agregar usuario</h3>
+        <h3 class="mb-1 text-success">Agregar usuario</h3>
       </div>
       <div class="card-body p-3">
         <form @submit.prevent="handleSubmit">
           <div class="grid-container">
-            <!-- Columna izquierda -->
+            <!-- Columna izquierda -->  
             <div class="grid-item image-container">
               <div class="text-center">
                 <div class="image-upload" style="position: relative; display: inline-block">
@@ -281,7 +281,7 @@ const handleCancel = () => {
 }
 
 .text-success {
-  color: #39b54a !important;
+  color: #39A900 !important;
 }
 
 .image-upload img {

@@ -355,8 +355,7 @@ const downloadExcel = () => {
   border-radius: 20%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  font-family: Arial, sans-serif;
+  padding:0 2rem;
 }
 
 .form {

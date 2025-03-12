@@ -43,7 +43,10 @@ const rows = ref([]);
 const fetchData = async () => {
   try {
     const response = await apiService.get('/Categorias');
-    rows.value = response;
+    rows.value = response.map(item => ({
+      ...item,
+      state: item.state ? 'Activo' : 'Inactivo'
+    }));
     console.log(rows.value);
   } catch (error) {
     console.error("Error fetching asset data:", error);
@@ -165,10 +168,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="py-5 container-fluid">
+  <div class="container-fluid">
     <div class="row">
       <div class="col-12">
         <AuthorsTable
+          :title="'Gestion de Categorias'"
           :headers="headers"
           :rows="filteredRows"
           :fields="fields"

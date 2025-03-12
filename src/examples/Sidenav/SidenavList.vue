@@ -26,6 +26,17 @@ const isNavItemOpen = ref({
   [NavItemsEnum.Inventario]: false,
 });
 
+const moduleIcons = {
+  Usuario: 'ni ni-single-02', 
+  Inventario: 'ni ni-box-2', 
+  'Maquinas y Equipos': 'ni ni-money-coins', 
+  Mantenimientos: 'ni ni-settings-gear-65',
+};
+
+const getModuleIcon = (moduleName) => {
+  return moduleIcons[moduleName] || 'ni ni-collection'; // Icono base por defecto
+};
+
 const menuData = ref(null);
 const role = ref('');
 
@@ -111,7 +122,7 @@ const routeName = computed(() => route.name);
               :class="{ 'active': isNavItemOpen[modulo.modulo] }"
             >
               <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                <i class="ni ni-box-2 text-info text-sm opacity-10"></i>
+                <i :class="getModuleIcon(modulo.modulo) + ' text-info text-sm opacity-10'"></i>
               </div>
               <span class="nav-link-text ms-1">{{ modulo.modulo }}</span>
               <ChevronDown v-if="!isNavItemOpen[modulo.modulo]" class="ml-auto" />

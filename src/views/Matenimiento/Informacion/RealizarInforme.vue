@@ -284,7 +284,6 @@ export default {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
 }
 
 
@@ -333,7 +332,7 @@ export default {
 }
 
 h2 {
-  color: #40b820;
+  color: #39A900;
   font-size: 18px;
   font-weight: bold;
   text-align: center;
@@ -413,7 +412,7 @@ textarea {
 
 /* Button styles */
 .save-button {
-  background-color: #40b820;
+  background-color: #39A900;
   color: white;
   border: none;
   border-radius: 4px;
@@ -425,7 +424,7 @@ textarea {
 }
 
 .save-button:hover {
-  background-color: #359818;
+  background-color: #2d8000;
 }
 
 /* Responsive styles */

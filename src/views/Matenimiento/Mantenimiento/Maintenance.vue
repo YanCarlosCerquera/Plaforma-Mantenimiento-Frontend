@@ -536,8 +536,7 @@ onMounted(() => {
 .maintenance-form {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  padding:0 20px;
   position: relative;
   overflow: hidden;
   color: #333;
@@ -592,13 +591,13 @@ onMounted(() => {
 
 .main-title {
   font-size: 22px;
-  color: #39a900;
+  color: #39A900;
   margin: 0;
   font-weight: 600;
 }
 
 .action-button {
-  background: #39a900;
+  background: #39A900;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -612,7 +611,7 @@ onMounted(() => {
 }
 
 .action-button:hover {
-  background: #2d8500;
+  background: #2d8000;
 }
 
 .form-grid {
@@ -648,7 +647,7 @@ onMounted(() => {
 }
 
 .form-input:focus, .form-textarea:focus {
-  border-color: #39a900;
+  border-color: #39A900;
   outline: none;
 }
 
@@ -674,7 +673,7 @@ onMounted(() => {
 
 .section-title {
   text-align: center;
-  color: #39a900;
+  color: #39A900;
   font-size: 20px;
   margin: 0 0 24px;
   font-weight: 600;
@@ -708,8 +707,8 @@ onMounted(() => {
 
 .checkbox-label.selected {
   background-color: #e8f5e9;
-  color: #39a900;
-  border-color: #39a900;
+  color: #39A900;
+  border-color: #39A900;
 }
 
 .bottom-row {
@@ -747,7 +746,7 @@ onMounted(() => {
 
 .submit-button {
   border: none;
-  background-color: #39a900;
+  background-color: #39A900;
   color: white;
 }
 
@@ -756,7 +755,7 @@ onMounted(() => {
 }
 
 .submit-button:hover {
-  background-color: #2d8500;
+  background-color: #2d8000;
 }
 
 @media (max-width: 992px) {

@@ -133,7 +133,7 @@ const fetchWordOrdens = async () => {
         const { userId, role } = props.userData;
         let url = '/word-orden';
         
-        if (role === 'instructor' || role === 'tecnico') {
+        if (role === 'instructor' || role === 'técnico') {
             url += `?${role}Id=${userId}`;
         }
 
@@ -153,7 +153,7 @@ const fetchWorkReports = async () => {
         const { userId, role } = props.userData;
         let url = '/work-report';
         
-        if (role === 'instructor' || role === 'tecnico') {
+        if (role === 'instructor' || role === 'técnico') {
             url += `?${role}Id=${userId}`;
         }
 
@@ -317,7 +317,7 @@ onMounted(async () => {
 .title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #4CAF50;
+    color: #39A900;
     margin: 0;
 }
 
@@ -340,7 +340,7 @@ onMounted(async () => {
 }
 
 .tab-button.active {
-    background-color: #4CAF50;
+    background-color: #39A900;
     color: white;
 }
 
@@ -352,7 +352,7 @@ onMounted(async () => {
 
 .estado-ejecutada {
     background-color: #e8f5e9;
-    color: #2e7d32;
+    color: #39A900;
     padding: 4px 8px;
     border-radius: 4px;
     display: inline-block;
@@ -398,7 +398,7 @@ onMounted(async () => {
 }
 
 .download-btn:hover, .search-btn:hover {
-    color: #4CAF50;
+    color: #2d8000;
 }
 
 /* Responsive styles */

@@ -38,7 +38,7 @@ onMounted(async () => {
 </script>
 
 <template>
-<h4 class="text-success text-center my-4">Solicitudes de actividades de mantenimiento</h4>
+<h4 class="text-succes text-center my-4">Solicitudes de actividades de mantenimiento</h4>
         
         <div class="dashboard-cards">
           <div class="dashboard-card">
@@ -78,7 +78,7 @@ onMounted(async () => {
           </div>
         </div>
         
-        <h4 class="text-success text-center my-4">Ordenes de trabajo</h4>
+        <h4 class="text-succes text-center my-4">Ordenes de trabajo</h4>
         
         <div class="dashboard-cards">
           <div class="dashboard-card">
@@ -181,7 +181,7 @@ onMounted(async () => {
 }
 
 .green-bg {
-  background-color: #28a745;
+  background-color: #39A900;
 }
 
 .orange-bg {

@@ -301,7 +301,6 @@ const formatPhoneNumber = (event) => {
 .register-container {
   display: flex;
   min-height: 100vh;
-  font-family: "Roboto", sans-serif;
 }
 
 .register-card {
@@ -314,9 +313,7 @@ const formatPhoneNumber = (event) => {
   background-color: #d8e0d7ad;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  margin: 2rem;
-  max-height: 70vh;
-  margin-top: 150px;
+  margin:auto 2rem;
 }
 
 

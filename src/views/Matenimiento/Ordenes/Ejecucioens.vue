@@ -265,7 +265,7 @@ if (workOrder.value?.maintenances && workOrder.value.maintenances.length > 0) {
 }
 
 .main-title {
-  color: #4caf50;
+  color: #39A900;
   font-size: 24px;
   font-weight: 500;
   margin: 0;
@@ -318,7 +318,7 @@ if (workOrder.value?.maintenances && workOrder.value.maintenances.length > 0) {
 
 .status.executed {
   background-color: #e8f5e9;
-  color: #4caf50;
+  color: #39A900;
 }
 
 .right-column {
@@ -335,7 +335,7 @@ if (workOrder.value?.maintenances && workOrder.value.maintenances.length > 0) {
 }
 
 .view-report-btn {
-  background-color: #4caf50;
+  background-color: #39A900;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -380,7 +380,7 @@ if (workOrder.value?.maintenances && workOrder.value.maintenances.length > 0) {
 }
 
 .section-title {
-  color: #4caf50;
+  color: #39A900;
   font-size: 20px;
   padding: 20px 24px;
   margin: 0;

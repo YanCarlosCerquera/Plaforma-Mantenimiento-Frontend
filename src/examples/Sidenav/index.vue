@@ -3,7 +3,6 @@ import { computed } from "vue";
 import { useStore } from "vuex";
 import SidenavList from "./SidenavList.vue";
 import logo from "@/assets/img/sena-logo.png";
-import logoWhite from "@/assets/img/logo-ct.png";
 
 const store = useStore();
 const isRTL = computed(() => store.state.isRTL);
@@ -35,7 +34,7 @@ const darkMode = computed(() => store.state.darkMode);
 
       <router-link class="m-0 navbar-brand" to="/">
         <img
-          :src="darkMode || sidebarType === 'bg-default' ? logoWhite : logo"
+          :src="darkMode || sidebarType === 'bg-default' ? logo : logo"
           class="navbar-brand-img h-100"
           alt="main_logo"
         />

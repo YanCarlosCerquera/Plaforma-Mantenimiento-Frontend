@@ -88,18 +88,21 @@ function onSelect(item) {
   border-radius: 6px !important;
   background: white !important;
   padding: 0 !important;
+  font-family: "Open Sans", sans-serif !important;
 }
 
 .custom-autocomplete :deep(.v-field__outline) {
   border-radius: 6px !important;
   border-color: #dee2e6 !important;
   color: #dee2e6 !important;
+  font-family: "Open Sans", sans-serif !important;
 }
 
 .custom-autocomplete :deep(.v-field__input) {
   padding: 8px 12px !important;
   min-height: 42px !important;
   font-size: 14px !important;
+  font-family: "Open Sans", sans-serif !important;
 }
 
 .custom-autocomplete :deep(.v-field__append-inner) {
@@ -122,6 +125,7 @@ function onSelect(item) {
 .custom-autocomplete :deep(.v-list-item) {
   min-height: 35px;
   padding: 0 12px;
+  font-family: "Open Sans", sans-serif !important;
 }
 
 .custom-autocomplete :deep(.v-list-item__content) {

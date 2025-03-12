@@ -1,13 +1,13 @@
 <template>
     <div class="container">
       <div class="header">
-        <h1>Maquinaria y equipos</h1>
-        <p>{{ isUpdating ? "Actualizar Categoría" : "Agregar Categoría" }}</p>
+        <h3 >Maquinaria y equipos</h3>
+        <h5>{{ isUpdating ? "Actualizar Categoría" : "Agregar Categoría" }}</h5>
       </div>
   
       <div class="form-container">
         <div class="form-group">
-          <label>Nombre de la Categoría</label>
+          <h2>Nombre de la Categoría</h2>
           <input v-model="name" placeholder="Nombre" class="input-nombre" />
         </div>
   
@@ -89,7 +89,7 @@
   </template>
   
   <script setup>
-  import { ref, computed, onMounted } from "vue";
+  import { ref, computed, onMounted, onUnmounted } from "vue";
   import { useRouter } from "vue-router";
   import { useStore } from "vuex";
   import apiService from "../../service/apiService";
@@ -203,13 +203,17 @@
       }
     }
   });
+
+  onUnmounted(() => {
+  Cookies.remove('categoryId');
+  });
   </script>
     
     <style scoped>
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 1rem;
+      padding:0 1rem;
       font-family: system-ui, -apple-system, sans-serif;
     }
     
@@ -218,16 +222,15 @@
       text-align: start;
     }
     
-    .header h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
+    .header h3 {
+      color: #ffffff;
       margin: 0;
       letter-spacing: -0.025em;
     }
     
-    .header p {
+    .header h5 {
       font-size: 1rem;
-      color: #64748b;
+      color: #494949;
       margin-top: 0.5rem;
     }
     
@@ -242,14 +245,13 @@
       margin-bottom: 1.5rem;
     }
     
-    .form-group label {
+    .form-group h2 {
       display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #1e293b;
+      font-size: 1rem;
+      font-weight: 600;
       margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: -0.025em;
+      color: #000000;
     }
     
     .input-nombre {

@@ -222,7 +222,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="py-4 container-fluid">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-12">
                 
@@ -285,14 +285,14 @@ onMounted(async () => {
 /* Estilos personalizados para el botón */
 .btn-custom {
     background-color: white; /* Fondo blanco */
-    color: #28a745; /* Letra verde */
-    border: 1px solid #28a745; /* Borde verde */
+    color: #39A900; /* Letra verde */
+    border: 1px solid #2d8000; /* Borde verde */
     transition: all 0.3s ease; /* Transición suave */
     margin-bottom: 0%;
 }
 
 .btn-custom:hover {
-    background-color: #28a745; /* Fondo verde al pasar el mouse */
+    background-color: #2d8000; /* Fondo verde al pasar el mouse */
     color: white; /* Letra blanca al pasar el mouse */
 }
 

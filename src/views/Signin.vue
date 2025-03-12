@@ -175,7 +175,6 @@ onBeforeUnmount(() => {
 .login-container {
   display: flex;
   height: 100vh;
-  font-family: "Arial", sans-serif;
   background-color: #f8f9fa;
 }
 
@@ -189,9 +188,8 @@ onBeforeUnmount(() => {
   background-color: #d8e0d7ad;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  margin: 2rem;
+  margin:auto 2rem;
   max-height: 700px;
-  margin-top: 250px;
 }
 
 .logo-container {
@@ -208,7 +206,7 @@ onBeforeUnmount(() => {
 
 .main-title {
   font-size: 1.75rem;
-  color: #28a745;
+  color: #39A900;
   margin: 0;
 }
 
@@ -249,7 +247,7 @@ select {
 input:focus,
 select:focus {
   outline: none;
-  border-color: #28a745;
+  border-color: #39A900;
   box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
 }
 
@@ -371,20 +369,18 @@ select:focus {
 @media (max-width: 576px) {
   .login-card {
     max-width: 100%;
-    margin: 1rem;
+    margin:auto 1rem;
     padding: 1.5rem;
     max-height: 700px;
-    margin-top: 250px;
   }
 }
 
 @media (min-width: 577px) and (max-width: 992px) {
   .login-card {
     max-width: 80%;
-    margin: 1.5rem;
+    margin:auto 1.5rem;
     padding: 1.75rem;
     max-height: 700px;
-    margin-top: 250px;
   }
 }
 
@@ -399,9 +395,8 @@ select:focus {
     background-color: #d8e0d7ad;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
-    margin: 2rem;
+    margin:auto 2rem;
     max-height: 700px;
-    margin-top: 250px;
   }
 }
 </style>

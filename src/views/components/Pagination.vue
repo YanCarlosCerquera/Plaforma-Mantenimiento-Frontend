@@ -86,8 +86,8 @@ export default {
 }
 
 .page-number.active {
-  border-color: #39a900;
-  color: #39a900;
+  border-color: #39A900;
+  color: #39A900;
   font-weight: bold;
 }
 

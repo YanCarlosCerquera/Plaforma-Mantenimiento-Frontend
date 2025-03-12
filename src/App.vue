@@ -4,7 +4,7 @@
 }
 
 .text-succes {
-  color: #39a900 !important;
+  color: #39A900 !important;
 }
 
 .modal-title {
@@ -19,12 +19,24 @@
 }
 
 .btn-success {
-  background-color: #39a900 !important;
+  background-color: #39A900 !important;
   color: white !important;
 }
 
 .modal-footer {
   gap: 10px;
+}
+
+.sena-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #fff;
+  padding: 6px;
+}
+
+.global-typography {
+  font-family: "Open Sans", sans-serif !important;
 }
 </style>
 <script setup>
@@ -67,7 +79,7 @@ const navClasses = computed(() => {
   <sidenav v-if="showSidenav" />
 
   <main
-    class="main-content position-relative max-height-vh-100 h-100 border-radius-lg"
+    class="main-content position-relative max-height-vh-100 h-100 border-radius-lg global-typography"
   >
     <!-- nav -->
 

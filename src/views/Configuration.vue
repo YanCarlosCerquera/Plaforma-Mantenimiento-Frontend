@@ -35,7 +35,7 @@ app.use(vuetify);
     >
       <v-row>
         <v-col cols="12">
-          <h3 class="text-h5 font-weight-bold mb-4">Parametrización</h3>
+          <h3 class="font-weight-bold mb-4">Parametrización</h3>
         </v-col>
 
         <v-col cols="12" md="6">
@@ -73,7 +73,7 @@ app.use(vuetify);
       
       <v-row>
         <v-col cols="12">
-          <h3 class="text-h5 font-weight-bold mb-4">Registros del sistema</h3>
+          <h3 class="font-weight-bold mb-4">Registros del sistema</h3>
         </v-col>
         
         <v-col cols="12">
@@ -99,7 +99,7 @@ export default {
 }
 
 .system-configuration {
-  padding: 24px;
+  padding: 0  24px;
 }
 
 .container-full-width {
@@ -115,12 +115,12 @@ export default {
   align-items: center;
   transition: all 0.3s ease;
   border-radius: 8px;
-  border: 1px solid #4caf50;
+  border: 1px solid #39A900;
   width: 100%; /* Asegura que todos los botones tengan el mismo ancho */
 }
 
 .custom-btn:hover {
-  background-color: #4caf50;
+  background-color: #39A900;
   color: white !important;
 }
 
@@ -129,7 +129,7 @@ export default {
 }
 
 .custom-btn i {
-  color: #4caf50;
+  color: #39A900;
 }
 
 .icon-end {

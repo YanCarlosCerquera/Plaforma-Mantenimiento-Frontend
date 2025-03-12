@@ -200,7 +200,7 @@ export default {
 <template>
   <div class="row justify-content-space-between py-2" style="border-radius: 8px; padding: 10px;">
     <div class="justify-content-space-between py-2">
-      <h2 v-if="title" class="text-xl font-semibold" style="color: #fff;">{{ title }}</h2>
+      <h2 v-if="title" class=" font-semibold" style="color: #fff;">{{ title }}</h2>
       <div class="py-2">
         <!-- Contenedor flex para alinear botones y filtros -->
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between w-100 gap-2">
@@ -495,7 +495,7 @@ export default {
   padding: 0.5rem 1rem;
   margin: 0 1rem;
   border-radius: 8px;
-  background-color: #28a745;
+  background-color: #39A900;
   color: white;
   font-size: 0.875rem;
   font-weight: 500;
@@ -506,7 +506,7 @@ export default {
 }
 
 .btn-reset:hover {
-  background-color: #5ba86d;
+  background-color: #2d8000;
   box-shadow: 0 4px 6px rgba(116, 192, 252, 0.2);
 }
 
@@ -533,13 +533,13 @@ export default {
 }
 
 .filter-select:hover {
-  border-color: #5ba86d;
+  border-color: #2d8000;
   box-shadow: 0 0 0 2px rgba(116, 192, 252, 0.2);
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #5ba86d;
+  border-color: #2d8000;
   box-shadow: 0 0 0 3px rgba(116, 192, 252, 0.3);
 }
 
@@ -554,14 +554,14 @@ export default {
   right: 1rem;
   transform: translateY(-50%);
   pointer-events: none;
-  color: #5ba86d;
+  color: #2d8000;
   font-size: 0.75rem;
 }
 
 .btn-table {
   cursor: pointer;
   border-radius: 8px;
-  background-color: #28a745;
+  background-color: #39A900;
   color: white;
   transition: all 0.3s ease;
   display: inline-flex;
@@ -570,7 +570,7 @@ export default {
 }
 
 .btn-table:hover {
-  background-color: #5ba86d;
+  background-color: #2d8000;
   box-shadow: 0 4px 6px rgba(116, 192, 252, 0.2);
 }
 
