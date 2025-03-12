@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
+import store from "../store"; 
+import Cookies from "js-cookie";
 import AssetDetail from "../views/Assets/AssetDetail.vue";
 import Assets from "../views/Assets/Assets.vue";
 import detalles_Bien from "../views/Assets/Detalles.vue";
@@ -37,7 +39,20 @@ import TrainingCenter from "../views/Parametrizacion/TrainingCenter.vue";
 import Dependences from "../views/Parametrizacion/dependences.vue";
 import ActionLog from "../views/Parametrizacion/ActionLog.vue";
 
+const publicRoutes = [
+  "/",
+  "/index",
+  "/bienes",
+  "/RecuperarContrase",
+  "/ResetPassword",
+  "/signin",
+  "/signup",
+  "/activo",
+  "/solicitud",
+];
+
 const routes = [
+  //ruta index, login y rgistrarse
   {
     path: "/",
     name: "Home",
@@ -58,6 +73,64 @@ const routes = [
     path: "/RecuperarContrase",
     name: "RecuperarContraseña",
     component: Password,
+  },
+  {
+    path: "/ResetPassword",
+    name: "ResetPassword",
+    component: ResetPassword,
+  },
+  {
+    path: "/signin",
+    name: "Signin",
+    component: Signin,
+  },
+  {
+    path: "/signup",
+    name: "Signup",
+    component: Signup,
+  },
+  {
+    name: "Consultar activo",
+    path: "/activo",
+    component: Bienes,
+  },
+  {
+    name:"Consular Solicitudes",
+    path:"/solicitud",
+    component : Solicitudes
+  },
+  //vistas despues de iniciar sesion
+  {
+    path: "/dashboard-default",
+    name: "Dashboard",
+    component: Dashboard,
+  },
+  {
+    path: "/profile",
+    name: "Profile",
+    component: Profile,
+  },
+  //vistas modulo de usuario
+  {
+    path: "/users/access",
+    name: "Control de accesso",
+    component: Users,
+  },
+  {
+    path: "/users/control",
+    name: "Gestion de usuarios",
+    component: Control_User,
+  },
+  {
+    path: "/users/add",
+    name: "Agregar de usuarios",
+    component: Save_User,
+  },
+  //vistas de parametrizacion
+  {
+    path: "/configuration",
+    name: "Configuration",
+    component: Configuration,
   },
   {
     path: "/rol",
@@ -88,51 +161,6 @@ const routes = [
     path: "/assignmentRoutes",
     name: "permiso de rutas",
     component: AssignmentRoutes,
-  },
-  {
-    path: "/ResetPassword",
-    name: "ResetPassword",
-    component: ResetPassword,
-  },
-  {
-    path: "/dashboard-default",
-    name: "Dashboard",
-    component: Dashboard,
-  },
-  {
-    path: "/profile",
-    name: "Profile",
-    component: Profile,
-  },
-  {
-    path: "/signin",
-    name: "Signin",
-    component: Signin,
-  },
-  {
-    path: "/signup",
-    name: "Signup",
-    component: Signup,
-  },
-  {
-    path: "/users/access",
-    name: "Control de accesso",
-    component: Users,
-  },
-  {
-    path: "/configuration",
-    name: "Configuration",
-    component: Configuration,
-  },
-  {
-    path: "/users/control",
-    name: "Gestion de usuarios",
-    component: Control_User,
-  },
-  {
-    path: "/users/add",
-    name: "Agregar de usuarios",
-    component: Save_User,
   },
   {
     path: "/maquinariayequipos",
@@ -214,16 +242,6 @@ const routes = [
     component: detalles_Bien,
   },
   {
-    name: "Consultar activo",
-    path: "/activo",
-    component: Bienes,
-  },
-  {
-    name:"Consular Solicitudes",
-    path:"/solicitud",
-    component : Solicitudes
-  },
-  {
     name:"ejecu",
     path:"/eje",
     component : Ejecucioens
@@ -252,6 +270,45 @@ const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
   linkActiveClass: "active",
+});
+
+router.beforeEach((to, from, next) => {
+  const isPublicRoute = publicRoutes.includes(to.path);
+  const isAuth = store.getters.isAuth;
+  const menuCookie = Cookies.get("menu"); 
+  const menu = menuCookie ? JSON.parse(menuCookie) : null; 
+  const role = menu ? menu.role : null; 
+
+  const allowedRoutes = menu
+    ? menu.menu.flatMap((modulo) => modulo.views.map((view) => view.route))
+    : [];
+
+  const defaultAllowedRoutes = ["/dashboard-default", "/profile"];
+
+  if (!isPublicRoute && !isAuth) {
+    return next("/index");
+  }
+
+  if (isPublicRoute && isAuth) {
+    return next("/dashboard-default");
+  }
+
+  if (role === "administrador") {
+    return next();
+  }
+
+  if (isAuth && role !== "administrador") {
+    const isAllowed =
+      allowedRoutes.includes(to.path) || defaultAllowedRoutes.includes(to.path);
+
+    if (isAllowed) {
+      return next(); 
+    } else {
+      return next("/dashboard-default"); 
+    }
+  }
+
+  next();
 });
 
 export default router;

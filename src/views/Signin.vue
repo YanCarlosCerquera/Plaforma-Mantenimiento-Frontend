@@ -102,6 +102,8 @@ const handleLogin = async () => {
         sameSite: "strict",
         expires: rememberMe.value ? 7 : 1,
       });
+
+      store.commit("setAuthToken", token);
     }
 
     if (menu) {

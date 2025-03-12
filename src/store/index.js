@@ -1,6 +1,7 @@
 import { createStore } from "vuex";
 import assets from './modules/assets';
 import tables from './modules/tables';
+import Cookies from 'js-cookie';
 
 export default createStore({
   modules: {
@@ -23,8 +24,17 @@ export default createStore({
     showFooter: true,
     showMain: true,
     layout: "default",
+    authToken: Cookies.get("authToken") || null,
   },
   mutations: {
+    setAuthToken(state, token) {
+      state.authToken = token;
+      if (token) {
+        Cookies.set("authToken", token);
+      } else {
+        Cookies.remove("authToken");
+      }
+    },
     toggleConfigurator(state) {
       state.showConfig = !state.showConfig;
     },
@@ -55,6 +65,14 @@ export default createStore({
     toggleSidebarColor({ commit }, payload) {
       commit("sidebarType", payload);
     },
+    login({ commit }, token) {
+      commit("setAuthToken", token);
+    },
+    logout({ commit }) {
+      commit("setAuthToken", null);
+    },  
   },
-  getters: {},
+  getters: {
+    isAuth: (state) => !!state.authToken,
+  },
 });

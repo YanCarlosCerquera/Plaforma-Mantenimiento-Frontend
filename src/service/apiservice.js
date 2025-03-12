@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const apiClient = axios.create({
-    baseURL: process.env.Url || "http://localhost:3000",
+    baseURL: process.env.Url || "http://localhost:3000", 
     headers: {
         "Content-Type": "application/json",
     },
@@ -12,7 +12,7 @@ apiClient.interceptors.request.use(
     (config) => {
         const token = Cookies.get("authToken"); 
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+                config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },

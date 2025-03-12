@@ -188,7 +188,6 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted, watch, reactive } from 'vue'
 import Cookies from 'js-cookie'
@@ -231,6 +230,7 @@ const formData = ref({
   executedBy: '',
   techSignature: '',
 })
+
 const getUserData = () => {
   const authToken = Cookies.get('authToken');
 
@@ -259,7 +259,6 @@ const getUserData = () => {
   }
 };
 
-
 const fetchData = async () => {
   try {
     Swal.showLoading()
@@ -272,9 +271,13 @@ const fetchData = async () => {
     
     const response = await apiService.get(`/word-orden/${Id}`)
     workOrder.value = response
+    console.log("ID de solicitud encontrado:", workOrder.value)
     
-    if (workOrder.value?.solicitud) {
-      await fetchAssetInfo(workOrder.value.solicitud)
+    // Corrección aquí: Verificar que solicitud._id existe y pasarlo directamente
+    if (workOrder.value?.solicitud?._id) {
+      await fetchAssetInfo(workOrder.value.solicitud._id)
+    } else {
+      console.error("No se encontró el ID de la solicitud en la respuesta")
     }
     
     mapWorkOrderToForm()
@@ -293,7 +296,15 @@ const fetchData = async () => {
 
 const fetchAssetInfo = async (solicitudId) => {
   try {
+    // Verificar que solicitudId es un string válido
+    if (!solicitudId || typeof solicitudId !== 'string') {
+      console.error("ID de solicitud inválido:", solicitudId)
+      throw new Error('ID de solicitud inválido')
+    }
+    
+    console.log("Consultando información del activo con ID:", solicitudId)
     const response = await apiService.get(`/application-maintenance/Consultar/${solicitudId}`)
+    
     if (response?.data?.assetInfo || response?.assetInfo) {
       assetInfo.value = response.data?.assetInfo || response.assetInfo
       mapAssetInfoToForm()
@@ -305,6 +316,7 @@ const fetchAssetInfo = async (solicitudId) => {
       }
     }
   } catch (error) {
+    console.error("Error al obtener la información del activo:", error)
     Swal.fire({
       icon: 'warning',
       title: 'Advertencia',
@@ -527,11 +539,10 @@ watch(sparePartsStatus, (newValue) => {
   }
 })
 
-onMounted(() => {
-  fetchData()
+onMounted( async () => {
+  await fetchData()
 })
 </script>
-
 <style scoped>
 .maintenance-form {
   max-width: 1200px;
