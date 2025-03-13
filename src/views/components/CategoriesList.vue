@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { useStore } from "vuex";
-import apiService from '../../service/apiService';
+import apiService from '../../service/apiservice';
 import { useRouter } from "vue-router";
 
 const store = useStore();

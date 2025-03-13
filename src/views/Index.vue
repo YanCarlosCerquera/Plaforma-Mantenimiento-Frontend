@@ -7,7 +7,7 @@ import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonButton from "@/components/ArgonButton.vue";
 import ArgonSelect from "@/components/ArgonSelect.vue";
 import fondoImage2 from "../assets/image208.png";
-import apiService from "../service/apiService";
+import apiService from "../service/apiservice";
 import Footer from "../examples/PageLayout/Footer.vue";
 const router = useRouter();
 const store = useStore();

@@ -185,7 +185,7 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import apiService from '../../service/apiService';
+import apiService from '../../service/apiservice';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from "js-cookie";
 import Swal from 'sweetalert2';

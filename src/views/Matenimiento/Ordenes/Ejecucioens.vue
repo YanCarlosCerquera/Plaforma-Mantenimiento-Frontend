@@ -136,7 +136,7 @@
 
 <script>
 import { ref, onMounted, computed } from "vue";
-import apiService from "../../../service/apiService";
+import apiService from "../../../service/apiservice";
 import Cookies from "js-cookie";
 import { useRouter } from "vue-router";
 

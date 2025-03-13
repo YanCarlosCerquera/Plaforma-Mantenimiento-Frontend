@@ -25,7 +25,7 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import apiService from "../../../service/apiService";
+import apiService from "../../../service/apiservice";
 import AuthorsTable from "../../components/AuthorsTable.vue";
 import { useRouter } from "vue-router";
 import Cookies from "js-cookie";

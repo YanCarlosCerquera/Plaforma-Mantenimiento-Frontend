@@ -218,9 +218,12 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import apiService from "../../service/apiService";
+import apiService from "../../service/apiservice";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import Cookies from "js-cookie";
 
 const router = useRouter();
@@ -301,6 +304,17 @@ onMounted(() => {
   loadAssetData();
 });
 
+const unregisterRouteGuard = router.beforeEach((to, from, next) => {
+  if (to.path !== "/detalles") {
+    Cookies.remove("editAssetId");
+  }
+  next();
+});
+
+onUnmounted(() => {
+  unregisterRouteGuard();
+});
+
 const formatDate = (dateString) => {
   if (!dateString) return "";
   const date = new Date(dateString);
@@ -340,13 +354,64 @@ const viewMaintenanceDetail = (maintenance) => {
 };
 
 const downloadPDF = () => {
-  console.log("Descargando PDF...");
-  // Implementar la descarga del PDF
+  const doc = new jsPDF();
+
+  // Título del documento
+  doc.setFontSize(18);
+  doc.text('Información del Bien', 10, 10);
+
+  // Información del bien
+  doc.setFontSize(12);
+  doc.text(`Centro de formación: ${requestData.value.assetInfo?.trainingCenterId.name || "No disponible"}`, 10, 20);
+  doc.text(`Ubicación: ${requestData.value.assetInfo?.location || "No disponible"}`, 10, 30);
+  doc.text(`Marca: ${requestData.value.assetInfo?.brand || "No disponible"}`, 10, 40);
+  doc.text(`Modelo: ${requestData.value.assetInfo?.modelo || "No disponible"}`, 10, 50);
+  doc.text(`Número de serie: ${requestData.value.assetInfo?.serialNumber || "No disponible"}`, 10, 60);
+  doc.text(`Tipo de equipo: ${requestData.value.assetInfo?.equipmentType || "No disponible"}`, 10, 70);
+  doc.text(`Fecha de adquisición: ${formatDate(requestData.value.assetInfo?.acquisitionDate)}`, 10, 80);
+  doc.text(`Estado: ${requestData.value.assetInfo?.status || "No disponible"}`, 10, 90);
+  doc.text(`Cuentadante: ${requestData.value.assetInfo?.accountHolder || "No disponible"}`, 10, 100);
+
+  // Información del proveedor
+  doc.text('Información del Proveedor', 10, 110);
+  doc.text(`Cuentadante: ${requestData.value.assetInfo?.manufacturer.name || "No disponible"}`, 10, 120);
+  doc.text(`Número de serie: ${requestData.value.assetInfo?.manufacturer.phone || "No disponible"}`, 10, 130);
+  doc.text(`Tipo de equipo: ${requestData.value.assetInfo?.manufacturer.address || "No disponible"}`, 10, 140);
+
+  // Información de accesorios
+  doc.text('Información de Accesorios', 10, 150);
+  doc.text(`Cuentadante: ${requestData.value.assetInfo?.supplier.name || "No disponible"}`, 10, 160);
+  doc.text(`Número de serie: ${requestData.value.assetInfo?.supplier.phone || "No disponible"}`, 10, 170);
+  doc.text(`Tipo de equipo: ${requestData.value.assetInfo?.supplier.address || "No disponible"}`, 10, 180);
+
+  // Guardar el PDF
+  doc.save('informacion_bien.pdf');
 };
 
 const downloadExcel = () => {
-  console.log("Descargando Excel...");
-  // Implementar la descarga del Excel
+  const data = [
+    ['Centro de formación', requestData.value.assetInfo?.trainingCenterId.name || "No disponible"],
+    ['Ubicación', requestData.value.assetInfo?.location || "No disponible"],
+    ['Marca', requestData.value.assetInfo?.brand || "No disponible"],
+    ['Modelo', requestData.value.assetInfo?.modelo || "No disponible"],
+    ['Número de serie', requestData.value.assetInfo?.serialNumber || "No disponible"],
+    ['Tipo de equipo', requestData.value.assetInfo?.equipmentType || "No disponible"],
+    ['Fecha de adquisición', formatDate(requestData.value.assetInfo?.acquisitionDate)],
+    ['Estado', requestData.value.assetInfo?.status || "No disponible"],
+    ['Cuentadante', requestData.value.assetInfo?.accountHolder || "No disponible"],
+    ['Proveedor - Cuentadante', requestData.value.assetInfo?.manufacturer.name || "No disponible"],
+    ['Proveedor - Número de serie', requestData.value.assetInfo?.manufacturer.phone || "No disponible"],
+    ['Proveedor - Tipo de equipo', requestData.value.assetInfo?.manufacturer.address || "No disponible"],
+    ['Accesorios - Cuentadante', requestData.value.assetInfo?.supplier.name || "No disponible"],
+    ['Accesorios - Número de serie', requestData.value.assetInfo?.supplier.phone || "No disponible"],
+    ['Accesorios - Tipo de equipo', requestData.value.assetInfo?.supplier.address || "No disponible"]
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Información del Bien');
+
+  XLSX.writeFile(wb, 'informacion_bien.xlsx');
 };
 </script>
 

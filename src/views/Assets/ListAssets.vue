@@ -2,7 +2,7 @@
 import Swal from "sweetalert2";
 import { onMounted, ref } from "vue";
 import router from "../../router";
-import apiService from "../../service/apiService";
+import apiService from "../../service/apiservice";
 import AuthorsTable from "../components/AuthorsTable.vue";
 import Cookies from "js-cookie";
 import jsPDF from "jspdf";
@@ -155,7 +155,7 @@ const handleDelete = async (row) => {
 const handleInfo = async (row) => {
   try {
     const response = await apiService.get(`/assets/${row._id}`);
-    const assetData = response.data;
+    const assetData = response;
     const pdfData = {
       name: assetData.name,
       brand: assetData.brand,
@@ -166,11 +166,9 @@ const handleInfo = async (row) => {
     };
 
     const pdf = new jsPDF();
-    pdf.setFontStyle("bold");
     pdf.setFontSize(16);
     pdf.text("Informaci n del Equipo", 15, 15);
 
-    pdf.setFontStyle("normal");
     pdf.setFontSize(12);
     Object.keys(pdfData).forEach((key, index) => {
       pdf.text(`${key}: ${pdfData[key]}`, 15, 20 + (index * 5));

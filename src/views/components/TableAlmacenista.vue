@@ -2,7 +2,7 @@
 import Swal from "sweetalert2";
 import { onMounted, ref, computed } from "vue";
 import router from "../../router";
-import apiService from "../../service/apiService";
+import apiService from "../../service/apiservice";
 import AuthorsTable from "../components/AuthorsTable.vue";
 import Cookies from "js-cookie";
 import jsPDF from "jspdf";

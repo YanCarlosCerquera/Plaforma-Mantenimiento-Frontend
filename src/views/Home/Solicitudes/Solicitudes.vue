@@ -147,7 +147,7 @@
     Loader2,
     AlertCircle,
   } from 'lucide-vue-next';
-import apiService from "../../../service/apiService";
+import apiService from "../../../service/apiservice";
   
   export default {
     name: "Solicitudes",

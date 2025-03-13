@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import AuthorsTable from "./components/AuthorsTable.vue";
-import apiService from "../service/apiService";
+import apiService from "../service/apiservice";
 import Swal from "sweetalert2";
 import Cookies from "js-cookie";
 import ArgonSelect from "@/components/ArgonSelect.vue"; // Importa el componente ArgonSelect
@@ -114,7 +114,7 @@ const handleEdit = (row) => {
   dialog.value = true;
 };
 
-const handleDelete = async (id) => {
+const handleDelete = async (row) => {
   const result = await Swal.fire({
     title: "¿Estás seguro de que quieres eliminar este usuario?",
     text: "Esta acción no puede deshacerse.",
@@ -134,7 +134,7 @@ const handleDelete = async (id) => {
   }
 
   try {
-    await apiService.delete(`users/${id}`);
+    await apiService.delete(`users/${row._id}`);
     Swal.fire({
       title: "Usuario eliminado correctamente",
       icon: "success",
@@ -177,11 +177,25 @@ const acceptUser = async (Userid, assignedRol) => {
 
     isLoading.value = true;
 
-    const response = await apiService.patch(`users/${Userid}`, {
+    await apiService.patch(`users/${Userid}`, {
       state: true,
       assignedRol: assignedRol,
     });
-    console.log(response);
+
+    Swal.fire({
+      title: "Usuario autorizado correctamente",
+      icon: "success",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#28a745",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
+    });
 
     dialog.value = false;
     await fetchData();

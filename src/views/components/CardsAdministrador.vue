@@ -1,5 +1,5 @@
 <script setup>
-import apiService from "../../service/apiService";
+import apiService from "../../service/apiservice";
 import { ref, onMounted } from "vue";
 
 const maintenances = ref({

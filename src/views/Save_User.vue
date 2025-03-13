@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import apiService from "../service/apiService";
+import apiService from "../service/apiservice";
 import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonSelect from "@/components/ArgonSelect.vue";
 import Swal from "sweetalert2";
@@ -134,6 +134,7 @@ const handleSubmit = async () => {
     Swal.fire({
       title: "Error agregando usuario:",
       text:
+        error.response?.data?.message ||
         error ||
         "Hubo un error al agregar el usuario",
       icon: "error",

@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import { onMounted, ref } from "vue";
 import router from "../../router";
 import AuthorsTable from "../components/AuthorsTable.vue";
-import apiService from "../../service/apiService";
+import apiService from "../../service/apiservice";
 import { commonFormatters } from "../../store/modules/tables";
 
 const loading = ref(false);

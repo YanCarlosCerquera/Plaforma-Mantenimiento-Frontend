@@ -3,7 +3,7 @@
   import { useStore } from "vuex";
   import ArgonSelect from "@/components/ArgonSelect.vue";
   import Alert from "../views/components/Alert.vue";
-  import apiService from '../service/apiService';
+  import apiService from '../service/apiservice';
   import { useRouter } from 'vue-router';
 
   const store = useStore();

@@ -156,7 +156,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import defaultImage from '@/assets/img/logos/image_upload.svg'
-import apiService from '../service/apiService';
+import apiService from '../service/apiservice';
 import ArgonAutocomplete from '../components/ArgonAutocomplete.vue';
 import Cookies from 'js-cookie';
 import Swal from "sweetalert2";

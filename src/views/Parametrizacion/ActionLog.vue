@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import Swal from "sweetalert2";
 import AuthorsTable from "../components/AuthorsTable.vue";
-import apiService from "../../service/apiService";
+import apiService from "../../service/apiservice";
 
 const headers = ref([
     { text: "Nombre usuario", value: "actionLog.userId.name" },

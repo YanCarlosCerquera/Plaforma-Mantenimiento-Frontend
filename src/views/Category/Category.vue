@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import apiService from '../../service/apiService';
+import apiService from '../../service/apiservice';
 import AuthorsTable from '../components/AuthorsTable.vue';
 import Swal from 'sweetalert2';
 import Cookies from 'js-cookie'; // Importar js-cookie
@@ -58,7 +58,7 @@ const handleEdit = (row) => {
   router.push('/machineandteams/list');
 };
 
-const handleDelete = async (id) => {
+const handleDelete = async (row) => {
   const result = await Swal.fire({
     title: "¿Estás seguro de que quieres eliminar la categoria?",
     text: "Esta acción no puede deshacerse.",
@@ -78,7 +78,7 @@ const handleDelete = async (id) => {
   }
 
   try {
-    await apiService.delete(`Categorias/${id}`);
+    await apiService.delete(`Categorias/${row._id}`);
     Swal.fire({
       title: "Categoria eliminada correctamente",
       icon: "success",

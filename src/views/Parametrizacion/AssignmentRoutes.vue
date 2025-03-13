@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import AuthorsTable from "../components/AuthorsTable.vue";
-import apiService from "../../service/apiService";
+import apiService from "../../service/apiservice";
 import Swal from "sweetalert2";
 import ArgonAutocomplete from "@/components/ArgonAutocomplete.vue";
 

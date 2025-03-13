@@ -141,7 +141,7 @@
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import Cookies from 'js-cookie';
-import apiService from "../../../service/apiService";
+import apiService from "../../../service/apiservice";
 import { useRouter } from 'vue-router';
 
 export default {

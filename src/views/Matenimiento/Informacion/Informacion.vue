@@ -121,7 +121,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import apiService from '../../../service/apiService';
+import apiService from '../../../service/apiservice';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from "js-cookie";
 import { useRouter } from 'vue-router';

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import AuthorsTable from './AuthorsTable.vue';
-import apiService from '../../service/apiService';
+import apiService from '../../service/apiservice';
 import jsPDF from 'jspdf';
 import Swal from 'sweetalert2';
 

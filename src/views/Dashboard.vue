@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 import MiniStatisticsCard from "@/examples/Cards/MiniStatisticsCard.vue";
 import GradientLineChart from "@/examples/Charts/GradientLineChart.vue";
 import CategoriesList from "./components/CategoriesList.vue";
-import apiService from "../service/apiService";
+import apiService from "../service/apiservice";
 
 // Referencias reactivas
 const userId = ref(null);
