@@ -310,7 +310,7 @@
     }
     
     .button, .button-rounded {
-      background: #1dcb11;
+      background: #39A900;
       color: white;
       border: none;
       padding: 0 1.5rem;
@@ -333,7 +333,7 @@
     }
     
     .button:hover, .button-rounded:hover {
-      background: #1dcb11;
+      background: #39A900;
       transform: translateY(-1px);
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
@@ -378,7 +378,7 @@
     .variables-section h2 {
       font-size: 1rem;
       font-weight: 600;
-      color: #1dcb11;
+      color: #39A900;
       margin-bottom: 1rem;
       text-align: center;
       letter-spacing: -0.025em;
@@ -403,7 +403,7 @@
       appearance: none;
       width: 1.25rem;
       height: 1.25rem;
-      border: 2px solid #1dcb11;
+      border: 2px solid #39A900;
       border-radius: 0.375rem;
       margin-right: 0.5rem;
       position: relative;
@@ -412,7 +412,7 @@
     }
     
     .checkbox:checked {
-      background-color: #1dcb11;
+      background-color: #39A900;
     }
     
     .checkbox:checked::after {
@@ -439,7 +439,7 @@
     }
     
     .submit-button {
-      background: #1dcb11;
+      background: #39A900;
       color: white;
       border: none;
       border-radius: 9999px;
@@ -454,7 +454,7 @@
     }
     
     .submit-button:hover {
-      background: #1dcb11;
+      background: #39A900;
       transform: translateY(-1px);
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }

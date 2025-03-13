@@ -41,7 +41,7 @@ const handleSignup = () => {
 };
 
 const handleActivos = () => {
-  router.push("/activos")
+  router.push("/bienes")
 };
 
 const handleSolicitud = () => {
@@ -184,13 +184,13 @@ const backgroundStyle = computed(() => ({
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-md-6 text-center">
-            <ArgonButton color="success" class="w-100 mb-3"  @clik="handleActivos" >
+            <ArgonButton color="success" class="w-100 mb-3"  @click="handleActivos" >
               <i class="fa fa-database fa-4x position-static my-3 mr-10" aria-hidden="true"></i>
               <p class="text-3xl font-weight-bold">Consulta de bienes registrados</p>
             </ArgonButton>
           </div>
           <div class="col-md-6 text-center">
-            <ArgonButton  color="success" class="w-100 mb-3" @clik="handleSolicitud" >
+            <ArgonButton  color="success" class="w-100 mb-3" @click="handleSolicitud" >
               <i class="fa fa-search fa-4x position-static my-3 mr-10" aria-hidden="true"></i>
               <p class="text-3xl font-weight-bold">Consulta el estado de tu solicitud</p>
             </ArgonButton>

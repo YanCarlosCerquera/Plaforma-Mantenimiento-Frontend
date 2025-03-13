@@ -352,9 +352,8 @@ const categories = ref([]);
 const handleCategoryModalSave = async (categoryData) => {
   try {
     // Here you would typically save the category data to your API
-    const response = await apiService.post('/categories', {
+    const response = await apiService.post('/Categorias', {
       ...categoryData,
-      name: formData.value.name // or however you want to structure your category data
     });
     requert.value = response
     // Refresh categories list

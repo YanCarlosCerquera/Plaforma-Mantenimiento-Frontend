@@ -333,7 +333,7 @@ import apiService from "../../../service/apiService";
   <style scoped>
   /* Estilos para la sección de consulta */
   h1 {
-    color: #4CAF50;
+    color: #39A900;
     margin-bottom: 8px;
   }
   
@@ -361,7 +361,7 @@ import apiService from "../../../service/apiService";
   }
   
   .consultar-btn {
-    background-color: #4CAF50;
+    background-color: #39A900;
     border: none;
     color: white;
     padding: 8px 16px;
@@ -465,9 +465,9 @@ import apiService from "../../../service/apiService";
   }
   
   .pagination-btn.active {
-    background-color: #4CAF50;
+    background-color: #39A900;
     color: white;
-    border-color: #4CAF50;
+    border-color: #39A900;
   }
   
   .pagination-ellipsis {

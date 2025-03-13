@@ -99,6 +99,17 @@
                 Agregar
               </button>
             </div>
+
+            <div class="modal-section">
+              <h4>Nombre</h4>
+              <div class="input-group">
+                <input
+                  v-model="name"
+                  type="text"
+                  placeholder="Nombre..."
+                />
+              </div>
+            </div>
           </div>
         </div>
   
@@ -122,6 +133,7 @@
   const emit = defineEmits(['close', 'save']);
   
   // State
+  const name = ref('');
   const newSpecification = ref('');
   const newAccessory = ref('');
   const newVariable = ref('');
@@ -166,10 +178,15 @@
   };
   
   const save = () => {
+    const selectedOperationVars = Object.keys(operationVars.value)
+      .filter(key => operationVars.value[key])
+      .map(key => key);
+
     emit('save', {
+      name: name.value,
       specifications: specifications.value,
       accessories: accessories.value,
-      operationVars: operationVars.value
+      operationVars: selectedOperationVars
     });
     close();
   };

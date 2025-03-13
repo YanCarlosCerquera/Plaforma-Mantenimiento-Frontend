@@ -2,8 +2,8 @@
   <div class="planear-mantenimiento-form">
     <header class="form-header">
       <div>
-        <h1 class="title">Gestión de actividades de mantenimiento</h1>
-        <h2 class="subtitle">Solicitud de mantenimiento</h2>
+        <h2 class="title">Gestión de actividades de mantenimiento</h2>
+        <h4 class="subtitle">Solicitud de mantenimiento</h4>
       </div>
     </header>
 
@@ -370,16 +370,12 @@ const downloadExcel = () => {
 }
 
 .title {
-  color: #0f610f;
-  font-size: 1.5rem;
-  font-weight: 800;
+  color: #ffffff;
   margin: 0;
 }
 
 .subtitle {
-  color: rgba(#0f610f, 0.7);
-  font-size: 1.25rem;
-  font-weight: 500;
+  color: #494949;
   margin: 0;
 }
 

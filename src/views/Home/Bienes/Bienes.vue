@@ -386,7 +386,7 @@ export default {
 <style scoped>
 /* Estilos para la sección de consulta */
 h1 {
-  color: #4CAF50;
+  color: #39A900;
   margin-bottom: 8px;
 }
 
@@ -437,7 +437,7 @@ h1 {
 }
 
 .consultar-btn {
-  background-color: #4CAF50;
+  background-color: #39A900;
   border: none;
   color: white;
   padding: 8px 16px;
@@ -508,13 +508,13 @@ tr:last-child td {
   width: 32px;
   height: 32px;
   border-radius: 4px;
-  color: #4CAF50;
+  color: #39A900;
   background-color: #e8f5e9;
   transition: all 0.2s ease;
 }
 
 .action-btn:hover {
-  background-color: #4CAF50;
+  background-color: #39A900;
   color: white;
 }
 
@@ -545,9 +545,9 @@ tr:last-child td {
 }
 
 .pagination-btn.active {
-  background-color: #4CAF50;
+  background-color: #39A900;
   color: white;
-  border-color: #4CAF50;
+  border-color: #39A900;
 }
 
 /* Animación para el spinner de carga */

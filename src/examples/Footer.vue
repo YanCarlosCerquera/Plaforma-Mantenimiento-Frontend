@@ -15,7 +15,7 @@ const store = useStore();
             {{ new Date().getFullYear() }}, 
              por
             <a
-              href="https://www.creative-tim.com"
+              href="http://industriaempresayservicios.blogspot.com/p/servicios-tecnologicos.html"
               class="font-weight-bold"
               target="_blank"
               >Servicios tecnologicos</a
@@ -29,7 +29,7 @@ const store = useStore();
           >
             <li class="nav-item">
               <a
-                href="https://www.creative-tim.com"
+                href="http://industriaempresayservicios.blogspot.com/p/servicios-tecnologicos.html"
                 class="nav-link text-muted"
                 target="_blank"
                 >Servicios tecnologicos</a
@@ -37,7 +37,7 @@ const store = useStore();
             </li>
             <li class="nav-item">
               <a
-                href="https://www.creative-tim.com/presentation"
+                href="http://industriaempresayservicios.blogspot.com/p/servicios-tecnologicos.html"
                 class="nav-link text-muted"
                 target="_blank"
                 >Sobre nosotros</a
@@ -45,7 +45,7 @@ const store = useStore();
             </li>
             <li class="nav-item">
               <a
-                href="https://www.creative-tim.com/blog"
+                href="http://industriaempresayservicios.blogspot.com/p/servicios-tecnologicos.html"
                 class="nav-link text-muted"
                 target="_blank"
                 >Blog</a
