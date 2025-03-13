@@ -20,12 +20,35 @@ apiClient.interceptors.request.use(
 );
 
 const apiService = {
+    // Método para obtener la URL base
+    getBaseUrl: () => {
+        return process.env.Url || "http://localhost:3000";
+    },
+
     get: async (route, params = {}) => {
         try {
             const response = await apiClient.get(route, { params });
             return response.data;
         } catch (error) {
             console.error("Error en GET:", error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    // Nuevo método para obtener archivos binarios como PDFs
+    getBlob: async (route, params = {}) => {
+        try {
+            const response = await apiClient.get(route, { 
+                params,
+                responseType: 'blob',
+                headers: {
+                    'Accept': 'application/pdf',
+                    'Content-Type': 'application/pdf'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error en getBlob:", error.response?.data || error.message);
             throw error;
         }
     },

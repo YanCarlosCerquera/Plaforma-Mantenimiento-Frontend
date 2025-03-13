@@ -16,6 +16,8 @@
             :fields="fields"
             :icons="icons"
             @edit="handleEdit"
+            @delete="handleDelete"
+            @check="handleDownloadPDF"
           />
         </div>
       </div>
@@ -107,71 +109,148 @@ export default {
       }
     };
 
-    const handleDelete = async (item) => {
+    const handleDownloadPDF = async (item) => {
   let reportId;
   
-  if (typeof item === "string") {
+  if (typeof item === 'string') {
     reportId = item;
-  } else if (item && typeof item === "object") {
+  } else if (item && typeof item === 'object') {
     reportId = item.Id || item.id;
   } else {
     console.error("Formato de ID no válido:", item);
     Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "ID de informe no válido",
-      confirmButtonColor: "#39a900"
+      icon: 'error',
+      title: 'Error',
+      text: 'ID de informe no válido',
+      confirmButtonColor: '#39a900'
     });
     return;
   }
-
+  
   if (!reportId) {
     console.error("ID de informe no encontrado");
     Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "ID de informe no encontrado",
-      confirmButtonColor: "#39a900"
+      icon: 'error',
+      title: 'Error',
+      text: 'ID de informe no encontrado',
+      confirmButtonColor: '#39a900'
     });
     return;
   }
-
-  // Confirmación antes de eliminar
-  const result = await Swal.fire({
-    title: "¿Estás seguro?",
-    text: "No podrás revertir esta acción",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Sí, eliminar",
-    cancelButtonText: "Cancelar"
-  });
-
-  if (result.isConfirmed) {
+  
+  try {
+    // Mostrar indicador de carga
+    Swal.fire({
+      title: 'Generando PDF',
+      html: 'Por favor espere...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    
+    // Opción 1: Descargar el PDF como blob
     try {
-      await apiService.delete(`/work-report/${reportId}`);
+      const blob = await apiService.getBlob(`/work-report/pdf/${reportId}`);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `informe-${reportId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+      
       Swal.fire({
-        icon: "success",
-        title: "Eliminado",
-        text: "El informe ha sido eliminado correctamente",
-        confirmButtonColor: "#39a900"
+        icon: 'success',
+        title: 'PDF Generado',
+        text: 'El informe se ha descargado correctamente',
+        confirmButtonColor: '#39a900'
       });
-
-      // Opcional: actualizar la lista de informes
-      await fetchData(); 
-    } catch (error) {
-      console.error("Error al eliminar el informe:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Hubo un problema al eliminar el informe",
-        confirmButtonColor: "#39a900"
-      });
+    } catch (blobError) {
+      console.error("Error al descargar como blob, intentando abrir en nueva pestaña:", blobError);
+      
+      // Opción 2: Si falla la descarga como blob, intentar abrir en nueva pestaña
+      const pdfUrl = `${apiService.getBaseUrl()}/work-report/pdf/${reportId}`;
+      window.open(pdfUrl, '_blank');
+      
+      Swal.close();
     }
+  } catch (error) {
+    console.error("Error al generar el PDF:", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudo generar el PDF del informe',
+      confirmButtonColor: '#39a900'
+    });
   }
 };
 
+    const handleDelete = async (item) => {
+      let reportId;
+      
+      if (typeof item === "string") {
+        reportId = item;
+      } else if (item && typeof item === "object") {
+        reportId = item.Id || item.id;
+      } else {
+        console.error("Formato de ID no válido:", item);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "ID de informe no válido",
+          confirmButtonColor: "#39a900"
+        });
+        return;
+      }
+
+      if (!reportId) {
+        console.error("ID de informe no encontrado");
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "ID de informe no encontrado",
+          confirmButtonColor: "#39a900"
+        });
+        return;
+      }
+
+      // Confirmación antes de eliminar
+      const result = await Swal.fire({
+        title: "¿Estás seguro?",
+        text: "No podrás revertir esta acción",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await apiService.delete(`/work-report/${reportId}`);
+          Swal.fire({
+            icon: "success",
+            title: "Eliminado",
+            text: "El informe ha sido eliminado correctamente",
+            confirmButtonColor: "#39a900"
+          });
+
+          // Opcional: actualizar la lista de informes
+          await fetchData(); 
+        } catch (error) {
+          console.error("Error al eliminar el informe:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Hubo un problema al eliminar el informe",
+            confirmButtonColor: "#39a900"
+          });
+        }
+      }
+    };
 
     const handleEdit = async (item) => {
       console.log("Item recibido para editar:", item);
@@ -191,8 +270,6 @@ export default {
           confirmButtonColor: '#39a900'
         });
         return;
-
-
       }
       
       if (!reportId) {
@@ -218,8 +295,8 @@ export default {
 
     // Iconos de acciones
     const icons = ref([
-      { class: "fas fa-check" },
-      { class: "fas fa-trash " , method : handleDelete },
+      { class: "fas fa-check", method: handleDownloadPDF },
+      { class: "fas fa-trash", method: handleDelete },
       { class: "fas fa-edit", method: handleEdit },
     ]);
 
@@ -233,7 +310,8 @@ export default {
       isLoading,
       fetchData,
       handleEdit,
-      handleDelete
+      handleDelete,
+      handleDownloadPDF
     };
   },
 };

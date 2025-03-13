@@ -199,6 +199,7 @@ const backgroundStyle = computed(() => ({
       </div>
     </div>
 
+
     <div class="container">
       <div class="row justify-content-center">
         <div class="card p-3 border-radius-xl" style="max-width: 1300px;">
