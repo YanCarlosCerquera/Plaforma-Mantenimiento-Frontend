@@ -23,7 +23,7 @@ const formData = ref({
   requesterName: "",
   requesterPhone: "",
   serialNumber: "",
-  trackingNumber: "12313123",
+  trackingNumber: "",
   issueDescription: "",
   InventoryCode: "",
   maintenanceType: "",

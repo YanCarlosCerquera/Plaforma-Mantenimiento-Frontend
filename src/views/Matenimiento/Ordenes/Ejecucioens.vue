@@ -56,11 +56,14 @@
             <!-- Right Column -->
             <div class="right-column">
               <img
-                :src="assetInfo?.image || '/placeholder.svg?height=180&width=120'"
+                :src="
+                  assetInfo?.image || '/placeholder.svg?height=180&width=120'
+                "
                 class="device-image"
               />
               <div v-if="isLoading" class="loading-overlay">
-                <p>  <i class="fa-solid fa-spinner fa-spin-pulse"></i>
+                <p>
+                  <i class="fa-solid fa-spinner fa-spin-pulse"></i>
                   Cargando...
                 </p>
               </div>
@@ -158,17 +161,19 @@ export default {
         workOrder.value = response;
         console.log("Work Order:", workOrder.value);
 
-      // En fetchData, para asignar el texto correcto al botón:
-if (workOrder.value?.maintenances && workOrder.value.maintenances.length > 0) {
-  buttonText.value = "Ver Informe"; // Tiene mantenimientos
-} else {
-  buttonText.value = "Realizar Mantenimiento"; // No tiene mantenimientos
-}
-
+        // En fetchData, para asignar el texto correcto al botón:
+        if (
+          workOrder.value?.maintenances &&
+          workOrder.value.maintenances.length > 0
+        ) {
+          buttonText.value = "Ver Informe"; // Tiene mantenimientos
+        } else {
+          buttonText.value = "Realizar Mantenimiento"; // No tiene mantenimientos
+        }
 
         // Si hay solicitudId, obtener info adicional
         if (workOrder.value?.solicitud) {
-          await fetchAssetInfo(workOrder.value.solicitud);
+          await fetchAssetInfo(workOrder.value.solicitud._id);
         }
       } catch (error) {
         console.error("Error al obtener los datos de la orden:", error);
@@ -197,20 +202,21 @@ if (workOrder.value?.maintenances && workOrder.value.maintenances.length > 0) {
           })
         : "Fecha no disponible";
     };
-    
 
     const handleButtonClick = () => {
-  if (workOrder.value?.maintenances && workOrder.value.maintenances.length > 0) {
-    router.push("/gestiones");
-  } else {
-    isLoading.value = true;
-    setTimeout(() => {
-      isLoading.value = false;
-      router.push("/mantenimiento");
-    }, 2000);
-  }
-};
-
+      if (
+        workOrder.value?.maintenances &&
+        workOrder.value.maintenances.length > 0
+      ) {
+        router.push("/gestiones");
+      } else {
+        isLoading.value = true;
+        setTimeout(() => {
+          isLoading.value = false;
+          router.push("/mantenimiento");
+        }, 2000);
+      }
+    };
 
     onMounted(fetchData);
 
@@ -227,7 +233,6 @@ if (workOrder.value?.maintenances && workOrder.value.maintenances.length > 0) {
   },
 };
 </script>
-
 
 <style scoped>
 .loading-overlay {

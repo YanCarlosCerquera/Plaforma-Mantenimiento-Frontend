@@ -411,6 +411,8 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div class="">
+      <TableInstructor :userData="{userId: userId, role: userRole}" />
+
       <div class="contentRole"  v-if="userRole === 'administrador'">
         <CardsAdminstrador/>
       </div>
@@ -418,7 +420,6 @@ onBeforeUnmount(() => {
         <TableAlmacenista/>
       </div>
       <div class="container-fluid" v-else-if="userRole === 'instructor' || userRole === 'tecnico'">
-        <TableInstructor :userData="{userId: userId, role: userRole}" />
       </div>
       <div class="container-fluid" v-else>
         <h2>Rol no reconocido</h2>

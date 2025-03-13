@@ -48,7 +48,7 @@
                 <input 
                   type="date"
                   class="form-control"
-                  :value="formatDate(requestData.createdAt)"
+                  :value="formatDate(requestData.assetInfo.createdAt)"
                 />
               </div>
               
