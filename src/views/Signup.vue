@@ -334,7 +334,7 @@ const formatPhoneNumber = (event) => {
 
 .main-title {
   font-size: 1.5rem;
-  color: #28a745;
+  color: #39A900;
   font-weight: 700;
   margin: 0;
   text-align: center;
@@ -386,7 +386,7 @@ label {
 
 .input-icon {
   margin-right: 0.5rem;
-  color: #28a745;
+  color: #39A900;
   width: 1rem;
   height: 1rem;
 }
@@ -404,7 +404,7 @@ select {
 input:focus,
 select:focus {
   outline: none;
-  border-color: #28a745;
+  border-color: #39A900;
   box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
 }
 
@@ -426,7 +426,7 @@ select:focus {
   width: 100%;
   max-width: 600px;
   padding: 0.75rem;
-  background-color: #28a745;
+  background-color: #39A900;
   color: white;
   border: none;
   border-radius: 8px;
@@ -438,7 +438,7 @@ select:focus {
 }
 
 .submit-btn:hover {
-  background-color: #218838;
+  background-color: #2d8000;
 }
 
 .signin-link {
@@ -448,7 +448,7 @@ select:focus {
 }
 
 .signin-link a {
-  color: #28a745;
+  color: #39A900;
   text-decoration: none;
   font-weight: 600;
 }

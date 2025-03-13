@@ -248,8 +248,12 @@ const routes = [
   },
   {
     name:"Mantenimetos",
-    path:"/mantenimiento",
+    path:"/mantenimientos/RealizarMantenimiento",
     component: Maintenance
+  },
+  {
+    path: "/mantenimiento",
+    redirect: "/mantenimientos/RealizarMantenimiento",
   },
   {
     name:"Gestions Informes",

@@ -436,7 +436,7 @@
   }
   
   .submit-button:hover:not(:disabled) {
-    background-color: #2c8000;
+    background-color: #2d8000;
   }
   
   .submit-button:disabled {
@@ -494,13 +494,13 @@
   .text-button {
     background: none;
     border: none;
-    color: #39a900;
+    color: #39A900;
     font-size: 0.875rem;
     cursor: pointer;
     text-decoration: underline;
   }
   
   .text-button:hover {
-    color: #2c8000;
+    color: #2d8000;
   }
   </style>

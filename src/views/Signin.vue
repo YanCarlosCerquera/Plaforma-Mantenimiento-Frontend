@@ -268,11 +268,11 @@ select:focus {
 }
 
 .toggle-password:hover {
-  color: #28a745;
+  color: #2d8000;
 }
 
 .forgot-password {
-  color: #1ca349;
+  color: #39A900;
   text-decoration: none;
   font-size: 1rem;
 }
@@ -284,7 +284,7 @@ select:focus {
 .submit-btn {
   width: 100%;
   padding: 0.75rem;
-  background-color: #28a745;
+  background-color: #39A900;
   color: white;
   border: none;
   border-radius: 8px;
@@ -294,7 +294,7 @@ select:focus {
 }
 
 .submit-btn:hover {
-  background-color: #218838;
+  background-color: #2d8000;
 }
 
 .signup-link {
@@ -304,7 +304,7 @@ select:focus {
 }
 
 .signup-link a {
-  color: #28a745;
+  color: #39A900;
   text-decoration: none;
 }
 
