@@ -4,9 +4,17 @@
     
     <div class="form-section top-section">
       <div class="header-row">
-        <span class="order-number">Orden de trabajo: {{ radicado }}</span>
+        <div class="search-container">
+          <ArgonAutocomplete 
+            placeholder="Buscar por radicado o activo..."
+            :items="workOrders"
+            v-model="selectedRadicado"
+            @update:modelValue="handleWorkOrderSelect"
+          />
+        </div>
         <div class="title-actions">
           <h2 class="main-title">Orden de Trabajo</h2>
+          
           <button class="action-button" @click="generatePdfReport">
             <span>Realizar informe</span>
             <i class="fas fa-file-pdf"></i>
@@ -162,18 +170,73 @@
           <label for="executedBy">Ejecutado por:</label>
           <input type="text" id="executedBy" v-model="formData.executedBy" class="form-input" readonly>
         </div>
+        
+        <!-- Componente de firma digital con opción de carga de imagen -->
         <div class="form-group">
           <label for="techSignature">Firma técnico <span class="required">*</span></label>
-          <input 
-            type="text" 
-            id="techSignature" 
-            v-model="formData.techSignature" 
-            class="form-input"
-            :class="{ 'error': validationErrors.techSignature }"
-          >
-          <span v-if="validationErrors.techSignature" class="error-message">
-            {{ validationErrors.techSignature }}
-          </span>
+          <div class="signature-container">
+            <div v-if="formData.techSignature" class="signature-preview">
+              <img :src="formData.techSignature" alt="Firma" class="signature-image" />
+              <button type="button" @click="removeSignature" class="remove-signature-btn">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div v-else class="signature-buttons">
+              <button 
+                type="button" 
+                @click="openSignatureModal" 
+                class="signature-button"
+                :class="{ 'error': validationErrors.techSignature }"
+              >
+                <i class="fas fa-pen"></i> Dibujar firma
+              </button>
+              <div class="or-divider">o</div>
+              <label class="upload-button">
+                <i class="fas fa-upload"></i> Subir imagen
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  @change="handleImageUpload" 
+                  class="file-input"
+                />
+              </label>
+            </div>
+            <span v-if="validationErrors.techSignature" class="error-message">
+              {{ validationErrors.techSignature }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal de firma -->
+      <div v-if="showSignatureModal" class="signature-modal-backdrop" @click.self="cancelSignature">
+        <div class="signature-modal">
+          <div class="signature-modal-header">
+            <h3>Firma Digital</h3>
+            <button type="button" class="close-button" @click="cancelSignature">&times;</button>
+          </div>
+          
+          <div class="signature-modal-body">
+            <VueSignaturePad
+              ref="signaturePad"
+              :width="modalWidth"
+              :height="300"
+              :options="{ penColor: 'rgb(57, 169, 0)' }"
+            />
+            <p class="signature-instructions">Dibuje su firma en el área de arriba</p>
+          </div>
+          
+          <div class="signature-modal-footer">
+            <button type="button" class="cancel-button" @click="cancelSignature">
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button type="button" class="clear-button" @click="clearSignature">
+              <i class="fas fa-eraser"></i> Limpiar
+            </button>
+            <button type="button" class="save-button" @click="saveSignature">
+              <i class="fas fa-save"></i> Guardar Firma
+            </button>
+          </div>
         </div>
       </div>
       
@@ -189,350 +252,631 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, watch, reactive } from 'vue'
+<script>
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
 import apiService from "../../../service/apiService"
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
+import ArgonAutocomplete from '../../../components/ArgonAutocomplete.vue'
+import { VueSignaturePad } from 'vue-signature-pad'
 
-const radicado = ref('')
-const workOrder = ref(null)
-const assetInfo = ref(null)
-const maintenanceType = ref('Preventivo')
-const sparePartsStatus = ref('No')
-const orderState = ref(true)
-const wordOrdenId = ref(null)
-const userId = ref(null)
-
-const validationErrors = reactive({
-  maintenanceType: '',
-  workDescription: '',
-  observations: '',
-  sparePartsStatus: '',
-  partsDetails: '',
-  techSignature: ''
-})
-
-const formData = ref({
-  serialNumber: '',
-  plateNumber: '',
-  contactName: '',
-  phone: '',
-  location: '',
-  startDate: '',
-  endDate: '',
-  trackingNumber: '',
-  prioridad: '',
-  workDescription: '',
-  observations: '',
-  partsDetails: '',
-  executedBy: '',
-  techSignature: '',
-})
-const getUserData = () => {
-  const authToken = Cookies.get('authToken');
-
-  if (authToken) {
-    try {
-      const tokenParts = authToken.split('.');
-      const payload = JSON.parse(atob(tokenParts[1])); 
-      const userIdFromToken = payload.sub; 
-
-      if (userIdFromToken) {
-        userId.value = userIdFromToken; 
-
-        apiService.get(`/users/${userId.value}`)
-          .then(response => {
-            if (response && response.name) {
-              formData.value.executedBy = response.name;
-            }
-          })
-          .catch(error => {
-            console.error('Error al obtener datos del usuario:', error);
-          });
-      }
-    } catch (error) {
-      console.error('Error al decodificar el token:', error);
-    }
+const originalConsoleError = console.error;
+console.error = function(msg, ...args) {
+  if (typeof msg === 'string' && msg.includes('ResizeObserver loop')) {
+    return;
   }
+  originalConsoleError(msg, ...args);
 };
 
-
-const fetchData = async () => {
-  try {
-    Swal.showLoading()
-    
-    const Id = Cookies.get('OrdenId')
-    if (!Id) throw new Error('No se encontró el ID de la orden')
-    
-    wordOrdenId.value = Id
-    await getUserData()
-    
-    const response = await apiService.get(`/word-orden/${Id}`)
-    workOrder.value = response
-    
-    if (workOrder.value?.solicitud) {
-      await fetchAssetInfo(workOrder.value.solicitud)
-    }
-    
-    mapWorkOrderToForm()
-    Swal.close()
-    
-  } catch (error) {
-    console.error('Error:', error)
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No se pudieron cargar los datos',
-      confirmButtonColor: '#39a900'
-    })
-  }
-}
-
-const fetchAssetInfo = async (solicitudId) => {
-  try {
-    const response = await apiService.get(`/application-maintenance/Consultar/${solicitudId}`)
-    if (response?.data?.assetInfo || response?.assetInfo) {
-      assetInfo.value = response.data?.assetInfo || response.assetInfo
-      mapAssetInfoToForm()
-      
-      if (response.requesterName) {
-        formData.value.contactName = response.requesterName
-        formData.value.phone = response.requesterPhone || ''
-        formData.value.trackingNumber = response.trackingNumber || ''
+export default {
+  name: 'MantenimientoForm',
+  components: {
+    ArgonAutocomplete,
+    VueSignaturePad
+  },
+  data() {
+    return {
+      selectedRadicado: '',
+      workOrder: null,
+      assetInfo: null,
+      maintenanceType: 'Preventivo',
+      sparePartsStatus: 'No',
+      orderState: true,
+      workOrders: [],
+      allOrders: [], // Almacenará todas las órdenes para buscar por radicado
+      userId: null,
+      wordOrdenId: null,
+      showSignatureModal: false,
+      modalWidth: window.innerWidth < 600 ? window.innerWidth - 40 : 560,
+      validationErrors: {
+        maintenanceType: '',
+        workDescription: '',
+        observations: '',
+        sparePartsStatus: '',
+        partsDetails: '',
+        techSignature: ''
+      },
+      formData: {
+        serialNumber: '',
+        plateNumber: '',
+        contactName: '',
+        phone: '',
+        location: '',
+        startDate: '',
+        endDate: '',
+        trackingNumber: '',
+        prioridad: '',
+        workDescription: '',
+        observations: '',
+        partsDetails: '',
+        executedBy: '',
+        techSignature: '',
+        radicado: ''
       }
     }
-  } catch (error) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Advertencia',
-      text: 'No se pudo cargar la información del activo',
-      toast: true,
-      position: 'top-end',
-      timer: 3000
-    })
-  }
-}
-
-const mapWorkOrderToForm = () => {
-  if (!workOrder.value) return
-  
-  radicado.value = workOrder.value.radicado || ''
-  
-  if (workOrder.value.fechaInicio) {
-    formData.value.startDate = new Date(workOrder.value.fechaInicio).toISOString().split('T')[0]
-  }
-  
-  if (workOrder.value.fechaFin) {
-    formData.value.endDate = new Date(workOrder.value.fechaFin).toISOString().split('T')[0]
-  }
-  
-  formData.value.prioridad = workOrder.value.prioridad || ''
-  
-  if (workOrder.value.maintenances?.[0]) {
-    const maintenance = workOrder.value.maintenances[0]
-    maintenanceType.value = maintenance.typeMaintenance || 'Preventivo'
-    formData.value.workDescription = maintenance.description || ''
-    formData.value.observations = maintenance.observation || ''
-    sparePartsStatus.value = maintenance.sparePartsStatus || 'No'
-    formData.value.partsDetails = maintenance.sparePartsDetails || ''
-    formData.value.techSignature = maintenance.technicalSignature || ''
-    orderState.value = maintenance.state ?? true
-  }
-}
-
-const mapAssetInfoToForm = () => {
-  if (!assetInfo.value) return
-  
-  formData.value.serialNumber = assetInfo.value.serialNumber || ''
-  formData.value.plateNumber = assetInfo.value.inventoryCode || ''
-  formData.value.location = assetInfo.value.location || ''
-}
-
-const validateForm = () => {
-  let isValid = true
-  Object.keys(validationErrors).forEach(key => validationErrors[key] = '')
-  
-  if (!maintenanceType.value) {
-    validationErrors.maintenanceType = 'Seleccione un tipo de mantenimiento'
-    isValid = false
-  }
-  
-  if (!formData.value.workDescription.trim()) {
-    validationErrors.workDescription = 'La descripción es obligatoria'
-    isValid = false
-  }
-  
-  if (!formData.value.observations.trim()) {
-    validationErrors.observations = 'Las observaciones son obligatorias'
-    isValid = false
-  }
-  
-  if (sparePartsStatus.value === 'Si' && !formData.value.partsDetails.trim()) {
-    validationErrors.partsDetails = 'El detalle de repuestos es obligatorio'
-    isValid = false
-  }
-  
-  if (!formData.value.techSignature.trim()) {
-    validationErrors.techSignature = 'La firma es obligatoria'
-    isValid = false
-  }
-  
-  return isValid
-}
-
-const validateAndSave = () => {
-  if (validateForm()) {
-    saveMaintenanceData()
-  } else {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error de validación',
-      text: 'Complete todos los campos obligatorios',
-      confirmButtonColor: '#39a900'
-    })
-  }
-}
-
-const saveMaintenanceData = async () => {
-  try {
-    Swal.showLoading()
-    
-    const maintenanceData = {
-      typeMaintenance: maintenanceType.value,
-      description: formData.value.workDescription,
-      observation: formData.value.observations,
-      sparePartsStatus: sparePartsStatus.value,
-      sparePartsDetails: formData.value.partsDetails,
-      technicalId: userId.value,
-      wordOrdenId: wordOrdenId.value,
-      technicalSignature: formData.value.techSignature,
-      state: orderState.value
+  },
+  watch: {
+    sparePartsStatus(newValue) {
+      if (newValue === 'No' || newValue === 'No aplica') {
+        this.formData.partsDetails = '';
+        this.validationErrors.partsDetails = '';
+      }
     }
+  },
+  methods: {
+    // Método para optimizar la imagen antes de guardarla
+    async optimizeImage(imageDataUrl, maxWidth = 600, maxHeight = 300, quality = 0.8) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          // Calcular nuevas dimensiones manteniendo la proporción
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+          
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+          
+          // Crear canvas para redimensionar
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Dibujar imagen redimensionada
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convertir a formato base64 con calidad ajustada
+          const optimizedImage = canvas.toDataURL('image/jpeg', quality);
+          
+          // Mostrar información de optimización en consola
+          console.log('Optimización de imagen:');
+          console.log('- Tamaño original:', Math.round(imageDataUrl.length / 1024), 'KB');
+          console.log('- Tamaño optimizado:', Math.round(optimizedImage.length / 1024), 'KB');
+          console.log('- Reducción:', Math.round((1 - optimizedImage.length / imageDataUrl.length) * 100), '%');
+          
+          resolve(optimizedImage);
+        };
+        img.src = imageDataUrl;
+      });
+    },
     
-    await apiService.post('/maintenance', maintenanceData)
+    // Métodos para la firma digital
+    openSignatureModal() {
+      this.showSignatureModal = true;
+      // Dar tiempo para que el modal se renderice antes de inicializar el pad
+      setTimeout(() => {
+        if (this.$refs.signaturePad) {
+          this.$refs.signaturePad.clearSignature();
+        }
+      }, 100);
+    },
     
-    Swal.fire({
-      icon: 'success',
-      title: '¡Guardado exitoso!',
-      text: 'Los datos se han guardado correctamente',
-      confirmButtonColor: '#39a900'
-    })
+    clearSignature() {
+      if (this.$refs.signaturePad) {
+        this.$refs.signaturePad.clearSignature();
+      }
+    },
     
-  } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No se pudieron guardar los datos',
-      confirmButtonColor: '#39a900'
-    })
-  }
-}
+    async saveSignature() {
+      if (this.$refs.signaturePad) {
+        const { isEmpty } = this.$refs.signaturePad;
+        
+        if (!isEmpty()) {
+          try {
+            Swal.showLoading();
+            
+            // Obtener la firma como imagen
+            const { data } = this.$refs.signaturePad.saveSignature();
+            
+            // Optimizar la firma antes de guardarla
+            const optimizedSignature = await this.optimizeImage(data);
+            
+            // Guardar la firma optimizada
+            this.formData.techSignature = optimizedSignature;
+            this.showSignatureModal = false;
+            this.validationErrors.techSignature = '';
+            
+            Swal.close();
+          } catch (error) {
+            console.error('Error al optimizar la firma:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'No se pudo procesar la firma',
+              confirmButtonColor: '#39a900'
+            });
+          }
+        } else {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Firma vacía',
+            text: 'Por favor, dibuje su firma antes de guardar',
+            confirmButtonColor: '#39a900'
+          });
+        }
+      }
+    },
+    
+    cancelSignature() {
+      this.showSignatureModal = false;
+    },
+    
+    removeSignature() {
+      this.formData.techSignature = '';
+    },
+    
+    // Método para manejar la carga de imágenes con optimización
+    async handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      // Verificar que sea una imagen
+      if (!file.type.match('image.*')) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Tipo de archivo no válido',
+          text: 'Por favor, seleccione un archivo de imagen',
+          confirmButtonColor: '#39a900'
+        });
+        return;
+      }
+      
+      // Verificar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Archivo demasiado grande',
+          text: 'La imagen debe ser menor a 5MB',
+          confirmButtonColor: '#39a900'
+        });
+        return;
+      }
+      
+      try {
+        Swal.showLoading();
+        
+        // Leer el archivo como DataURL
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            // Optimizar la imagen antes de guardarla
+            const optimizedImage = await this.optimizeImage(e.target.result);
+            this.formData.techSignature = optimizedImage;
+            this.validationErrors.techSignature = '';
+            
+            Swal.close();
+          } catch (error) {
+            console.error('Error al optimizar la imagen:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error al procesar la imagen',
+              text: 'No se pudo optimizar la imagen',
+              confirmButtonColor: '#39a900'
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error al leer el archivo:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo leer el archivo',
+          confirmButtonColor: '#39a900'
+        });
+      } finally {
+        // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+        event.target.value = '';
+      }
+    },
+    
+    // Métodos existentes
+    getUserData() {
+      const authToken = Cookies.get('authToken');
 
-const generatePdfReport = async () => {
-  try {
-    Swal.showLoading()
-    
-    const doc = new jsPDF()
-    
-    doc.setFontSize(20)
-    doc.text('Orden de Trabajo', 105, 20, { align: 'center' })
-    
-    doc.setFontSize(12)
-    doc.text(`Número: ${radicado.value}`, 20, 40)
-    
-    doc.autoTable({
-      startY: 50,
-      head: [['Campo', 'Valor']],
-      body: [
-        ['Número de serie', formData.value.serialNumber],
-        ['Número de placa', formData.value.plateNumber],
-        ['Fecha inicio', formData.value.startDate],
-        ['Fecha fin', formData.value.endDate],
-        ['Ubicación', formData.value.location],
-        ['Contacto', formData.value.contactName],
-        ['Teléfono', formData.value.phone],
-        ['Tipo de mantenimiento', maintenanceType.value],
-        ['Descripción', formData.value.workDescription],
-        ['Observaciones', formData.value.observations],
-        ['Repuestos requeridos', sparePartsStatus.value],
-        ['Detalle de repuestos', formData.value.partsDetails],
-        ['Estado', orderState.value ? 'Ejecutado' : 'Pendiente'],
-        ['Ejecutado por', formData.value.executedBy],
-        ['Firma técnico', formData.value.techSignature]
-      ]
-    })
-    
-    doc.save(`orden-trabajo-${radicado.value}.pdf`)
-    
-    resetForm()
-    
-    Swal.fire({
-      icon: 'success',
-      title: 'PDF Generado',
-      text: 'El informe se ha generado correctamente',
-      confirmButtonColor: '#39a900'
-    })
-    
-  } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No se pudo generar el informe',
-      confirmButtonColor: '#39a900'
-    })
-  }
-}
+      if (authToken) {
+        try {
+          const tokenParts = authToken.split('.');
+          const payload = JSON.parse(atob(tokenParts[1])); 
+          const userIdFromToken = payload.sub; 
 
-const confirmReset = () => {
-  Swal.fire({
-    title: '¿Está seguro?',
-    text: "Se perderán los cambios no guardados",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#39a900',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Sí, limpiar',
-    cancelButtonText: 'Cancelar'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      resetForm()
+          if (userIdFromToken) {
+            this.userId = userIdFromToken; 
+
+            apiService.get(`/users/${this.userId}`)
+              .then(response => {
+                if (response && response.name) {
+                  this.formData.executedBy = response.name;
+                }
+              })
+              .catch(error => {
+                console.error('Error al obtener datos del usuario:', error);
+              });
+          }
+        } catch (error) {
+          console.error('Error al decodificar el token:', error);
+        }
+      }
+    },
+    
+    async fetchData() {
+      try {
+        Swal.showLoading();
+        
+        await this.getUserData();
+        
+        const response = await apiService.get(`/word-orden`);
+        
+        this.allOrders = response;
+        
+        this.workOrders = response.map(orden => ({
+          value: orden.radicado,
+          subtitle: orden.solicitud.asset.name,
+          title: `${orden.radicado} - ${orden.solicitud.serialNumber}`
+        }));
+        
+        Swal.close();
+      } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los datos',
+          confirmButtonColor: '#39a900'
+        });
+      }
+    },
+    
+    async handleWorkOrderSelect() {
+      if (!this.selectedRadicado) return;
+      
+      try {
+        Swal.showLoading();
+        
+        // Buscar la orden seleccionada en las órdenes ya cargadas
+        const selectedOrder = this.allOrders.find(orden => orden.radicado === this.selectedRadicado);
+        
+        if (!selectedOrder) {
+          throw new Error('Orden no encontrada');
+        }
+        
+        // Guardar la orden completa y su ID
+        this.workOrder = selectedOrder;
+        this.wordOrdenId = selectedOrder._id;
+        
+        // Cargar información básica de la orden
+        this.formData.radicado = selectedOrder.radicado || '';
+        this.formData.prioridad = selectedOrder.prioridad || '';
+        
+        // Formatear fechas
+        if (selectedOrder.fechaInicio) {
+          this.formData.startDate = new Date(selectedOrder.fechaInicio).toISOString().split('T')[0];
+        }
+        
+        if (selectedOrder.fechaFin) {
+          this.formData.endDate = new Date(selectedOrder.fechaFin).toISOString().split('T')[0];
+        }
+        
+        // Cargar información básica del activo si existe en la orden
+        if (selectedOrder.asset) {
+          this.formData.serialNumber = selectedOrder.asset.serialNumber || '';
+        }
+        
+        // Cargar información de mantenimientos previos si existen
+        if (selectedOrder.maintenances && selectedOrder.maintenances.length > 0) {
+          const maintenance = selectedOrder.maintenances[0];
+          this.formData.workDescription = maintenance.description || '';
+        }
+        
+        // Si hay ID de solicitud, obtener detalles completos del activo y la solicitud
+        if (selectedOrder.solicitud && selectedOrder.solicitud._id) {
+          await this.fetchAssetInfo(selectedOrder.solicitud._id);
+        } else {
+          console.error("No se encontró el ID de la solicitud en la orden");
+        }
+        
+        Swal.close();
+      } catch (error) {
+        console.error('Error al cargar información de la orden:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo cargar la información de la orden',
+          confirmButtonColor: '#39a900'
+        });
+      }
+    },
+    
+    async fetchAssetInfo(solicitudId) {
+      try {
+        console.log("Consultando información del activo con ID de solicitud:", solicitudId);
+        
+        const response = await apiService.get(`/application-maintenance/Consultar/${solicitudId}`);
+        console.log("Respuesta de la API:", response);
+        
+        // Guardar información de la solicitud
+        if (response) {
+          // Información del solicitante
+          this.formData.contactName = response.requesterName || '';
+          this.formData.phone = response.requesterPhone || '';
+          this.formData.trackingNumber = response.trackingNumber || '';
+          
+          // Información del activo
+          if (response.assetInfo) {
+            this.assetInfo = response.assetInfo;
+            
+            // Mapear datos del activo a los campos del formulario
+            this.formData.serialNumber = this.assetInfo.serialNumber || '';
+            this.formData.plateNumber = this.assetInfo.inventoryCode || '';
+            this.formData.location = this.assetInfo.location || '';
+            
+            console.log("Información del activo cargada correctamente");
+          } else {
+            console.error("No se encontró información del activo en la respuesta");
+          }
+        } else {
+          console.error("Respuesta vacía de la API");
+        }
+      } catch (error) {
+        console.error("Error al obtener la información del activo:", error);
+      }
+    },
+    
+    validateForm() {
+      let isValid = true;
+      
+      // Limpiar errores anteriores
+      Object.keys(this.validationErrors).forEach(key => this.validationErrors[key] = '');
+      
+      if (!this.maintenanceType) {
+        this.validationErrors.maintenanceType = 'Seleccione un tipo de mantenimiento';
+        isValid = false;
+      }
+      
+      if (!this.formData.workDescription.trim()) {
+        this.validationErrors.workDescription = 'La descripción es obligatoria';
+        isValid = false;
+      }
+      
+      if (!this.formData.observations.trim()) {
+        this.validationErrors.observations = 'Las observaciones son obligatorias';
+        isValid = false;
+      }
+      
+      if (this.sparePartsStatus === 'Si' && !this.formData.partsDetails.trim()) {
+        this.validationErrors.partsDetails = 'El detalle de repuestos es obligatorio';
+        isValid = false;
+      }
+      
+      if (!this.formData.techSignature) {
+        this.validationErrors.techSignature = 'La firma es obligatoria';
+        isValid = false;
+      }
+      
+      return isValid;
+    },
+    
+    validateAndSave() {
+      if (this.validateForm()) {
+        this.saveMaintenanceData();
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de validación',
+          text: 'Complete todos los campos obligatorios',
+          confirmButtonColor: '#39a900'
+        });
+      }
+    },
+    
+    async saveMaintenanceData() {
+      if (!this.selectedRadicado || !this.wordOrdenId) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Debe seleccionar una orden de trabajo',
+          confirmButtonColor: '#39a900'
+        });
+        return;
+      }
+      
+      try {
+        Swal.showLoading();
+        
+        const maintenanceData = {
+          typeMaintenance: this.maintenanceType,
+          description: this.formData.workDescription,
+          observation: this.formData.observations,
+          sparePartsStatus: this.sparePartsStatus,
+          sparePartsDetails: this.formData.partsDetails,
+          technicalId: this.userId,
+          wordOrdenId: this.wordOrdenId,
+          technicalSignature: this.formData.techSignature,
+          state: this.orderState
+        };
+        
+        await apiService.post('/maintenance', maintenanceData);
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Guardado exitoso!',
+          text: 'Los datos se han guardado correctamente',
+          confirmButtonColor: '#39a900'
+        });
+        
+      } catch (error) {
+        console.error('Error al guardar:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron guardar los datos',
+          confirmButtonColor: '#39a900'
+        });
+      }
+    },
+    
+    async generatePdfReport() {
+      if (!this.selectedRadicado) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Advertencia',
+          text: 'Debe seleccionar una orden de trabajo para generar el informe',
+          confirmButtonColor: '#39a900'
+        });
+        return;
+      }
+      
+      try {
+        Swal.showLoading();
+        
+        const doc = new jsPDF();
+        
+        doc.setFontSize(20);
+        doc.text('Orden de Trabajo', 105, 20, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.text(`Número: ${this.selectedRadicado}`, 20, 40);
+        
+        doc.autoTable({
+          startY: 50,
+          head: [['Campo', 'Valor']],
+          body: [
+            ['Número de serie', this.formData.serialNumber],
+            ['Número de placa', this.formData.plateNumber],
+            ['Fecha inicio', this.formData.startDate],
+            ['Fecha fin', this.formData.endDate],
+            ['Ubicación', this.formData.location],
+            ['Contacto', this.formData.contactName],
+            ['Teléfono', this.formData.phone],
+            ['Tipo de mantenimiento', this.maintenanceType],
+            ['Descripción', this.formData.workDescription],
+            ['Observaciones', this.formData.observations],
+            ['Repuestos requeridos', this.sparePartsStatus],
+            ['Detalle de repuestos', this.formData.partsDetails],
+            ['Estado', this.orderState ? 'Ejecutado' : 'Pendiente'],
+            ['Ejecutado por', this.formData.executedBy],
+            ['Firma técnico', 'Firmado digitalmente']
+          ]
+        });
+        
+        // Si hay firma, añadirla al PDF
+        if (this.formData.techSignature) {
+          try {
+            // Añadir la firma como imagen
+            doc.addPage();
+            doc.setFontSize(16);
+            doc.text('Firma del técnico:', 105, 20, { align: 'center' });
+            doc.addImage(this.formData.techSignature, 'PNG', 20, 30, 170, 100);
+          } catch (e) {
+            console.error('Error al añadir la firma al PDF:', e);
+          }
+        }
+        
+        doc.save(`orden-trabajo-${this.selectedRadicado}.pdf`);
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'PDF Generado',
+          text: 'El informe se ha generado correctamente',
+          confirmButtonColor: '#39a900'
+        });
+        
+      } catch (error) {
+        console.error('Error al generar PDF:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el informe',
+          confirmButtonColor: '#39a900'
+        });
+      }
+    },
+    
+    confirmReset() {
       Swal.fire({
-        icon: 'success',
-        title: 'Formulario limpiado',
-        showConfirmButton: false,
-        timer: 1500
-      })
+        title: '¿Está seguro?',
+        text: "Se perderán los cambios no guardados",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#39a900',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, limpiar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.resetForm();
+          Swal.fire({
+            icon: 'success',
+            title: 'Formulario limpiado',
+            showConfirmButton: false,
+            timer: 1500
+          });
+        }
+      });
+    },
+    
+    resetForm() {
+      // Mantener radicado seleccionado pero limpiar campos de mantenimiento
+      this.formData.workDescription = '';
+      this.formData.observations = '';
+      this.formData.partsDetails = '';
+      this.formData.techSignature = '';
+      this.maintenanceType = 'Preventivo';
+      this.sparePartsStatus = 'No';
+      this.orderState = true;
+      
+      // Limpiar errores
+      Object.keys(this.validationErrors).forEach(key => this.validationErrors[key] = '');
+    },
+    
+    handleResize() {
+      this.modalWidth = window.innerWidth < 600 ? window.innerWidth - 40 : 560;
     }
-  })
-}
-
-const resetForm = () => {
-  formData.value.workDescription = ''
-  formData.value.observations = ''
-  formData.value.partsDetails = ''
-  formData.value.techSignature = ''
-  maintenanceType.value = 'Preventivo'
-  sparePartsStatus.value = 'No'
-  orderState.value = true
-  Object.keys(validationErrors).forEach(key => validationErrors[key] = '')
-}
-
-watch(sparePartsStatus, (newValue) => {
-  if (newValue === 'No' || newValue === 'No aplica') {
-    formData.value.partsDetails = ''
-    validationErrors.partsDetails = ''
+  },
+  mounted() {
+    this.fetchData();
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize);
   }
-})
-
-onMounted(() => {
-  fetchData()
-})
+}
 </script>
 
 <style scoped>
+.search-container {
+  display: flex;
+  align-items: center;
+  width: 50%;
+}
 .maintenance-form {
   max-width: 1200px;
   margin: 0 auto;
@@ -758,6 +1102,187 @@ onMounted(() => {
   background-color: #2d8000;
 }
 
+/* Estilos para el componente de firma */
+.signature-container {
+  position: relative;
+}
+
+.signature-preview {
+  position: relative;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.signature-image {
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  display: block;
+}
+
+.remove-signature-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #dc3545;
+  font-size: 14px;
+}
+
+.signature-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.signature-button, .upload-button {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.signature-button:hover, .upload-button:hover {
+  background-color: #e9ecef;
+}
+
+.signature-button.error, .upload-button.error {
+  border-color: #dc3545;
+}
+
+.or-divider {
+  text-align: center;
+  color: #6c757d;
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+.file-input {
+  display: none;
+}
+
+/* Estilos del modal */
+.signature-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.signature-modal {
+  background-color: white;
+  border-radius: 8px;
+  width: 600px;
+  max-width: 95%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.signature-modal-header {
+  padding: 16px;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signature-modal-header h3 {
+  margin: 0;
+  color: #39a900;
+  font-size: 18px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.signature-modal-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.signature-instructions {
+  margin-top: 12px;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.signature-modal-footer {
+  padding: 16px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.clear-button {
+  border: 1px solid #ced4da;
+  background-color: white;
+  color: #555;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.clear-button:hover {
+  background-color: #f8f9fa;
+}
+
+.save-button {
+  border: none;
+  background-color: #39a900;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.save-button:hover {
+  background-color: #2d8500;
+}
+
 @media (max-width: 992px) {
   .form-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -791,6 +1316,14 @@ onMounted(() => {
   .checkbox-group {
     flex-direction: column;
     gap: 8px;
+  }
+  
+  .signature-modal-footer {
+    flex-direction: column;
+  }
+  
+  .cancel-button, .clear-button, .save-button {
+    width: 100%;
   }
 }
 

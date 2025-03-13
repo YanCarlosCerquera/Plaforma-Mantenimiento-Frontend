@@ -107,9 +107,11 @@
             </div>
             
             <div class="info-item">
-              <div class="info-label">Estado</div>
-              <div class="info-value status-good">{{ assetInfo.status == 'Bueno' || assetInfo.status == "Dañado" }}</div>
-            </div>
+    <div class="info-label">Estado</div>
+    <div class="info-value status-good">{{ assetInfo.status ? "Bueno" : "Dañado" }}</div>
+</div>
+
+
           </div>
         </div>
       </div>
@@ -140,10 +142,10 @@ const fetchOrdenData = async () => {
     const response = await apiService.get(`/word-orden/${ordenId}`);
     ordenData.value = response.data || response;
     
-    if (ordenData.value) {
+    if (ordenData.value.solicitud) {
       // Si tenemos el ID de la solicitud, buscamos la información del activo
-      if (ordenData.value.solicitud) {
-        await fetchAssetInfo(ordenData.value.solicitud);
+      if (ordenData.value.solicitud._id) {
+        await fetchAssetInfo(ordenData.value.solicitud._id);
       }
     }
   } catch (error) {

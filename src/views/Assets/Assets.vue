@@ -307,6 +307,7 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import apiService from "../../service/apiService";
 import CategoryModal from "../Category/CategoryModal.vue";
+import Cookies from "js-cookie";
 
 const router = useRouter();
 const isEditMode = ref(false);
@@ -395,14 +396,16 @@ const handleCategoryModalSave = async (categoryData) => {
 };
 // Cargar datos si estamos en modo edición
 const loadAssetData = async () => {
-  const assetId = localStorage.getItem("editAssetId");
-  console.log(assetId);
+  const assetId = Cookies.get("editAssetId");
+  console.log("asdasdas" + assetId);
 
   if (assetId) {
     isEditMode.value = true;
     try {
       console.log("Cargando activo con ID:", assetId);
       const response = await apiService.get(`/assets/${assetId}`);
+      console.log(assetId);
+      
       const asset = response.data || response;
       console.log("Datos del activo:", asset);
 
@@ -495,7 +498,6 @@ const handleSubmit = async () => {
         showConfirmButton: false,
       });
     }
-    // Limpiar el localStorage y redirigir
     localStorage.removeItem("editAssetId");
     router.push("/assets");
   } catch (error) {

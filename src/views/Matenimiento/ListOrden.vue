@@ -7,16 +7,7 @@ import Cookies from "js-cookie";
 import AuthorsTable from "../components/AuthorsTable.vue";
 
 // Definición de formateadores local (sin export)
-const commonFormatters = {
-  state(value) {
-    if (value === true || value === false) {
-      return `<span style="color: green;">Asignado</span>`;
-    } else {
-      return `<span style="color: red;">No asignada</span>`;
-    }
-  },
-  // Otros formatters...
-};
+
 
 const store = useStore();
 const TABLE_ID = "ordenes-trabajo";
@@ -60,7 +51,6 @@ const fields = ref({
     value: "state",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
-    formatter: commonFormatters.state,
   }
 });
 

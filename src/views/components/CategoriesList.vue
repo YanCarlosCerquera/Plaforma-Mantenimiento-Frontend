@@ -2,9 +2,11 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useStore } from "vuex";
 import apiService from '../../service/apiService';
+import { useRouter } from "vue-router";
 
 const store = useStore();
 const isRTL = computed(() => store.state.isRTL);
+const router = useRouter();
 
 const props = defineProps({
   title: {
@@ -19,6 +21,7 @@ const props = defineProps({
 
 const mergedCategories = ref([]);
 
+
 const iconMap = {
   'equipo de computa': 'ni ni-mobile-button',
   'Equipos especiales': 'ni ni-tag',
@@ -28,6 +31,9 @@ const iconMap = {
 
 const backgroundColors = ['primary', 'info', 'success', 'warning', 'danger'];
 
+const handleCategotias = async () =>{
+  router.push("/cateogitas")
+}
 const fetchCategories = async () => {
   try {
     const response = await apiService.get('/assets/count-by-category');
@@ -84,7 +90,7 @@ watch(() => props.categories, fetchCategories);
             </div>
           </div>
           <div class="d-flex">
-            <button
+            <button @clik="handleCategotias"
               class="my-auto btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right"
             >
               <i
