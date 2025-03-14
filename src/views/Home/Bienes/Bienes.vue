@@ -1,25 +1,39 @@
 <template>
   <main class="main-content mt-0">
+
+   
+      
+
     <!-- Hero / Encabezado -->
-    <div class="page-header align-items-start min-vh-50 pb-11 md:h-60" :style="backgroundStyle">
-      <span class="mask bg-gradient-dark opacity-6 md:h-60"></span>
-      <div class="container row">
-        <div class="row justify-content-center mt-8 md:mt-16">
-          <div class="col-lg-12 text-left mx-auto mt-8 md:mt-16">
-            <h1 class="text-white mb-2 mt-1 md:mt-12 md:text-4xl lg:text-4xl sm:text-xs">
-              Bienvenidos al sistema de gestión de inventarios de la regional Huila
-            </h1>
-          </div>
+    <div class="page-header align-items-start min-vh-50 pb-11 md:h-60 position-relative" :style="backgroundStyle">
+    <!-- Overlay mask -->
+    <span class="mask bg-gradient-dark opacity-6 md:h-60"></span>
+    
+    <!-- Home button positioned in top-left corner -->
+    <div class="position-absolute top-0 left-0 p-3 z-index-2">
+      <ArgonButton color="success" size="sm" class="rounded-none shadow-lg p-2" title="Inicio"   @click="handleIndex">
+        Regresar <i class="fa-solid fa-house"></i>
+      </ArgonButton>
+    </div>
+    
+    <div class="container row">
+      <div class="row justify-content-center mt-8 md:mt-16">
+        <div class="col-lg-12 text-left mx-auto mt-8 md:mt-16">
+          <h1 class="text-white mb-2 mt-1 md:mt-12 md:text-4xl lg:text-4xl sm:text-xs">
+            Bienvenidos al sistema de gestión de inventarios de la regional Huila
+          </h1>
         </div>
       </div>
-      <div class="container row d-flex justify-content-end flex-wrap">
-        <div class="d-flex flex-column flex-md-row justify-content-end w-100">
-          <ArgonButton color="success" class="my-2 md:my-4 mb-2 w-100 w-md-25 md:w-1/4 lg:w-1/5" @click="handleLoginClick">
-            Ingresar
-          </ArgonButton>
-          <ArgonButton color="success" class="my-2 md:my-4 mb-2 w-100 w-md-25 md:w-1/4 lg:w-1/5 mx-md-3" @click="handleSignup">
-            Registrarse
-          </ArgonButton>
+    </div>
+    
+    <div class="container row d-flex justify-content-end flex-wrap">
+      <div class="d-flex flex-column flex-md-row justify-content-end w-100">
+        <ArgonButton color="success" class="my-2 md:my-4 mb-2 w-100 w-md-25 md:w-1/4 lg:w-1/5" @click="handleLoginClick">
+          Ingresar
+        </ArgonButton>
+        <ArgonButton color="success" class="my-2 md:my-4 mb-2 w-100 w-md-25 md:w-1/4 lg:w-1/5 mx-md-3" @click="handleSignup">
+          Registrarse
+        </ArgonButton>
         </div>
       </div>
     </div>
@@ -308,7 +322,6 @@ export default {
       currentPage.value = 1;
     };
 
-    // Función para ver detalle de un activo
     const viewAssetDetail = (assetId) => {
       router.push(`/activos/detalle/${assetId}`);
     };
@@ -352,11 +365,14 @@ export default {
 
     // Funciones de manejo de eventos
     const handleLoginClick = () => {
-      console.log("Iniciar sesión");
+      router.push("/sign-in")
     };
 
     const handleSignup = () => {
-      console.log("Registrarse");
+      router.push("/sign-up")
+    };
+    const handleIndex = () => {
+      router.push("/")
     };
 
     return {
@@ -375,6 +391,7 @@ export default {
       backgroundStyle,
       handleLoginClick,
       handleSignup,
+      handleIndex,
       loading,
       error,
       viewAssetDetail
@@ -384,7 +401,10 @@ export default {
 </script>
 
 <style scoped>
-/* Estilos para la sección de consulta */
+
+.position-relative {
+  position: relative;
+}
 h1 {
   color: #39A900;
   margin-bottom: 8px;

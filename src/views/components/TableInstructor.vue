@@ -126,6 +126,9 @@ const fields_informes = ref({
         textClass: 'text-xs font-weight-bold',
     },
 });
+const normalizeText = (text) => {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+};
 
 const fetchWordOrdens = async () => {
     try {
@@ -134,7 +137,8 @@ const fetchWordOrdens = async () => {
         let url = '/word-orden';
         
         if (role === 'instructor' || role === 'técnico') {
-            url += `?${role}Id=${userId}`;
+            const normalizedRole = normalizeText(role); // Normalizar el rol
+            url += `?${normalizedRole}Id=${userId}`;
         }
 
         const data = await apiService.get(url);
@@ -154,7 +158,8 @@ const fetchWorkReports = async () => {
         let url = '/work-report';
         
         if (role === 'instructor' || role === 'técnico') {
-            url += `?${role}Id=${userId}`;
+            const normalizedRole = normalizeText(role); // Normalizar el rol
+            url += `    ?${normalizedRole}Id=${userId}`;
         }
 
         const data = await apiService.get(url);
