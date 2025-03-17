@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, watch, ref, onBeforeUnmount, nextTick } from "vue";
+import { onMounted, watch, ref, onBeforeUnmount } from "vue";
 import Chart from "chart.js/auto";
 
 const props = defineProps({
@@ -40,14 +40,11 @@ const retryCount = ref(0);
 const MAX_RETRIES = 5;
 
 // Función para crear o actualizar el gráfico con manejo de errores mejorado
-const createOrUpdateChart = async () => {
+const createOrUpdateChart = () => {
   // Verificar si el componente está montado
   if (!isMounted.value) return;
   
   try {
-    // Esperar a que el DOM se actualice completamente
-    await nextTick();
-    
     // Obtener el elemento canvas de forma segura
     const canvas = document.getElementById(props.id);
     if (!canvas) {
@@ -80,7 +77,7 @@ const createOrUpdateChart = async () => {
     }
 
     // Limpiar cualquier gráfico existente
-    await cleanupChart();
+    cleanupChart();
 
     // Crear gradientes
     const gradientStroke1 = ctx.createLinearGradient(0, 230, 0, 50);
@@ -222,11 +219,8 @@ const createOrUpdateChart = async () => {
 };
 
 // Función para limpiar el gráfico existente con manejo de errores mejorado
-const cleanupChart = async () => {
+const cleanupChart = () => {
   try {
-    // Esperar a que el DOM se actualice completamente
-    await nextTick();
-    
     // Destruir la instancia actual si existe
     if (chartInstance.value) {
       chartInstance.value.destroy();
@@ -241,6 +235,7 @@ const cleanupChart = async () => {
       }
     } catch (e) {
       // Ignorar errores al obtener el gráfico existente
+      console.warn("No se pudo obtener el gráfico existente:", e);
     }
   } catch (error) {
     console.warn("Error al limpiar el gráfico:", error);
@@ -278,40 +273,15 @@ watch(() => props.id, () => {
   }
 });
 
-// Registrar eventos de navegación de Vue Router si está disponible
-const setupRouterGuards = () => {
-  try {
-    const router = window?.$nuxt?.$router || window?.$router;
-    if (router) {
-      router.beforeEach((to, from, next) => {
-        if (isMounted.value) {
-          cleanupChart();
-        }
-        next();
-      });
-    }
-  } catch (e) {
-    // Router no disponible, ignorar
-  }
-};
-
 onMounted(() => {
   isMounted.value = true;
-  
-  // Esperar a que el DOM esté completamente cargado
-  nextTick(() => {
-    initializeChart();
-    setupRouterGuards();
-  });
+  initializeChart();
   
   // Agregar listener para el evento de visibilidad
   document.addEventListener('visibilitychange', handleVisibilityChange);
   
   // Agregar listener para el evento de cambio de ruta (para SPA)
   window.addEventListener('popstate', handleRouteChange);
-  
-  // Agregar listener para cambios en el DOM que podrían afectar al canvas
-  window.addEventListener('resize', handleResize);
 });
 
 onBeforeUnmount(() => {
@@ -327,7 +297,6 @@ onBeforeUnmount(() => {
   cleanupChart();
   document.removeEventListener('visibilitychange', handleVisibilityChange);
   window.removeEventListener('popstate', handleRouteChange);
-  window.removeEventListener('resize', handleResize);
 });
 
 // Manejar cambios de visibilidad (cuando el usuario cambia de pestaña y vuelve)
@@ -344,14 +313,6 @@ const handleRouteChange = () => {
   if (isMounted.value) {
     // Limpiar el gráfico cuando cambia la ruta
     cleanupChart();
-  }
-};
-
-// Manejar cambios de tamaño de ventana
-const handleResize = () => {
-  if (isMounted.value && chartInstance.value) {
-    // Actualizar el gráfico cuando cambia el tamaño de la ventana
-    chartInstance.value.resize();
   }
 };
 </script>
