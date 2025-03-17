@@ -126,7 +126,6 @@ const fields_informes = ref({
         textClass: 'text-xs font-weight-bold',
     },
 });
-
 const normalizeText = (text) => {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 };

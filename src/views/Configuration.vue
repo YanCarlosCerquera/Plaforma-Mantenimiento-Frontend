@@ -69,6 +69,12 @@ app.use(vuetify);
             <i class="fa fa-chevron-right icon-end"></i>
           </router-link>
         </v-col>
+        <v-col cols="12" md="6" class="mx-auto">
+          <router-link to="/environment" outlined block class="py-6 text-body-1 custom-btn mb-3">
+            <span>Gestión de Ambientes</span>
+            <i class="fa fa-chevron-right icon-end"></i>
+          </router-link>
+        </v-col>
       </v-row>
       
       <v-row>
