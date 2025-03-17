@@ -417,7 +417,7 @@ onBeforeUnmount(() => {
       <div class="container-fluid" v-else-if="userRole === 'almacenista'">
         <TableAlmacenista/>
       </div>
-      <div class="container-fluid" v-else-if="userRole === 'instructor' || userRole === 'técnico'">
+      <div class="container-fluid" v-else-if="userRole === 'Instructor' || userRole === 'técnico'">
         <TableInstructor :userData="{userId: userId, role: userRole}" />
       </div>
       <div class="container-fluid" v-else>

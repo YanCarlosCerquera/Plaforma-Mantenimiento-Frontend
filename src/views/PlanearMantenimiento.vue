@@ -68,9 +68,9 @@
 
         <div class="form-grid asset-info-grid">
           <div class="form-group">
-            <label>Centro de formacion</label>
+            <label>Ambiente</label>
             <p>
-              {{ asset.centro_formacion }}
+              {{ asset.ambiente }}
             </p>
           </div>
 
@@ -170,7 +170,7 @@ const assetsData = ref([])
 const router = useRouter()
 
 const asset = ref({
-  centro_formacion: '',
+  ambiente: '',
   ubicacion: '',
   fecha: '',
   marca: '',
@@ -246,7 +246,7 @@ const fetchSelectAsset = async (inventoryCode) => {
   try {
     const response = await apiService.get(`/assets/InventoryCode/${inventoryCode}`);
     asset.value = {
-      centro_formacion: response.trainingCenterId.name,
+      ambiente: response.environmentId.name,
       ubicacion: response.location,
       fecha: response.createdAt,
       marca: response.brand,

@@ -120,8 +120,8 @@
         
         <div class="asset-info-grid">
           <div class="info-group">
-            <label>Centro de formación</label>
-            <p>{{ requestData.assetInfo?.trainingCenterId?.[0]?.name }}</p>
+            <label>Ambiente</label>
+            <p>{{ requestData.environmentInfo?.name }}</p>
           </div>
 
           <div class="info-group">

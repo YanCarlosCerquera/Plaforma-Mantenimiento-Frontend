@@ -136,7 +136,7 @@ const fetchWordOrdens = async () => {
         const { userId, role } = props.userData;
         let url = '/word-orden';
         
-        if (role === 'instructor' || role === 'técnico') {
+        if (role === 'Instructor' || role === 'técnico') {
             const normalizedRole = normalizeText(role); // Normalizar el rol
             url += `?${normalizedRole}Id=${userId}`;
         }
@@ -157,7 +157,7 @@ const fetchWorkReports = async () => {
         const { userId, role } = props.userData;
         let url = '/work-report';
         
-        if (role === 'instructor' || role === 'técnico') {
+        if (role === 'Instructor' || role === 'técnico') {
             const normalizedRole = normalizeText(role); // Normalizar el rol
             url += `?${normalizedRole}Id=${userId}`;
         }

@@ -26,10 +26,10 @@
           </div>
 
           <div class="form-group">
-            <label for="trainingCenterId">Centro de formación</label>
+            <label for="environmentId">Ambiente</label>
             <select
-              id="trainingCenterId"
-              v-model="formData.trainingCenterId"
+              id="environmentId"
+              v-model="formData.environmentId"
               class="form-select"
             >
               <option value="">Seleccionar...</option>
@@ -352,7 +352,6 @@ const categories = ref([]);
 
 const handleCategoryModalSave = async (categoryData) => {
   try {
-    // Here you would typically save the category data to your API
     const response = await apiService.post('/Categorias', {
       ...categoryData,
     });
@@ -397,7 +396,6 @@ const handleCategoryModalSave = async (categoryData) => {
 // Cargar datos si estamos en modo edición
 const loadAssetData = async () => {
   const assetId = Cookies.get("editAssetId");
-  console.log("asdasdas" + assetId);
 
   if (assetId) {
     isEditMode.value = true;

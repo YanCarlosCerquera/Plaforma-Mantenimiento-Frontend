@@ -63,8 +63,8 @@
         <div class="content-grid">
           <div class="info-column">
             <div class="info-item">
-              <div class="info-label">Centro de formación</div>
-              <div class="info-value">{{ assetInfo.trainingCenterId?.[0]?.name }}</div>
+              <div class="info-label">Ambiente</div>
+              <div class="info-value">{{ environmentInfo.name }}</div>
             </div>
             
             <div class="info-item">
@@ -128,6 +128,7 @@ import { useRouter } from 'vue-router';
 
 const ordenData = ref(null);
 const assetInfo = ref(null);
+const environmentInfo = ref(null);
 const userName = ref('');
 const router = useRouter(null)
 
@@ -157,6 +158,7 @@ const fetchAssetInfo = async (solicitudId) => {
   try {
     const response = await apiService.get(`/application-maintenance/Consultar/${solicitudId}`);
     assetInfo.value = response.data?.assetInfo || response.assetInfo;
+    environmentInfo.value = response.data?.environmentInfo || response.environmentInfo;
   } catch (error) {
     console.error('Error al obtener la información del activo:', error);
   }
