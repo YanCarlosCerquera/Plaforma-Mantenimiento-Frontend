@@ -40,14 +40,18 @@
 }
 </style>
 <script setup>
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useStore } from "vuex";
+import { useRoute } from "vue-router";
+import Cookies from "js-cookie";
 import Sidenav from "./examples/Sidenav";
 import Configurator from "@/examples/Configurator.vue";
 import Navbar from "@/examples/Navbars/Navbar.vue";
 import AppFooter from "@/examples/Footer.vue";
 
 const store = useStore();
+const route = useRoute();
+
 const isNavFixed = computed(() => store.state.isNavFixed);
 const darkMode = computed(() => store.state.darkMode);
 const isAbsolute = computed(() => store.state.isAbsolute);
@@ -69,6 +73,17 @@ const navClasses = computed(() => {
     "px-0 mx-4": !isAbsolute.value,
   };
 });
+
+// Watcher para detectar cambios en la ruta
+watch(
+  () => route.path,
+  (newPath) => {
+    const protectedRoutes = ["/assets/edit", "/assets/detail", "/detalles"];
+    if (!protectedRoutes.includes(newPath)) {
+      Cookies.remove("editAssetId");
+    }
+  }
+);
 </script>
 <template>
   <div

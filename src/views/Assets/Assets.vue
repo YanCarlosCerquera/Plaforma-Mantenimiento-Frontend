@@ -26,9 +26,9 @@
           </div>
 
           <div class="form-group">
-            <label for="trainingCenterId">Centro de formación</label>
+            <label for="environmentId">Ambiente</label>
             <select
-              id="trainingCenterId"
+              id="environmentId"
               v-model="formData.environmentId"
               class="form-select"
             >
@@ -303,9 +303,9 @@
 
 <script setup>
 import Swal from "sweetalert2";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import apiService from "../../service/apiService";
+import apiService from "../../service/apiservice";
 import CategoryModal from "../Category/CategoryModal.vue";
 import Cookies from "js-cookie";
 
@@ -352,7 +352,6 @@ const categories = ref([]);
 
 const handleCategoryModalSave = async (categoryData) => {
   try {
-    // Here you would typically save the category data to your API
     const response = await apiService.post('/Categorias', {
       ...categoryData,
     });
@@ -397,7 +396,6 @@ const handleCategoryModalSave = async (categoryData) => {
 // Cargar datos si estamos en modo edición
 const loadAssetData = async () => {
   const assetId = Cookies.get("editAssetId");
-  console.log("asdasdas" + assetId);
 
   if (assetId) {
     isEditMode.value = true;
@@ -414,8 +412,11 @@ const loadAssetData = async () => {
         ? new Date(asset.acquisitionDate).toISOString().split("T")[0]
         : "";
 
+      imagePreview.value = asset.image || null;
+
       formData.value = {
         name: asset.name || "",
+        image: asset.image || "",
         location: asset.location || "",
         acquisitionDate: date,
         brand: asset.brand || "",
@@ -467,7 +468,7 @@ const handleSubmit = async () => {
         : null,
     };
 
-    const assetId = localStorage.getItem("editAssetId");
+    const assetId = Cookies.get("editAssetId");
 
     if (assetId) {
       // Modo edición - usar patch en lugar de put
@@ -556,6 +557,10 @@ onMounted(async () => {
     console.error("Error loading initial data:", error);
   }
 });
+
+onUnmounted(() =>{
+  Cookies.remove("editAssetId");
+})
 </script>
 
 <style scoped>

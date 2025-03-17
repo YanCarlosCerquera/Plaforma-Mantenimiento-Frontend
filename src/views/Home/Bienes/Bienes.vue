@@ -188,7 +188,7 @@ import {
   Eye,
   FileSearch
 } from 'lucide-vue-next';
-import apiService from "../../../service/apiService";
+import apiService from "../../../service/apiservice";
 import AppFooter from "../../../examples/PageLayout/Footer.vue";
 
 export default {

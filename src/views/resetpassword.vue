@@ -101,7 +101,7 @@
   import { ref, computed, onMounted, onBeforeMount, onBeforeUnmount } from 'vue';
   import { useRouter } from 'vue-router';
   import { useStore } from 'vuex';
-  import apiService from '../service/apiService';
+  import apiService from '../service/apiservice';
   import fondoImage2 from '../assets/fondo2.jpg';
   import logoSena from '../assets/logoSena.jpg';
   

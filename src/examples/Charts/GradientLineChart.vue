@@ -35,35 +35,47 @@ const chartInstance = ref(null);
 const isMounted = ref(false);
 // Referencia para el timeout
 const chartTimeout = ref(null);
+// Referencia para el número de intentos
+const retryCount = ref(0);
+const MAX_RETRIES = 5;
 
-// Función para crear o actualizar el gráfico
+// Función para crear o actualizar el gráfico con manejo de errores mejorado
 const createOrUpdateChart = () => {
   // Verificar si el componente está montado
   if (!isMounted.value) return;
-
-  // Obtener el elemento canvas de forma segura
-  const canvas = document.getElementById(props.id);
-  if (!canvas) {
-    console.warn(`Canvas con id ${props.id} no encontrado, reintentando...`);
-    // Reintentar después de un breve retraso
-    if (chartTimeout.value) clearTimeout(chartTimeout.value);
-    chartTimeout.value = setTimeout(() => createOrUpdateChart(), 200);
-    return;
-  }
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    console.error(`No se pudo obtener el contexto 2D para el canvas ${props.id}`);
-    return;
-  }
-
-  // Verificar datos del gráfico
-  if (!props.chart || !props.chart.labels || !props.chart.datasets) {
-    console.warn("Datos de gráfico inválidos o incompletos:", props.chart);
-    return;
-  }
-
+  
   try {
+    // Obtener el elemento canvas de forma segura
+    const canvas = document.getElementById(props.id);
+    if (!canvas) {
+      if (retryCount.value < MAX_RETRIES) {
+        console.warn(`Canvas con id ${props.id} no encontrado, reintentando... (${retryCount.value + 1}/${MAX_RETRIES})`);
+        retryCount.value++;
+        // Reintentar después de un breve retraso con backoff exponencial
+        if (chartTimeout.value) clearTimeout(chartTimeout.value);
+        chartTimeout.value = setTimeout(() => createOrUpdateChart(), 200 * retryCount.value);
+      } else {
+        console.error(`Canvas con id ${props.id} no encontrado después de ${MAX_RETRIES} intentos`);
+      }
+      return;
+    }
+
+    // Resetear contador de intentos
+    retryCount.value = 0;
+
+    // Verificar que el contexto 2D esté disponible
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      console.error(`No se pudo obtener el contexto 2D para el canvas ${props.id}`);
+      return;
+    }
+
+    // Verificar datos del gráfico
+    if (!props.chart || !props.chart.labels || !props.chart.datasets) {
+      console.warn("Datos de gráfico inválidos o incompletos:", props.chart);
+      return;
+    }
+
     // Limpiar cualquier gráfico existente
     cleanupChart();
 
@@ -195,10 +207,18 @@ const createOrUpdateChart = () => {
     });
   } catch (error) {
     console.error("Error al crear el gráfico:", error);
+    // Si hay un error, intentar limpiar y reintentar una vez más
+    if (retryCount.value < MAX_RETRIES) {
+      retryCount.value++;
+      setTimeout(() => {
+        cleanupChart();
+        createOrUpdateChart();
+      }, 300);
+    }
   }
 };
 
-// Función para limpiar el gráfico existente
+// Función para limpiar el gráfico existente con manejo de errores mejorado
 const cleanupChart = () => {
   try {
     // Destruir la instancia actual si existe
@@ -208,9 +228,14 @@ const cleanupChart = () => {
     }
     
     // Verificar si hay un gráfico existente con el mismo ID
-    const existingChart = Chart.getChart(props.id);
-    if (existingChart) {
-      existingChart.destroy();
+    try {
+      const existingChart = Chart.getChart(props.id);
+      if (existingChart) {
+        existingChart.destroy();
+      }
+    } catch (e) {
+      // Ignorar errores al obtener el gráfico existente
+      console.warn("No se pudo obtener el gráfico existente:", e);
     }
   } catch (error) {
     console.warn("Error al limpiar el gráfico:", error);
@@ -223,6 +248,9 @@ const initializeChart = () => {
   if (chartTimeout.value) {
     clearTimeout(chartTimeout.value);
   }
+  
+  // Resetear contador de intentos
+  retryCount.value = 0;
   
   // Intentar crear el gráfico con un pequeño retraso
   chartTimeout.value = setTimeout(() => {
@@ -237,31 +265,54 @@ watch(() => props.chart, () => {
   }
 }, { deep: true });
 
+// Observar cambios en el ID del gráfico
+watch(() => props.id, () => {
+  if (isMounted.value) {
+    cleanupChart();
+    initializeChart();
+  }
+});
+
 onMounted(() => {
   isMounted.value = true;
   initializeChart();
   
   // Agregar listener para el evento de visibilidad
   document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+  // Agregar listener para el evento de cambio de ruta (para SPA)
+  window.addEventListener('popstate', handleRouteChange);
 });
 
 onBeforeUnmount(() => {
+  // Marcar como desmontado antes de limpiar
   isMounted.value = false;
   
   // Limpiar timeouts y listeners
   if (chartTimeout.value) {
     clearTimeout(chartTimeout.value);
+    chartTimeout.value = null;
   }
   
   cleanupChart();
   document.removeEventListener('visibilitychange', handleVisibilityChange);
+  window.removeEventListener('popstate', handleRouteChange);
 });
 
 // Manejar cambios de visibilidad (cuando el usuario cambia de pestaña y vuelve)
 const handleVisibilityChange = () => {
   if (document.visibilityState === 'visible' && isMounted.value) {
     // Reinicializar el gráfico cuando la página vuelve a ser visible
+    cleanupChart();
     initializeChart();
+  }
+};
+
+// Manejar cambios de ruta
+const handleRouteChange = () => {
+  if (isMounted.value) {
+    // Limpiar el gráfico cuando cambia la ruta
+    cleanupChart();
   }
 };
 </script>
@@ -270,7 +321,6 @@ const handleVisibilityChange = () => {
   <div class="card z-index-2">
     <div class="pb-0 card-header mb-0">
       <h6>{{ props.title }}</h6>
-      <!--  eslint-disable-next-line vue/no-v-html -->
       <p v-if="props.description" class="text-sm" v-html="props.description" />
     </div>
     <div class="p-3 card-body">

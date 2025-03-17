@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import AuthorsTable from "../components/AuthorsTable.vue";
-import apiService from "../../service/apiService";
+import apiService from "../../service/apiservice";
 import Swal from "sweetalert2";
 import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonAutocomplete from "@/components/ArgonAutocomplete.vue";

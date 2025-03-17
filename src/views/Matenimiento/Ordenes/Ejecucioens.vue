@@ -97,9 +97,9 @@
             </div>
 
             <div class="info-group">
-              <label>Centro de formación</label>
+              <label>Ambiente</label>
               <p class="value">
-                {{ assetInfo.trainingCenterId?.[0]?.name || "No disponible" }}
+                {{ environmentId?.name || "No disponible" }}
               </p>
             </div>
 
@@ -136,7 +136,7 @@
 
 <script>
 import { ref, onMounted, computed } from "vue";
-import apiService from "../../../service/apiService";
+import apiService from "../../../service/apiservice";
 import Cookies from "js-cookie";
 import { useRouter } from "vue-router";
 
@@ -145,6 +145,7 @@ export default {
   setup() {
     const workOrder = ref(null);
     const assetInfo = ref(null);
+    const environmentId = ref(null);
     const buttonText = ref("");
     const isLoading = ref(false);
     const router = useRouter();
@@ -187,7 +188,9 @@ export default {
           `/application-maintenance/Consultar/${solicitudId}`
         );
         assetInfo.value = response.data?.assetInfo || response.assetInfo;
+        environmentId.value = response.data?.environmentInfo || response.environmentInfo;
         console.log("Asset Info:", assetInfo.value);
+        console.log("environment infor:", environmentId.value)
       } catch (error) {
         console.error("Error al obtener la información del activo:", error);
       }
@@ -218,12 +221,15 @@ export default {
       }
     };
 
-    onMounted(fetchData);
+    onMounted(async () => {
+      await fetchData()
+    });
 
     // Agregar las funciones y variables al return para que estén disponibles en el template
     return {
       workOrder,
       assetInfo,
+      environmentId,
       workOrderStatusText,
       formatDate,
       buttonText,

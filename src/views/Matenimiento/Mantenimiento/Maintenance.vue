@@ -312,7 +312,7 @@
 <script>
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
-import apiService from "../../../service/apiService"
+import apiService from "../../../service/apiservice"
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import ArgonAutocomplete from '../../../components/ArgonAutocomplete.vue'

@@ -60,7 +60,7 @@ import { useStore } from "vuex";
 import Cookies from "js-cookie";
 import Swal from "sweetalert2";
 import { onBeforeUnmount, onBeforeMount } from "vue";
-import apiService from "../service/apiService";
+import apiService from "../service/apiservice";
 import logo from "@/assets/img/sena-logo.png";
 
 const router = useRouter();

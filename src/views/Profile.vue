@@ -7,7 +7,7 @@ import setTooltip from "@/assets/js/tooltip.js";
 import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonButton from "@/components/ArgonButton.vue";
 import Swal from "sweetalert2";
-import apiService from "../service/apiService";
+import apiService from "../service/apiservice";
 import ArgonSelect from "@/components/ArgonSelect.vue";
 import ArgonAutocomplete from "../components/ArgonAutocomplete.vue";
 import CardsAdminstrador from "./components/CardsAdministrador.vue";
@@ -417,7 +417,7 @@ onBeforeUnmount(() => {
       <div class="container-fluid" v-else-if="userRole === 'almacenista'">
         <TableAlmacenista/>
       </div>
-      <div class="container-fluid" v-else-if="userRole === 'instructor' || userRole === 'técnico'">
+      <div class="container-fluid" v-else-if="userRole === 'Instructor' || userRole === 'técnico'">
         <TableInstructor :userData="{userId: userId, role: userRole}" />
       </div>
       <div class="container-fluid" v-else>

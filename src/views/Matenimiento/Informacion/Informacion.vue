@@ -49,7 +49,7 @@
               alt="Equipo de mantenimiento"
             >
             <button
-            @clik="handleViwe"
+            @click="handleViwe"
             class="action-button">Realizar informe</button>
           </div>
         </div>
@@ -63,8 +63,8 @@
         <div class="content-grid">
           <div class="info-column">
             <div class="info-item">
-              <div class="info-label">Centro de formación</div>
-              <div class="info-value">{{ assetInfo.trainingCenterId?.[0]?.name }}</div>
+              <div class="info-label">Ambiente</div>
+              <div class="info-value">{{ environmentInfo.name }}</div>
             </div>
             
             <div class="info-item">
@@ -121,13 +121,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import apiService from '../../../service/apiService';
+import apiService from '../../../service/apiservice';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from "js-cookie";
 import { useRouter } from 'vue-router';
 
 const ordenData = ref(null);
 const assetInfo = ref(null);
+const environmentInfo = ref(null);
 const userName = ref('');
 const router = useRouter(null)
 
@@ -157,6 +158,7 @@ const fetchAssetInfo = async (solicitudId) => {
   try {
     const response = await apiService.get(`/application-maintenance/Consultar/${solicitudId}`);
     assetInfo.value = response.data?.assetInfo || response.assetInfo;
+    environmentInfo.value = response.data?.environmentInfo || response.environmentInfo;
   } catch (error) {
     console.error('Error al obtener la información del activo:', error);
   }
@@ -195,7 +197,7 @@ const handleUser = async () => {
 };
 
 const handleViwe = async ()=> {
-  router.push("/Manteni")
+  router.push("/RealizarInforme")
 }
 onMounted(async () => {
   await handleUser();

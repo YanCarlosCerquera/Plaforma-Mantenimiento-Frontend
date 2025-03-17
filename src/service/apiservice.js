@@ -1,6 +1,8 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
+const jwt_decode = require("jwt-decode");
+
 const apiClient = axios.create({
     baseURL: " https://2dbb-179-1-219-232.ngrok-free.app", 
     headers: {
@@ -8,15 +10,47 @@ const apiClient = axios.create({
     },
 });
 
+const isTokenExpired = (token) => {
+    try {
+        const decoded = jwt_decode.jwtDecode(token);
+        const currentTime = Date.now() / 1000; 
+        return decoded.exp < currentTime; 
+    } catch (error) {
+        console.error("Error al decodificar el token:", error);
+        return true; 
+    }
+};
+
 apiClient.interceptors.request.use(
-    (config) => {
+    async (config) => {
         const token = Cookies.get("authToken"); 
         if (token) {
+            if (isTokenExpired(token)) {
+                try {
+                    const response = await axios.post(`${config.baseURL}/auth/refresh-access-token`, {
+                        access_token: token,
+                    });
+                    const newToken = response.data.access_token; 
+                    Cookies.set("authToken", newToken); 
+                    config.headers.Authorization = `Bearer ${newToken}`; 
+                } catch (error) {
+                    if (error.response && error.response.status === 401) {
+                        console.warn("El token no está próximo a expirar. Continuando con el token actual.");
+                        config.headers.Authorization = `Bearer ${token}`;
+                    } else {
+                        console.error("Error al refrescar el token:", error);
+                        throw new Error("No se pudo refrescar el token. Por favor, inicia sesión nuevamente.");
+                    }
+                }
+            } else {
                 config.headers.Authorization = `Bearer ${token}`;
+            }
         }
         return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+        return Promise.reject(error);
+    }
 );
 
 const apiService = {

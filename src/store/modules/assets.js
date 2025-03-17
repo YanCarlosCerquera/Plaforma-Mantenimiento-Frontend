@@ -1,4 +1,4 @@
-import apiService from '../../service/apiService';
+import apiService from '../../service/apiservice';
 
 export default {
   namespaced: true,

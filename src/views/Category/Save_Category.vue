@@ -92,7 +92,7 @@
   import { ref, computed, onMounted, onUnmounted } from "vue";
   import { useRouter } from "vue-router";
   import { useStore } from "vuex";
-  import apiService from "../../service/apiService";
+  import apiService from "../../service/apiservice";
   import Cookies from 'js-cookie'; // Importar js-cookie
 
   const router = useRouter();

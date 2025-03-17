@@ -147,6 +147,7 @@
   
   <script>
   import { ref, computed, onMounted, onBeforeMount, onBeforeUnmount } from "vue";
+  import { useRouter } from "vue-router";
   import { useStore } from "vuex";
   import ArgonButton from "@/components/ArgonButton.vue";
   import AppFooter from "../../../examples/PageLayout/Footer.vue";
@@ -158,8 +159,7 @@
     Loader2,
     AlertCircle,
   } from 'lucide-vue-next';
-import apiService from "../../../service/apiService";
-import router from "../../../router";
+import apiService from "../../../service/apiservice";
   
   export default {
     name: "Solicitudes",
@@ -173,6 +173,7 @@ import router from "../../../router";
       AlertCircle
     },
     setup() {
+      const router = useRouter();
       const store = useStore();
       const body = document.getElementsByTagName("body")[0];
       
@@ -315,7 +316,7 @@ import router from "../../../router";
       const handleLoginClick = () => {
         router.push("/signin")
       };
-  
+
       const handleSignup = () => {
         router.push("/signup")
       };

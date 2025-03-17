@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import Swal from "sweetalert2";
-import apiService from "../../../service/apiService";
+import apiService from "../../../service/apiservice";
 import router from "../../../router";
 import Table from "../../components/Table.vue";
 

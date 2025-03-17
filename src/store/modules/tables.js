@@ -1,4 +1,4 @@
-import apiService from '../../service/apiService';
+import apiService from '../../service/apiservice';
 
 export default {
   namespaced: true,
@@ -137,3 +137,4 @@ export const commonFormatters = {
   // Otros formatters...
 };
 
+  

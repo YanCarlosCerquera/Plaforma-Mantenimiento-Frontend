@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import AuthorsTable from './AuthorsTable.vue';
-import apiService from '../../service/apiService';
+import apiService from '../../service/apiservice';
 import jsPDF from 'jspdf';
 import Swal from 'sweetalert2';
 
@@ -96,7 +96,7 @@ const fields_ordens = ref({
 
 const fields_informes = ref({
     informe: {
-        value: 'orderId.radicado',
+        value: 'Informe',
         class: 'align-middle',
         textClass: 'text-xs font-weight-bold mb-0',
     },
@@ -136,7 +136,7 @@ const fetchWordOrdens = async () => {
         const { userId, role } = props.userData;
         let url = '/word-orden';
         
-        if (role === 'instructor' || role === 'técnico') {
+        if (role === 'Instructor' || role === 'técnico') {
             const normalizedRole = normalizeText(role); // Normalizar el rol
             url += `?${normalizedRole}Id=${userId}`;
         }
@@ -157,9 +157,9 @@ const fetchWorkReports = async () => {
         const { userId, role } = props.userData;
         let url = '/work-report';
         
-        if (role === 'instructor' || role === 'técnico') {
+        if (role === 'Instructor' || role === 'técnico') {
             const normalizedRole = normalizeText(role); // Normalizar el rol
-            url += `    ?${normalizedRole}Id=${userId}`;
+            url += `?${normalizedRole}Id=${userId}`;
         }
 
         const data = await apiService.get(url);

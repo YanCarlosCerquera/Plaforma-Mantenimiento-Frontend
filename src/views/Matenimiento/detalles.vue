@@ -120,8 +120,8 @@
         
         <div class="asset-info-grid">
           <div class="info-group">
-            <label>Centro de formación</label>
-            <p>{{ requestData.assetInfo?.trainingCenterId?.[0]?.name }}</p>
+            <label>Ambiente</label>
+            <p>{{ requestData.environmentInfo?.name }}</p>
           </div>
 
           <div class="info-group">
@@ -185,7 +185,7 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import apiService from '../../service/apiService';
+import apiService from '../../service/apiservice';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from "js-cookie";
 import Swal from 'sweetalert2';

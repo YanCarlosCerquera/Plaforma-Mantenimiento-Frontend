@@ -4,7 +4,8 @@ import Cookies from 'js-cookie';
 import MiniStatisticsCard from "@/examples/Cards/MiniStatisticsCard.vue";
 import GradientLineChart from "@/examples/Charts/GradientLineChart.vue";
 import CategoriesList from "./components/CategoriesList.vue";
-import apiService from "../service/apiService";
+import apiService from "../service/apiservice";
+import Pagination from './components/Pagination.vue';
 
 // Referencias reactivas
 const userId = ref(null);
@@ -57,8 +58,8 @@ const chartData = computed(() => {
     
     // Contar órdenes por mes
     ordenes.value.forEach(orden => {
-      if (orden.fechaCreacion) {
-        const fecha = new Date(orden.fechaCreacion);
+      if (orden.fechaInicio) {
+        const fecha = new Date(orden.fechaInicio);
         const mes = fecha.getMonth(); // 0-11
         ordenesPorMes[mes]++;
       }
@@ -252,6 +253,21 @@ const reloadData = () => {
   }
 };
 
+const page = ref(1);
+const itemsPerPage = ref(5);
+
+const paginatedActivos = computed(() => {
+  const start = (page.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return activos.value.slice(start, end);
+});
+
+const paginatedOrdenes = computed(() => {
+  const start = (page.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return ordenes.value.slice(start, end);
+});
+
 onMounted(() => {
   console.log('Componente montado');
   getUserData();
@@ -403,7 +419,7 @@ onMounted(() => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="activo in activos" :key="activo.id">
+                    <tr v-for="activo in paginatedActivos" :key="activo.id">
                       <td>{{ activo.codigoInventario }}</td>
                       <td>{{ activo.nombre }}</td>
                       <td>{{ activo.categoria }}</td>
@@ -422,6 +438,11 @@ onMounted(() => {
                     </tr>
                   </tbody>
                 </table>
+                <Pagination class="pagination"
+                  :totalPages="Math.ceil(activos.length / itemsPerPage)"
+                  :currentPage="page"
+                  @page-change="page = $event"
+                />
               </div>
             </div>
           </div>
@@ -453,7 +474,7 @@ onMounted(() => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="orden in ordenes" :key="orden.id">
+                    <tr v-for="orden in paginatedOrdenes" :key="orden.id">
                       <td>{{ orden.radicado }}</td>
                       <td>
                         <span v-if="orden.activo && orden.activo.length > 0">
@@ -482,6 +503,11 @@ onMounted(() => {
                     </tr>
                   </tbody>
                 </table>
+                <Pagination class="pagination"
+                  :totalPages="Math.ceil(ordenes.length / itemsPerPage)"
+                  :currentPage="page"
+                  @page-change="page = $event"
+                />
               </div>
             </div>
           </div>
@@ -494,3 +520,11 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+
+.pagination{
+  margin-bottom: 20px;
+}
+
+</style>

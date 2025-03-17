@@ -79,9 +79,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, onUnmounted } from "vue";
+import Cookies from "js-cookie";
 import { useRouter } from "vue-router";
-import apiService from "../../service/apiService";
+import apiService from "../../service/apiservice";
 const router = useRouter();
 const assetData = ref({
   name: "",
@@ -122,7 +123,7 @@ const specifications = computed(() => ({
 }));
 
 onMounted(async () => {
-  const assetId = localStorage.getItem("selectedAssetId");
+  const assetId = Cookies.get("editAssetId");
   if (assetId) {
     try {
       const response = await apiService.get(`/assets/${assetId}`);
@@ -132,12 +133,25 @@ onMounted(async () => {
     } catch (error) {
       console.error("Error fetching asset data:", error);
     }
+  }else{
+    router.push("/assets/detail");
   }
 });
 
 function goBack() {
   router.push("/assets/detail");
 }
+
+const unregisterRouteGuard = router.beforeEach((to, from, next) => {
+  if (to.path !== "/assets/detail") {
+    Cookies.remove("editAssetId");
+  }
+  next();
+});
+
+onUnmounted(() => {
+  unregisterRouteGuard();
+});
 </script>
 
 <style scoped>

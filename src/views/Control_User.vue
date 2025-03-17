@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import AuthorsTable from "./components/AuthorsTable.vue";
-import apiService from "../service/apiService";
+import apiService from "../service/apiservice";
 import Swal from "sweetalert2";
 import Cookies from "js-cookie";
 import ArgonInput from "@/components/ArgonInput.vue";
@@ -175,7 +175,7 @@ const handleCancel = () => {
   dialog.value = false;
 };
 
-const handleDelete = async (id) => {
+const handleDelete = async (row) => {
   const result = await Swal.fire({
     title: "¿Estás seguro de que quieres eliminar este usuario?",
     text: "Esta acción no puede deshacerse.",
@@ -195,7 +195,7 @@ const handleDelete = async (id) => {
   }
 
   try {
-    await apiService.delete(`users/${id}`);
+    await apiService.delete(`users/${row._id}`);
     Swal.fire({
       title: "Usuario eliminado correctamente",
       icon: "success",
