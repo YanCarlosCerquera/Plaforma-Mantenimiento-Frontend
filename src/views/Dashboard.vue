@@ -57,8 +57,8 @@ const chartData = computed(() => {
     
     // Contar órdenes por mes
     ordenes.value.forEach(orden => {
-      if (orden.fechaCreacion) {
-        const fecha = new Date(orden.fechaCreacion);
+      if (orden.fechaInicio) {
+        const fecha = new Date(orden.fechaInicio);
         const mes = fecha.getMonth(); // 0-11
         ordenesPorMes[mes]++;
       }

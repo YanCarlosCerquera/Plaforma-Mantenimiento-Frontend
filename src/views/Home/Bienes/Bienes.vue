@@ -352,11 +352,11 @@ export default {
 
     // Funciones de manejo de eventos
     const handleLoginClick = () => {
-      console.log("Iniciar sesión");
+      router.push("/signin");
     };
 
     const handleSignup = () => {
-      console.log("Registrarse");
+      router.push("/signup");
     };
 
     return {

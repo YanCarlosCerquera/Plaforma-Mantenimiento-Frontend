@@ -493,14 +493,14 @@ export default {
 }
 
 .report-header h1 {
-  color: #39a900;
+  color: #ffffff;
   font-size: 24px;
   margin: 0;
   margin-bottom: 8px;
 }
 
 .report-header h2 {
-  color: #333;
+  color: #494949;
   font-size: 20px;
   margin: 0;
 }

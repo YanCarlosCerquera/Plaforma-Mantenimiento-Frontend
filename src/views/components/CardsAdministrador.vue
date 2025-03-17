@@ -27,9 +27,9 @@ onMounted(async () => {
 
     try {
         const response = await apiService.get("/word-orden/statics");
-        workOrders.value.total = response.All;
-        workOrders.value.executed = response.Executed;
-        workOrders.value.expired = response.Expired;
+        workOrders.value.total = response.resumen.total;
+        workOrders.value.executed = response.resumen.ejecutadas;
+        workOrders.value.expired = response.resumen.vencidas;
     } catch (error) {
         console.error("Error fetching work orders:", error);
     }

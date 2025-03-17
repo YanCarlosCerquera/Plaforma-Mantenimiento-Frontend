@@ -49,7 +49,7 @@
               alt="Equipo de mantenimiento"
             >
             <button
-            @clik="handleViwe"
+            @click="handleViwe"
             class="action-button">Realizar informe</button>
           </div>
         </div>
@@ -195,7 +195,7 @@ const handleUser = async () => {
 };
 
 const handleViwe = async ()=> {
-  router.push("/Manteni")
+  router.push("/RealizarInforme")
 }
 onMounted(async () => {
   await handleUser();

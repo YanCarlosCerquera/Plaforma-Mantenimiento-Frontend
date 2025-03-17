@@ -11,6 +11,7 @@ import AuthorsTable from "../components/AuthorsTable.vue";
 
 const store = useStore();
 const TABLE_ID = "ordenes-trabajo";
+const jwt_decode = require("jwt-decode");
 
 const headers = ref([
   "Orden de Trabajo",
@@ -68,10 +69,33 @@ const formatWorkOrderStatus = (state) => {
   return state ? "Ejecutada" : "Sin ejecutar";
 };
 
+const normalizeText = (text) => {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+};
+
 const fetchData = async () => {
+  const token = Cookies.get("authToken");
+  if (!token) {
+    console.error("No se encontró el token de autenticación");
+    return;
+  }
+  const decodedToken = jwt_decode.jwtDecode(token);
+  const userId = decodedToken.sub;
+
+  const menuCookie = Cookies.get("menu"); 
+  const menu = menuCookie ? JSON.parse(menuCookie) : null; 
+  const role = menu ? menu.role : null; 
+
+  let url = '/word-orden';
+
+  if (role === 'instructor' || role === 'técnico') {
+      const normalizedRole = normalizeText(role); 
+      url += `?${normalizedRole}Id=${userId}`;
+    }
+
   await store.dispatch("tables/fetchTableData", {
     tableId: TABLE_ID,
-    endpoint: "/word-orden",
+    endpoint: url,
     formatters: {
       fechaInicio: formatDate,
       fechaFin: formatDate,

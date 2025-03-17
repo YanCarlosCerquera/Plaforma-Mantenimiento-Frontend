@@ -42,6 +42,7 @@ export default {
     const isLoading = ref(false);
     const rows = ref([]);
     const router = useRouter();
+  const jwt_decode = require("jwt-decode");
 
     const headers = ref([
       "Informe",
@@ -59,36 +60,60 @@ export default {
         textClass: "text-xs font-weight-bold",
       },
       CodigoInventario: {
-        value: "CodigoInventario",
+        value: "orderId.solicitud.InventoryCode",
         class: "align-middle",
         textClass: "text-xs font-weight-bold mb-0",
       },
       Horas: {
-        value: "Horas",
+        value: "hours",
         class: "align-middle",
         textClass: "text-xs font-weight-bold",
       },
       Costos: {
-        value: "Costos",
+        value: "costs",
         class: "align-middle",
         textClass: "text-xs font-weight-bold",
       },
       TrabajoRealizado: {
-        value: "TrabajoRealizado",
+        value: "workDone",
         class: "align-middle",
         textClass: "text-xs font-weight-bold",
       },
       EjecutadoPor: {
-        value: "EjecutadoPor",
+        value: "orderId.tecnicoId.name",
         class: "align-middle",
         textClass: "text-xs font-weight-bold",
       },
     });
 
+    const normalizeText = (text) => {
+      return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    };
+
     const fetchData = async () => {
       isLoading.value = true;
       try {
-        const response = await apiService.get("/work-report/Informes");
+
+        const token = Cookies.get("authToken");
+        if (!token) {
+          console.error("No se encontró el token de autenticación");
+          return;
+        }
+        const decodedToken = jwt_decode.jwtDecode(token);
+        const userId = decodedToken.sub;
+
+        const menuCookie = Cookies.get("menu"); 
+        const menu = menuCookie ? JSON.parse(menuCookie) : null; 
+        const role = menu ? menu.role : null; 
+
+        let url = '/work-report';
+
+        if (role === 'instructor' || role === 'técnico') {
+          const normalizedRole = normalizeText(role); 
+          url += `?${normalizedRole}Id=${userId}`;
+        }
+
+        const response = await apiService.get(url);
         
         rows.value = response.map((item) => ({
           ...item,

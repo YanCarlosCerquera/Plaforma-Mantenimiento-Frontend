@@ -96,7 +96,7 @@ const fields_ordens = ref({
 
 const fields_informes = ref({
     informe: {
-        value: 'orderId.radicado',
+        value: 'Informe',
         class: 'align-middle',
         textClass: 'text-xs font-weight-bold mb-0',
     },
@@ -127,6 +127,10 @@ const fields_informes = ref({
     },
 });
 
+const normalizeText = (text) => {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+};
+
 const fetchWordOrdens = async () => {
     try {
         loading.value = true;
@@ -134,7 +138,8 @@ const fetchWordOrdens = async () => {
         let url = '/word-orden';
         
         if (role === 'instructor' || role === 'técnico') {
-            url += `?${role}Id=${userId}`;
+            const normalizedRole = normalizeText(role); // Normalizar el rol
+            url += `?${normalizedRole}Id=${userId}`;
         }
 
         const data = await apiService.get(url);
@@ -154,7 +159,8 @@ const fetchWorkReports = async () => {
         let url = '/work-report';
         
         if (role === 'instructor' || role === 'técnico') {
-            url += `?${role}Id=${userId}`;
+            const normalizedRole = normalizeText(role); // Normalizar el rol
+            url += `?${normalizedRole}Id=${userId}`;
         }
 
         const data = await apiService.get(url);

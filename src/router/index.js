@@ -283,35 +283,48 @@ router.beforeEach((to, from, next) => {
   const menu = menuCookie ? JSON.parse(menuCookie) : null; 
   const role = menu ? menu.role : null; 
 
+  // Obtén las rutas permitidas para el rol del usuario
   const allowedRoutes = menu
     ? menu.menu.flatMap((modulo) => modulo.views.map((view) => view.route))
     : [];
 
+  // Rutas permitidas por defecto (como el dashboard y el perfil)
   const defaultAllowedRoutes = ["/dashboard-default", "/profile"];
 
-  if (!isPublicRoute && !isAuth) {
-    return next("/index");
-  }
-
+  // Si la ruta es pública y el usuario está autenticado, redirige al dashboard
   if (isPublicRoute && isAuth) {
     return next("/dashboard-default");
   }
 
+  // Si la ruta no es pública y el usuario no está autenticado, redirige al login
+  if (!isPublicRoute && !isAuth) {
+    return next("/index");
+  }
+
+  // Si el usuario es administrador, permite el acceso a todas las rutas
   if (role === "administrador") {
     return next();
   }
 
+  // Si el usuario está autenticado pero no es administrador
   if (isAuth && role !== "administrador") {
     const isAllowed =
       allowedRoutes.includes(to.path) || defaultAllowedRoutes.includes(to.path);
 
-    if (isAllowed) {
-      return next(); 
-    } else {
-      return next("/dashboard-default"); 
+    // Permitir redirecciones internas (desde un componente)
+    if (from.path !== "/" && !isAllowed) {
+      return next(); // Permite la redirección interna
     }
+
+    // Bloquear acceso manual a rutas no permitidas
+    if (!isAllowed) {
+      return next("/dashboard-default"); // Redirige al dashboard si no tiene permiso
+    }
+
+    return next(); // Permite el acceso a la ruta
   }
 
+  // Si no se cumple ninguna de las condiciones anteriores, continúa con la navegación
   next();
 });
 

@@ -136,6 +136,7 @@
   
   <script>
   import { ref, computed, onMounted, onBeforeMount, onBeforeUnmount } from "vue";
+  import { useRouter } from "vue-router";
   import { useStore } from "vuex";
   import ArgonButton from "@/components/ArgonButton.vue";
   import AppFooter from "../../../examples/PageLayout/Footer.vue";
@@ -161,6 +162,7 @@ import apiService from "../../../service/apiservice";
       AlertCircle
     },
     setup() {
+      const router = useRouter();
       const store = useStore();
       const body = document.getElementsByTagName("body")[0];
       
@@ -301,11 +303,11 @@ import apiService from "../../../service/apiservice";
   
       // Funciones de manejo de eventos
       const handleLoginClick = () => {
-        console.log("Iniciar sesión");
+        router.push("/signin");
       };
-  
+
       const handleSignup = () => {
-        console.log("Registrarse");
+        router.push("/signup");
       };
   
       return {
