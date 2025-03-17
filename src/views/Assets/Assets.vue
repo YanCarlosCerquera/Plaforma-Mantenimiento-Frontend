@@ -323,7 +323,7 @@ const formData = ref({
   serialNumber: '',
   inventoryCode: '',
   accountHolder: '',
-  trainingCenterId: '',
+  environmentId: '',
   categoryId: '',
   status: '',
   manufacturer: {
@@ -424,7 +424,7 @@ const loadAssetData = async () => {
         serialNumber: asset.serialNumber || "",
         inventoryCode: asset.inventoryCode || "",
         accountHolder: asset.accountHolder || "",
-        trainingCenterId: asset.trainingCenterId?._id || "",
+        environmentId: asset.environmentId?._id || "",
         categoryId: asset.categoryId?._id || "",
         status: asset.status || false,
         manufacturer: {
@@ -533,7 +533,7 @@ const handleImageUpload = (event) => {
 onMounted(async () => {
   try {
     // Cargar centros de formación
-    const centersResponse = await apiService.get("/training-centers");
+    const centersResponse = await apiService.get("/environments");
     trainingCenters.value = (centersResponse.data || centersResponse).map(
       (center) => ({
         value: center._id,

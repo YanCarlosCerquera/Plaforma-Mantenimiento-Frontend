@@ -2,20 +2,35 @@
   <div class="maintenance-form">
     <div class="background-watermark"></div>
     
+    <!-- Loading overlay -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loading-spinner"></div>
+    </div>
+    
     <div class="form-section top-section">
       <div class="header-row">
-        <div class="search-container">
+        <div class="search-container" v-if="!autoSelectedOrder">
           <ArgonAutocomplete 
             placeholder="Buscar por radicado o activo..."
-            :items="workOrders"
+            :items="filteredWorkOrders"
             v-model="selectedRadicado"
             @update:modelValue="handleWorkOrderSelect"
+            @input="handleSearchInput"
           />
+        </div>
+        <div class="search-container" v-else>
+          <div class="auto-selected-order">
+            <span>Orden seleccionada: </span>
+            <strong>{{ selectedRadicado }}</strong>
+            <button class="change-order-btn" @click="resetAutoSelectedOrder">
+              <i class="fas fa-exchange-alt"></i> Cambiar
+            </button>
+          </div>
         </div>
         <div class="title-actions">
           <h2 class="main-title">Orden de Trabajo</h2>
           
-          <button class="action-button" @click="generatePdfReport">
+          <button class="action-button" @click="generatePdfReport" :disabled="!selectedRadicado">
             <span>Realizar informe</span>
             <i class="fas fa-file-pdf"></i>
           </button>
@@ -68,7 +83,14 @@
       <div class="two-columns">
         <div class="column">
           <div class="form-group">
-            <label class="label-text">Mantenimiento realizado <span class="required">*</span></label>
+            <label class="label-text">
+              Mantenimiento realizado 
+              <span class="required">*</span>
+              <div class="tooltip">
+                <i class="fas fa-info-circle"></i>
+                <span class="tooltip-text">Seleccione el tipo de mantenimiento realizado</span>
+              </div>
+            </label>
             <div class="checkbox-group">
               <label class="checkbox-label" :class="{ 'selected': maintenanceType === 'Preventivo' }">
                 <input type="radio" name="maintenanceType" value="Preventivo" v-model="maintenanceType">
@@ -85,7 +107,10 @@
           </div>
 
           <div class="form-group">
-            <label for="workDescription">Descripción del trabajo y/o servicio solicitado <span class="required">*</span></label>
+            <label for="workDescription">
+              Descripción del trabajo y/o servicio solicitado 
+              <span class="required">*</span>
+            </label>
             <textarea 
               id="workDescription" 
               v-model="formData.workDescription" 
@@ -100,7 +125,10 @@
           </div>
 
           <div class="form-group">
-            <label for="observations">Observaciones <span class="required">*</span></label>
+            <label for="observations">
+              Observaciones 
+              <span class="required">*</span>
+            </label>
             <textarea 
               id="observations" 
               v-model="formData.observations" 
@@ -117,7 +145,14 @@
 
         <div class="column">
           <div class="form-group">
-            <label class="label-text">Repuestos requeridos <span class="required">*</span></label>
+            <label class="label-text">
+              Repuestos requeridos 
+              <span class="required">*</span>
+              <div class="tooltip">
+                <i class="fas fa-info-circle"></i>
+                <span class="tooltip-text">Indique si se requirieron repuestos para el mantenimiento</span>
+              </div>
+            </label>
             <div class="checkbox-group">
               <label class="checkbox-label" :class="{ 'selected': sparePartsStatus === 'Si' }">
                 <input type="radio" name="sparePartsStatus" value="Si" v-model="sparePartsStatus">
@@ -135,7 +170,10 @@
           </div>
 
           <div class="form-group">
-            <label for="partsDetails">Detalle de repuestos <span v-if="sparePartsStatus === 'Si'" class="required">*</span></label>
+            <label for="partsDetails">
+              Detalle de repuestos 
+              <span v-if="sparePartsStatus === 'Si'" class="required">*</span>
+            </label>
             <textarea 
               id="partsDetails" 
               v-model="formData.partsDetails" 
@@ -154,7 +192,14 @@
 
       <div class="bottom-row">
         <div class="form-group">
-          <label class="label-text">Estado Orden de trabajo <span class="required">*</span></label>
+          <label class="label-text">
+            Estado Orden de trabajo 
+            <span class="required">*</span>
+            <div class="tooltip">
+              <i class="fas fa-info-circle"></i>
+              <span class="tooltip-text">Indique si la orden ha sido ejecutada o está pendiente</span>
+            </div>
+          </label>
           <div class="checkbox-group">
             <label class="checkbox-label" :class="{ 'selected': orderState }">
               <input type="radio" name="orderState" :value="true" v-model="orderState">
@@ -173,8 +218,15 @@
         
         <!-- Componente de firma digital con opción de carga de imagen -->
         <div class="form-group">
-          <label for="techSignature">Firma técnico <span class="required">*</span></label>
-          <div class="signature-container">
+          <label for="techSignature">
+            Firma técnico 
+            <span class="required">*</span>
+            <div class="tooltip">
+              <i class="fas fa-info-circle"></i>
+              <span class="tooltip-text">Dibuje o cargue una imagen de su firma</span>
+            </div>
+          </label>
+          <div class="signature-container" :class="{ 'error-container': validationErrors.techSignature }">
             <div v-if="formData.techSignature" class="signature-preview">
               <img :src="formData.techSignature" alt="Firma" class="signature-image" />
               <button type="button" @click="removeSignature" class="remove-signature-btn">
@@ -186,7 +238,6 @@
                 type="button" 
                 @click="openSignatureModal" 
                 class="signature-button"
-                :class="{ 'error': validationErrors.techSignature }"
               >
                 <i class="fas fa-pen"></i> Dibujar firma
               </button>
@@ -244,10 +295,16 @@
         <button class="cancel-button" @click="confirmReset">
           <i class="fas fa-times"></i> Cancelar
         </button>
-        <button class="submit-button" @click="validateAndSave">
+        <button class="submit-button" @click="validateAndSave" :disabled="isLoading">
           <i class="fas fa-save"></i> Guardar
         </button>
       </div>
+    </div>
+    
+    <!-- Mensaje de no hay órdenes -->
+    <div v-if="showNoOrdersMessage" class="no-orders-message">
+      <i class="fas fa-info-circle"></i>
+      <p>No hay órdenes de trabajo disponibles. Contacte al administrador.</p>
     </div>
   </div>
 </template>
@@ -260,7 +317,9 @@ import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import ArgonAutocomplete from '../../../components/ArgonAutocomplete.vue'
 import { VueSignaturePad } from 'vue-signature-pad'
+import { debounce } from 'lodash'
 
+// Solución para el error de ResizeObserver
 const originalConsoleError = console.error;
 console.error = function(msg, ...args) {
   if (typeof msg === 'string' && msg.includes('ResizeObserver loop')) {
@@ -278,17 +337,22 @@ export default {
   data() {
     return {
       selectedRadicado: '',
+      searchQuery: '',
       workOrder: null,
       assetInfo: null,
       maintenanceType: 'Preventivo',
       sparePartsStatus: 'No',
       orderState: true,
       workOrders: [],
+      filteredWorkOrders: [],
       allOrders: [], // Almacenará todas las órdenes para buscar por radicado
       userId: null,
       wordOrdenId: null,
       showSignatureModal: false,
       modalWidth: window.innerWidth < 600 ? window.innerWidth - 40 : 560,
+      isLoading: false,
+      showNoOrdersMessage: false,
+      autoSelectedOrder: false, // Indica si la orden fue seleccionada automáticamente
       validationErrors: {
         maintenanceType: '',
         workDescription: '',
@@ -324,7 +388,60 @@ export default {
       }
     }
   },
+  created() {
+    // Crear versión con debounce de la función de búsqueda
+    this.debouncedSearch = debounce(this.performSearch, 300);
+  },
   methods: {
+    // Método para manejar la entrada de búsqueda
+    handleSearchInput(event) {
+      this.searchQuery = event.target.value;
+      this.debouncedSearch(this.searchQuery);
+    },
+    
+    // Método para realizar la búsqueda
+    performSearch(query) {
+      if (!query) {
+        this.filteredWorkOrders = this.workOrders;
+        return;
+      }
+      
+      const lowerQuery = query.toLowerCase();
+      this.filteredWorkOrders = this.allOrders
+        .filter(orden => 
+          orden && 
+          (orden.radicado.toLowerCase().includes(lowerQuery) || 
+           (orden.solicitud?.asset?.name && orden.solicitud.asset.name.toLowerCase().includes(lowerQuery)))
+        )
+        .map(orden => ({
+          value: orden.radicado,
+          subtitle: orden.solicitud?.asset?.name || '',
+          title: `${orden.radicado} - ${orden.solicitud?.serialNumber || ''}`
+        }));
+    },
+    
+    // Método para manejar errores de API de forma consistente
+    handleApiError(error, customMessage = 'Error en la operación') {
+      console.error(customMessage, error);
+      const errorMessage = error.response?.data?.message || error.message || 'Error desconocido';
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: `${customMessage}: ${errorMessage}`,
+        confirmButtonColor: '#39a900'
+      });
+    },
+    
+    // Método para gestionar el estado de carga
+    setLoading(status) {
+      this.isLoading = status;
+      if (status) {
+        Swal.showLoading();
+      } else {
+        Swal.close();
+      }
+    },
+    
     // Método para optimizar la imagen antes de guardarla
     async optimizeImage(imageDataUrl, maxWidth = 600, maxHeight = 300, quality = 0.8) {
       return new Promise((resolve) => {
@@ -391,7 +508,7 @@ export default {
         
         if (!isEmpty()) {
           try {
-            Swal.showLoading();
+            this.setLoading(true);
             
             // Obtener la firma como imagen
             const { data } = this.$refs.signaturePad.saveSignature();
@@ -404,15 +521,9 @@ export default {
             this.showSignatureModal = false;
             this.validationErrors.techSignature = '';
             
-            Swal.close();
+            this.setLoading(false);
           } catch (error) {
-            console.error('Error al optimizar la firma:', error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'No se pudo procesar la firma',
-              confirmButtonColor: '#39a900'
-            });
+            this.handleApiError(error, 'Error al optimizar la firma');
           }
         } else {
           Swal.fire({
@@ -461,7 +572,7 @@ export default {
       }
       
       try {
-        Swal.showLoading();
+        this.setLoading(true);
         
         // Leer el archivo como DataURL
         const reader = new FileReader();
@@ -472,30 +583,28 @@ export default {
             this.formData.techSignature = optimizedImage;
             this.validationErrors.techSignature = '';
             
-            Swal.close();
+            this.setLoading(false);
           } catch (error) {
-            console.error('Error al optimizar la imagen:', error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Error al procesar la imagen',
-              text: 'No se pudo optimizar la imagen',
-              confirmButtonColor: '#39a900'
-            });
+            this.handleApiError(error, 'Error al optimizar la imagen');
           }
         };
         reader.readAsDataURL(file);
       } catch (error) {
-        console.error('Error al leer el archivo:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo leer el archivo',
-          confirmButtonColor: '#39a900'
-        });
+        this.handleApiError(error, 'Error al leer el archivo');
       } finally {
         // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
         event.target.value = '';
       }
+    },
+    
+    // Método para resetear la orden seleccionada automáticamente
+    resetAutoSelectedOrder() {
+      this.autoSelectedOrder = false;
+      this.selectedRadicado = '';
+      this.resetForm();
+      
+      // Eliminar la cookie de OrdenId
+      Cookies.remove('OrdenId');
     },
     
     // Métodos existentes
@@ -529,45 +638,72 @@ export default {
     
     async fetchData() {
       try {
-        Swal.showLoading();
+        this.setLoading(true);
         
         await this.getUserData();
         
+        // Verificar si hay una orden seleccionada desde el componente de ejecuciones
+        const ordenId = Cookies.get('OrdenId');
+        
+        // Cargar todas las órdenes primero
         const response = await apiService.get(`/word-orden`);
+        
+        if (!response || response.length === 0) {
+          this.showNoOrdersMessage = true;
+          this.setLoading(false);
+          return;
+        }
         
         this.allOrders = response;
         
-        this.workOrders = response.map(orden => ({
-          value: orden.radicado,
-          subtitle: orden.solicitud.asset.name,
-          title: `${orden.radicado} - ${orden.solicitud.serialNumber}`
-        }));
+        // Filtrar órdenes válidas para evitar errores
+        this.workOrders = response
+          .filter(orden => orden && orden.radicado && orden.solicitud && orden.solicitud.asset)
+          .map(orden => ({
+            value: orden.radicado,
+            subtitle: orden.solicitud.asset.name,
+            title: `${orden.radicado} - ${orden.solicitud.serialNumber}`
+          }));
         
-        Swal.close();
+        this.filteredWorkOrders = [...this.workOrders];
+        
+        // Si hay una orden seleccionada desde el componente de ejecuciones, cargarla
+        if (ordenId) {
+          console.log("Orden seleccionada desde componente de ejecuciones:", ordenId);
+          
+          // Buscar la orden en las órdenes cargadas
+          const selectedOrder = this.allOrders.find(orden => orden._id === ordenId);
+          
+          if (selectedOrder) {
+            this.autoSelectedOrder = true;
+            this.selectedRadicado = selectedOrder.radicado;
+            await this.loadWorkOrderDetails(selectedOrder);
+          } else {
+            console.error("No se encontró la orden con ID:", ordenId);
+            // Intentar cargar directamente por ID
+            try {
+              const orderDetails = await apiService.get(`/word-orden/${ordenId}`);
+              if (orderDetails) {
+                this.autoSelectedOrder = true;
+                this.selectedRadicado = orderDetails.radicado;
+                await this.loadWorkOrderDetails(orderDetails);
+              }
+            } catch (error) {
+              console.error("Error al cargar la orden por ID:", error);
+            }
+          }
+        }
+        
+        this.setLoading(false);
       } catch (error) {
-        console.error('Error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudieron cargar los datos',
-          confirmButtonColor: '#39a900'
-        });
+        this.handleApiError(error, 'No se pudieron cargar los datos');
+        this.showNoOrdersMessage = true;
       }
     },
     
-    async handleWorkOrderSelect() {
-      if (!this.selectedRadicado) return;
-      
+    // Método para cargar los detalles de una orden de trabajo
+    async loadWorkOrderDetails(selectedOrder) {
       try {
-        Swal.showLoading();
-        
-        // Buscar la orden seleccionada en las órdenes ya cargadas
-        const selectedOrder = this.allOrders.find(orden => orden.radicado === this.selectedRadicado);
-        
-        if (!selectedOrder) {
-          throw new Error('Orden no encontrada');
-        }
-        
         // Guardar la orden completa y su ID
         this.workOrder = selectedOrder;
         this.wordOrdenId = selectedOrder._id;
@@ -585,33 +721,69 @@ export default {
           this.formData.endDate = new Date(selectedOrder.fechaFin).toISOString().split('T')[0];
         }
         
-        // Cargar información básica del activo si existe en la orden
-        if (selectedOrder.asset) {
-          this.formData.serialNumber = selectedOrder.asset.serialNumber || '';
+        // Establecer el estado de la orden
+        this.orderState = selectedOrder.state;
+        
+        // Cargar información del técnico
+        if (selectedOrder.tecnicoId && selectedOrder.tecnicoId.name) {
+          this.formData.executedBy = selectedOrder.tecnicoId.name;
         }
         
-        // Cargar información de mantenimientos previos si existen
-        if (selectedOrder.maintenances && selectedOrder.maintenances.length > 0) {
-          const maintenance = selectedOrder.maintenances[0];
-          this.formData.workDescription = maintenance.description || '';
+        // Cargar información de la solicitud si existe
+        if (selectedOrder.solicitud) {
+          // Información del activo
+          if (selectedOrder.solicitud.asset) {
+            this.formData.serialNumber = selectedOrder.solicitud.serialNumber || '';
+            this.formData.location = selectedOrder.solicitud.asset.location || '';
+          }
+          
+          // Información del tipo de mantenimiento
+          if (selectedOrder.solicitud.maintenanceType) {
+            this.maintenanceType = selectedOrder.solicitud.maintenanceType;
+          }
+          
+          // Número de seguimiento
+          this.formData.trackingNumber = selectedOrder.solicitud.trackingNumber || '';
         }
         
         // Si hay ID de solicitud, obtener detalles completos del activo y la solicitud
         if (selectedOrder.solicitud && selectedOrder.solicitud._id) {
           await this.fetchAssetInfo(selectedOrder.solicitud._id);
-        } else {
-          console.error("No se encontró el ID de la solicitud en la orden");
         }
         
-        Swal.close();
+        // Cargar mantenimientos previos si existen
+        if (selectedOrder.maintenances && selectedOrder.maintenances.length > 0) {
+          const lastMaintenance = selectedOrder.maintenances[selectedOrder.maintenances.length - 1];
+          this.formData.workDescription = lastMaintenance.description || '';
+          this.formData.observations = lastMaintenance.observation || '';
+          this.sparePartsStatus = lastMaintenance.sparePartsStatus || 'No';
+          this.formData.partsDetails = lastMaintenance.sparePartsDetails || '';
+          this.formData.techSignature = lastMaintenance.technicalSignature || '';
+        }
+        
       } catch (error) {
-        console.error('Error al cargar información de la orden:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo cargar la información de la orden',
-          confirmButtonColor: '#39a900'
-        });
+        this.handleApiError(error, 'Error al cargar información de la orden');
+      }
+    },
+    
+    async handleWorkOrderSelect() {
+      if (!this.selectedRadicado) return;
+      
+      try {
+        this.setLoading(true);
+        
+        // Buscar la orden seleccionada en las órdenes ya cargadas
+        const selectedOrder = this.allOrders.find(orden => orden.radicado === this.selectedRadicado);
+        
+        if (!selectedOrder) {
+          throw new Error('Orden no encontrada');
+        }
+        
+        await this.loadWorkOrderDetails(selectedOrder);
+        
+        this.setLoading(false);
+      } catch (error) {
+        this.handleApiError(error, 'Error al cargar información de la orden');
       }
     },
     
@@ -627,7 +799,6 @@ export default {
           // Información del solicitante
           this.formData.contactName = response.requesterName || '';
           this.formData.phone = response.requesterPhone || '';
-          this.formData.trackingNumber = response.trackingNumber || '';
           
           // Información del activo
           if (response.assetInfo) {
@@ -639,11 +810,7 @@ export default {
             this.formData.location = this.assetInfo.location || '';
             
             console.log("Información del activo cargada correctamente");
-          } else {
-            console.error("No se encontró información del activo en la respuesta");
           }
-        } else {
-          console.error("Respuesta vacía de la API");
         }
       } catch (error) {
         console.error("Error al obtener la información del activo:", error);
@@ -708,22 +875,54 @@ export default {
         return;
       }
       
+      // Añadir confirmación si se está cambiando el estado a ejecutado
+      if (this.orderState === true && this.workOrder && this.workOrder.state === false) {
+        const result = await Swal.fire({
+          icon: 'warning',
+          title: 'Confirmar cambio de estado',
+          text: '¿Está seguro de marcar esta orden como ejecutada? Esta acción no se puede deshacer.',
+          showCancelButton: true,
+          confirmButtonColor: '#39a900',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Sí, confirmar',
+          cancelButtonText: 'Cancelar'
+        });
+        
+        if (!result.isConfirmed) {
+          return;
+        }
+      }
+      
       try {
-        Swal.showLoading();
+        this.setLoading(true);
         
         const maintenanceData = {
           typeMaintenance: this.maintenanceType,
           description: this.formData.workDescription,
           observation: this.formData.observations,
           sparePartsStatus: this.sparePartsStatus,
-          sparePartsDetails: this.formData.partsDetails,
+          sparePartsDetails: this.sparePartsStatus === 'Si' ? this.formData.partsDetails : '',
           technicalId: this.userId,
           wordOrdenId: this.wordOrdenId,
           technicalSignature: this.formData.techSignature,
           state: this.orderState
         };
         
-        await apiService.post('/maintenance', maintenanceData);
+        // Log the data being sent for debugging
+        console.log('Enviando datos de mantenimiento:', JSON.stringify(maintenanceData, null, 2));
+        
+         await apiService.post('/maintenance', maintenanceData);
+        
+        // Actualizar datos locales para reflejar el cambio
+        const updatedOrder = this.allOrders.find(order => order._id === this.wordOrdenId);
+        if (updatedOrder) {
+          updatedOrder.state = this.orderState;
+        }
+        
+        // Si la orden fue seleccionada automáticamente, eliminar la cookie
+        if (this.autoSelectedOrder) {
+          Cookies.remove('OrdenId');
+        }
         
         Swal.fire({
           icon: 'success',
@@ -732,14 +931,17 @@ export default {
           confirmButtonColor: '#39a900'
         });
         
+        // Resetear formulario después de guardar exitosamente
+        this.resetForm();
+        
+        // Si la orden fue seleccionada automáticamente, resetear también esa selección
+        if (this.autoSelectedOrder) {
+          this.autoSelectedOrder = false;
+          this.selectedRadicado = '';
+        }
+        
       } catch (error) {
-        console.error('Error al guardar:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudieron guardar los datos',
-          confirmButtonColor: '#39a900'
-        });
+        this.handleApiError(error, 'No se pudieron guardar los datos');
       }
     },
     
@@ -755,18 +957,21 @@ export default {
       }
       
       try {
-        Swal.showLoading();
+        this.setLoading(true);
         
         const doc = new jsPDF();
         
+        // Añadir encabezado
         doc.setFontSize(20);
         doc.text('Orden de Trabajo', 105, 20, { align: 'center' });
         
         doc.setFontSize(12);
         doc.text(`Número: ${this.selectedRadicado}`, 20, 40);
+        doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 50);
         
+        // Tabla de información general
         doc.autoTable({
-          startY: 50,
+          startY: 60,
           head: [['Campo', 'Valor']],
           body: [
             ['Número de serie', this.formData.serialNumber],
@@ -782,8 +987,7 @@ export default {
             ['Repuestos requeridos', this.sparePartsStatus],
             ['Detalle de repuestos', this.formData.partsDetails],
             ['Estado', this.orderState ? 'Ejecutado' : 'Pendiente'],
-            ['Ejecutado por', this.formData.executedBy],
-            ['Firma técnico', 'Firmado digitalmente']
+            ['Ejecutado por', this.formData.executedBy]
           ]
         });
         
@@ -802,6 +1006,8 @@ export default {
         
         doc.save(`orden-trabajo-${this.selectedRadicado}.pdf`);
         
+        this.setLoading(false);
+        
         Swal.fire({
           icon: 'success',
           title: 'PDF Generado',
@@ -810,13 +1016,7 @@ export default {
         });
         
       } catch (error) {
-        console.error('Error al generar PDF:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo generar el informe',
-          confirmButtonColor: '#39a900'
-        });
+        this.handleApiError(error, 'No se pudo generar el informe');
       }
     },
     
@@ -851,7 +1051,6 @@ export default {
       this.formData.techSignature = '';
       this.maintenanceType = 'Preventivo';
       this.sparePartsStatus = 'No';
-      this.orderState = true;
       
       // Limpiar errores
       Object.keys(this.validationErrors).forEach(key => this.validationErrors[key] = '');
@@ -872,15 +1071,10 @@ export default {
 </script>
 
 <style scoped>
-.search-container {
-  display: flex;
-  align-items: center;
-  width: 50%;
-}
 .maintenance-form {
   max-width: 1200px;
   margin: 0 auto;
-  padding:0 20px;
+  padding: 0 20px 40px;
   position: relative;
   overflow: hidden;
   color: #333;
@@ -900,6 +1094,34 @@ export default {
   z-index: -1;
 }
 
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(57, 169, 0, 0.3);
+  border-radius: 50%;
+  border-top: 4px solid #39a900;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .form-section {
   background: white;
   border-radius: 8px;
@@ -916,6 +1138,44 @@ export default {
   margin-bottom: 24px;
   flex-wrap: wrap;
   gap: 16px;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  width: 50%;
+}
+
+/* Estilos para la orden seleccionada automáticamente */
+.auto-selected-order {
+  display: flex;
+  align-items: center;
+  background-color: #e8f5e9;
+  border: 1px solid #39A900;
+  border-radius: 6px;
+  padding: 10px 16px;
+  width: 100%;
+}
+
+.auto-selected-order strong {
+  margin: 0 8px;
+  color: #39A900;
+}
+
+.change-order-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #39A900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+}
+
+.change-order-btn:hover {
+  text-decoration: underline;
 }
 
 .order-number {
@@ -958,6 +1218,11 @@ export default {
   background: #2d8000;
 }
 
+.action-button:disabled {
+  background: #a0d8a0;
+  cursor: not-allowed;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -987,12 +1252,13 @@ export default {
   border: 1px solid #ced4da;
   border-radius: 4px;
   font-size: 14px;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
 
 .form-input:focus, .form-textarea:focus {
   border-color: #39A900;
   outline: none;
+  box-shadow: 0 0 0 3px rgba(57, 169, 0, 0.2);
 }
 
 .form-input[readonly] {
@@ -1006,6 +1272,10 @@ export default {
 }
 
 .error {
+  border-color: #dc3545;
+}
+
+.error-container {
   border-color: #dc3545;
 }
 
@@ -1102,14 +1372,56 @@ export default {
   background-color: #2d8000;
 }
 
+.submit-button:disabled {
+  background-color: #a0d8a0;
+  cursor: not-allowed;
+}
+
+/* Tooltip styles */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  margin-left: 5px;
+  cursor: help;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  width: 200px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -100px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
 /* Estilos para el componente de firma */
 .signature-container {
   position: relative;
+  border: 2px dashed #ced4da;
+  border-radius: 4px;
+  padding: 10px;
+  transition: all 0.2s;
+}
+
+.signature-container:hover {
+  border-color: #39A900;
 }
 
 .signature-preview {
   position: relative;
-  border: 1px solid #ced4da;
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -1163,10 +1475,6 @@ export default {
 
 .signature-button:hover, .upload-button:hover {
   background-color: #e9ecef;
-}
-
-.signature-button.error, .upload-button.error {
-  border-color: #dc3545;
 }
 
 .or-divider {
@@ -1283,6 +1591,28 @@ export default {
   background-color: #2d8500;
 }
 
+/* Mensaje de no hay órdenes */
+.no-orders-message {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.no-orders-message i {
+  font-size: 24px;
+  color: #6c757d;
+  margin-bottom: 12px;
+}
+
+.no-orders-message p {
+  color: #6c757d;
+  font-size: 16px;
+  margin: 0;
+}
+
 @media (max-width: 992px) {
   .form-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1290,6 +1620,10 @@ export default {
 }
 
 @media (max-width: 768px) {
+  .search-container {
+    width: 100%;
+  }
+  
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -1311,6 +1645,7 @@ export default {
   .title-actions {
     width: 100%;
     justify-content: space-between;
+    margin-top: 10px;
   }
   
   .checkbox-group {

@@ -38,6 +38,7 @@ import TecnicoGestion from "../views/Matenimiento/Mantenimiento/TecnicoGestion.v
 import TrainingCenter from "../views/Parametrizacion/TrainingCenter.vue";
 import Dependences from "../views/Parametrizacion/dependences.vue";
 import ActionLog from "../views/Parametrizacion/ActionLog.vue";
+import Environment from "../views/Parametrizacion/Environment.vue";
 
 const publicRoutes = [
   "/",
@@ -264,8 +265,12 @@ const routes = [
     name:"Tecnicos Gestion",
     path:"/Tecnico",
     component : TecnicoGestion
+  },
+  {
+    name:"Ambientes",
+    path:"/environment",
+    component : Environment
   }
-  
   
  
 ];
