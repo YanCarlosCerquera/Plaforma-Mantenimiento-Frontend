@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const apiClient = axios.create({
-    baseURL: process.env.Url || "http://localhost:3000", 
+    baseURL: " https://2dbb-179-1-219-232.ngrok-free.app", 
     headers: {
         "Content-Type": "application/json",
     },

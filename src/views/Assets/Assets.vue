@@ -29,7 +29,7 @@
             <label for="trainingCenterId">Centro de formación</label>
             <select
               id="trainingCenterId"
-              v-model="formData.trainingCenterId"
+              v-model="formData.environmentId"
               class="form-select"
             >
               <option value="">Seleccionar...</option>
