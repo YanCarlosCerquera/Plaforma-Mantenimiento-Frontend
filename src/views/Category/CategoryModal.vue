@@ -182,9 +182,15 @@
       .filter(key => operationVars.value[key])
       .map(key => key);
 
+      console.log({
+      name: name.value,
+      specs: specifications.value,
+      accessories: accessories.value,
+      operationVars: selectedOperationVars
+    })
     emit('save', {
       name: name.value,
-      specifications: specifications.value,
+      specs: specifications.value,
       accessories: accessories.value,
       operationVars: selectedOperationVars
     });

@@ -120,7 +120,6 @@ export default {
           id: item._id || item.Id || item.id
         }));
         
-        console.log("Datos cargados:", rows.value);
       } catch (error) {
         console.error("Error al obtener informes:", error);
         Swal.fire({
@@ -284,7 +283,6 @@ export default {
     };
 
     const handleEdit = async (item) => {
-      console.log("Item recibido para editar:", item);
       
       // Extraer el ID del informe de manera más robusta
       let reportId;
@@ -309,7 +307,6 @@ export default {
       
       // Guardar ID en cookie
       Cookies.set("Id_INF", String(reportId));
-      console.log("ID guardado en cookie:", reportId);
       
       // Limpiar cookie de orden si existe
       Cookies.remove("OrdenId");

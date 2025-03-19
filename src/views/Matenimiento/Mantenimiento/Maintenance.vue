@@ -891,12 +891,6 @@ export default {
           // Convertir a formato base64 con calidad ajustada
           const optimizedImage = canvas.toDataURL('image/jpeg', quality);
           
-          // Mostrar información de optimización en consola
-          console.log('Optimización de imagen:');
-          console.log('- Tamaño original:', Math.round(imageDataUrl.length / 1024), 'KB');
-          console.log('- Tamaño optimizado:', Math.round(optimizedImage.length / 1024), 'KB');
-          console.log('- Reducción:', Math.round((1 - optimizedImage.length / imageDataUrl.length) * 100), '%');
-          
           resolve(optimizedImage);
         };
         img.src = imageDataUrl;
@@ -1089,7 +1083,6 @@ export default {
         
         // Si hay una orden seleccionada desde el componente de ejecuciones, cargarla
         if (ordenId) {
-          console.log("Orden seleccionada desde componente de ejecuciones:", ordenId);
           
           // Buscar la orden en las órdenes cargadas
           const selectedOrder = this.allOrders.find(orden => orden._id === ordenId);
@@ -1209,10 +1202,8 @@ export default {
     
     async fetchAssetInfo(solicitudId) {
       try {
-        console.log("Consultando información del activo con ID de solicitud:", solicitudId);
         
         const response = await apiService.get(`/application-maintenance/Consultar/${solicitudId}`);
-        console.log("Respuesta de la API:", response);
         
         // Guardar información de la solicitud
         if (response) {
@@ -1229,7 +1220,6 @@ export default {
             this.formData.plateNumber = this.assetInfo.inventoryCode || '';
             this.formData.location = this.assetInfo.location || '';
             
-            console.log("Información del activo cargada correctamente");
           }
         }
       } catch (error) {

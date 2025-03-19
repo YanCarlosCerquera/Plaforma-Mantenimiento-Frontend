@@ -132,7 +132,6 @@ const fetchInstructors = async () => {
         name: item.name,
         assignedRol: item.assignedRol.name
       }));
-      console.log("Instructores cargados:", instructors.value);
     } else {
       console.error("Formato de respuesta inesperado:", response);
       showErrorAlert("Error en el formato de respuesta de instructores");
@@ -272,7 +271,6 @@ async function handleSubmit() {
 
 // Agregar logs para depuración
 onMounted(() => {
-  console.log("Componente montado, cargando datos...");
   fetchAllData();
 });
 </script>
