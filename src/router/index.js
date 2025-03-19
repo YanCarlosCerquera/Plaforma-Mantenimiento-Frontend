@@ -39,6 +39,8 @@ import TrainingCenter from "../views/Parametrizacion/TrainingCenter.vue";
 import Dependences from "../views/Parametrizacion/dependences.vue";
 import ActionLog from "../views/Parametrizacion/ActionLog.vue";
 import Environment from "../views/Parametrizacion/Environment.vue";
+import Mantenimientolist from "../views/Matenimiento/Mantenimientolist.vue";
+import MaintenanceDetails from "../views/Matenimiento/MaintenanceDetails.vue";
 
 const publicRoutes = [
   "/",
@@ -208,7 +210,7 @@ const routes = [
     redirect: "/mantenimientos/planear-mantenimiento",
   },
   {
-    path: "/mantenimientos/planear-mantenimiento",
+    path: "/mantenimientos/planear-mantenimientos",
     name: "Planear Mantenimiento",
     component: PlanearMantenimiento,
   },
@@ -274,8 +276,17 @@ const routes = [
     name:"Ambientes",
     path:"/environment",
     component : Environment
+  },
+  {
+name:"Gestion de Mantenimientos",
+path:"/Listmantemientos",
+component : Mantenimientolist
+  },
+  {
+    path: '/detalle-mantenimiento',
+    name: 'MaintenanceDetails',
+    component: MaintenanceDetails
   }
-  
  
 ];
 

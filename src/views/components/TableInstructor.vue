@@ -126,6 +126,7 @@ const fields_informes = ref({
         textClass: 'text-xs font-weight-bold',
     },
 });
+
 const normalizeText = (text) => {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 };
@@ -203,7 +204,7 @@ const handleDetailReporte = (row) => {
     doc.text(`Ejecutado por: ${rowData.orderId.tecnicoId.name}`, 10, 70);
 
     doc.save('detalle_informe_mantenimiento.pdf');
-}
+};
 
 const handleDeleteReporte = async (row) => {
     Swal.fire({
@@ -215,42 +216,87 @@ const handleDeleteReporte = async (row) => {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Sí, eliminarlo!',
         cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    await apiService.delete(`/work-report/${row._id}`);
-                    await fetchWorkReports();
-                    Swal.fire({
-                        title: "Reporte eliminado",
-                        text: "El informe ha sido eliminado correctamente.",
-                        icon: "success",
-                        position: "bottom-right",
-                        toast: true,
-                        timer: 3000,
-                        background: "#28a745",
-                        color: "white",
-                        iconColor: "white",
-                        showConfirmButton: false,
-                        customClass: {
-                            title: "swal-title-white",
-                        },
-                    });
-                } catch (error) {
-                    console.error('Error deleting report:', error);
-                    alert('Error al eliminar el reporte');
-                }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await apiService.delete(`/work-report/${row._id}`);
+                await fetchWorkReports();
+                Swal.fire({
+                    title: "Reporte eliminado",
+                    text: "El informe ha sido eliminado correctamente.",
+                    icon: "success",
+                    position: "bottom-right",
+                    toast: true,
+                    timer: 3000,
+                    background: "#28a745",
+                    color: "white",
+                    iconColor: "white",
+                    showConfirmButton: false,
+                    customClass: {
+                        title: "swal-title-white",
+                    },
+                });
+            } catch (error) {
+                console.error('Error deleting report:', error);
+                alert('Error al eliminar el reporte');
             }
-    })
+        }
+    });
+};
+
+const handeUpdateState = async (row) => {
+    Swal.fire({
+        title: '¿Desea cambiar el estado de la orden de trabajo?',
+        text: '¡No podrás revertir esto!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, cambiarlo!',
+        cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                // Cambiar el estado de la orden a true
+                 await apiService.patch(`/word-orden/${row._id}`, {
+                    state: true // Siempre se establece en true
+                });
+
+                // Actualizar la lista de órdenes
+                await fetchWordOrdens();
+
+                Swal.fire({
+                    title: "Estado cambiado",
+                    text: "El estado de la orden ha sido actualizado correctamente.",
+                    icon: "success",
+                    position: "bottom-right",
+                    toast: true,
+                    timer: 3000,
+                    background: "#28a745",
+                    color: "white",
+                    iconColor: "white",
+                    showConfirmButton: false,
+                    customClass: {
+                        title: "swal-title-white",
+                    },
+                });
+            } catch (error) {
+                console.error('Error updating order state:', error);
+                alert('Error al cambiar el estado de la orden');
+            }
+        }
+    });
 };
 
 const icons_ordens = ref([
-    { class: "fa-solid fa-download",  method: handeDetailOrden },
+    { class: "fa-solid fa-download", method: handeDetailOrden },
+    { class: "fa-solid fa-search", method: handeUpdateState },
 ]);
 
 const icons_reportes = ref([
-    { class: "fa-solid fa-download",  method: handleDetailReporte },
+    { class: "fa-solid fa-download", method: handleDetailReporte },
     { class: "fa-solid fa-trash", method: handleDeleteReporte },
-])
+]);
 
 onMounted(async () => {
     await fetchWordOrdens();

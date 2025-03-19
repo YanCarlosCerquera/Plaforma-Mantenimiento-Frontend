@@ -28,7 +28,8 @@
           <div class="form-group">
             <label for="environmentId">Ambiente</label>
             <select
-              id="environmentId"
+
+            id="environmentId"
               v-model="formData.environmentId"
               class="form-select"
             >

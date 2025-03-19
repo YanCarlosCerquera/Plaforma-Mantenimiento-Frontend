@@ -42,7 +42,7 @@ export default {
     const isLoading = ref(false);
     const rows = ref([]);
     const router = useRouter();
-  const jwt_decode = require("jwt-decode");
+    const jwt_decode = require("jwt-decode");
 
     const headers = ref([
       "Informe",
@@ -93,7 +93,6 @@ export default {
     const fetchData = async () => {
       isLoading.value = true;
       try {
-
         const token = Cookies.get("authToken");
         if (!token) {
           console.error("No se encontró el token de autenticación");
@@ -115,9 +114,10 @@ export default {
 
         const response = await apiService.get(url);
         
+        // Asegurarse de que cada elemento tenga un ID accesible
         rows.value = response.map((item) => ({
           ...item,
-          id: item.Id
+          id: item._id || item.Id || item.id
         }));
         
         console.log("Datos cargados:", rows.value);
@@ -135,114 +135,120 @@ export default {
     };
 
     const handleDownloadPDF = async (item) => {
-  let reportId;
-  
-  if (typeof item === 'string') {
-    reportId = item;
-  } else if (item && typeof item === 'object') {
-    reportId = item.Id || item.id;
-  } else {
-    console.error("Formato de ID no válido:", item);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'ID de informe no válido',
-      confirmButtonColor: '#39a900'
-    });
-    return;
-  }
-  
-  if (!reportId) {
-    console.error("ID de informe no encontrado");
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'ID de informe no encontrado',
-      confirmButtonColor: '#39a900'
-    });
-    return;
-  }
-  
-  try {
-    // Mostrar indicador de carga
-    Swal.fire({
-      title: 'Generando PDF',
-      html: 'Por favor espere...',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-    
-    // Opción 1: Descargar el PDF como blob
-    try {
-      const blob = await apiService.getBlob(`/work-report/pdf/${reportId}`);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `informe-${reportId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
+      console.log("Item recibido para descargar PDF:", item);
       
-      Swal.fire({
-        icon: 'success',
-        title: 'PDF Generado',
-        text: 'El informe se ha descargado correctamente',
-        confirmButtonColor: '#39a900'
-      });
-    } catch (blobError) {
-      console.error("Error al descargar como blob, intentando abrir en nueva pestaña:", blobError);
+      // Extraer el ID del informe de manera más robusta
+      let reportId;
       
-      // Opción 2: Si falla la descarga como blob, intentar abrir en nueva pestaña
-      const pdfUrl = `${apiService.getBaseUrl()}/work-report/pdf/${reportId}`;
-      window.open(pdfUrl, '_blank');
-      
-      Swal.close();
-    }
-  } catch (error) {
-    console.error("Error al generar el PDF:", error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No se pudo generar el PDF del informe',
-      confirmButtonColor: '#39a900'
-    });
-  }
-};
-
-const handleDelete = async (item) => {
-    let reportId;
-
-    if (typeof item === "string") {
+      if (typeof item === 'string') {
         reportId = item;
-    } else if (item && typeof item === "object") {
-        reportId = item._id;  // Se extrae el ID correcto
-    } else {
-        console.error("Formato de ID no válido:", item);
+      } else if (item && typeof item === 'object') {
+        // Intentar obtener el ID de todas las posibles propiedades
+        reportId = item._id || item.Id || item.id;
+      }
+      
+      if (!reportId) {
+        console.error("ID de informe no encontrado:", item);
         Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "ID de informe no válido",
-            confirmButtonColor: "#39a900"
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo identificar el ID del informe',
+          confirmButtonColor: '#39a900'
         });
         return;
-    }
-
-    if (!reportId) {
-        console.error("ID de informe no encontrado");
+      }
+      
+      console.log("ID del informe a descargar:", reportId);
+      
+      try {
+        // Mostrar indicador de carga
         Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "ID de informe no encontrado",
-            confirmButtonColor: "#39a900"
+          title: 'Generando PDF',
+          html: 'Por favor espere...',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+        
+        try {
+          // Intentar descargar como blob
+          const response = await apiService.getBlob(`/work-report/pdf/${reportId}`);
+          
+          if (!response || !(response instanceof Blob)) {
+            throw new Error("La respuesta no es un blob válido");
+          }
+          
+          // Crear URL y descargar
+          const url = window.URL.createObjectURL(response);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `informe-${reportId}.pdf`);
+          document.body.appendChild(link);
+          link.click();
+          
+          // Limpiar
+          setTimeout(() => {
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+          }, 100);
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'PDF Generado',
+            text: 'El informe se ha descargado correctamente',
+            confirmButtonColor: '#39a900'
+          });
+        } catch (blobError) {
+          console.error("Error al descargar como blob:", blobError);
+          
+          // Plan B: Abrir en nueva pestaña
+          const pdfUrl = `${apiService.getBaseUrl()}/work-report/pdf/${reportId}`;
+          const newWindow = window.open(pdfUrl, '_blank');
+          
+          if (!newWindow) {
+            throw new Error("No se pudo abrir una nueva ventana. Verifique que los popups estén permitidos.");
+          }
+          
+          Swal.close();
+        }
+      } catch (error) {
+        console.error("Error al generar el PDF:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo generar el PDF del informe: ' + error.message,
+          confirmButtonColor: '#39a900'
+        });
+      }
+    };
+
+    const handleDelete = async (item) => {
+      console.log("Item recibido para eliminar:", item);
+      
+      // Extraer el ID del informe de manera más robusta
+      let reportId;
+      
+      if (typeof item === 'string') {
+        reportId = item;
+      } else if (item && typeof item === 'object') {
+        // Intentar obtener el ID de todas las posibles propiedades
+        reportId = item._id || item.Id || item.id;
+      }
+      
+      if (!reportId) {
+        console.error("ID de informe no encontrado:", item);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo identificar el ID del informe',
+          confirmButtonColor: '#39a900'
         });
         return;
-    }
+      }
 
-    // Confirmación antes de eliminar
-    const result = await Swal.fire({
+      // Confirmación antes de eliminar
+      const result = await Swal.fire({
         title: "¿Estás seguro?",
         text: "No podrás revertir esta acción",
         icon: "warning",
@@ -251,70 +257,67 @@ const handleDelete = async (item) => {
         cancelButtonColor: "#3085d6",
         confirmButtonText: "Sí, eliminar",
         cancelButtonText: "Cancelar"
-    });
+      });
 
-    if (result.isConfirmed) {
+      if (result.isConfirmed) {
         try {
-            await apiService.delete(`/work-report/${reportId}`);
-            Swal.fire({
-                icon: "success",
-                title: "Eliminado",
-                text: "El informe ha sido eliminado correctamente",
-                confirmButtonColor: "#39a900"
-            });
+          await apiService.delete(`/work-report/${reportId}`);
+          Swal.fire({
+            icon: "success",
+            title: "Eliminado",
+            text: "El informe ha sido eliminado correctamente",
+            confirmButtonColor: "#39a900"
+          });
 
-            // Opcional: actualizar la lista de informes
-            await fetchData(); 
+          // Actualizar la lista de informes
+          await fetchData(); 
         } catch (error) {
-            console.error("Error al eliminar el informe:", error);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Hubo un problema al eliminar el informe",
-                confirmButtonColor: "#39a900"
-            });
+          console.error("Error al eliminar el informe:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Hubo un problema al eliminar el informe: " + error.message,
+            confirmButtonColor: "#39a900"
+          });
         }
-    }
-};
+      }
+    };
 
     const handleEdit = async (item) => {
       console.log("Item recibido para editar:", item);
       
+      // Extraer el ID del informe de manera más robusta
       let reportId;
       
       if (typeof item === 'string') {
         reportId = item;
       } else if (item && typeof item === 'object') {
-        reportId = item.Id || item.id;
-      } else {
-        console.error("Formato de ID no válido:", item);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'ID de informe no válido',
-          confirmButtonColor: '#39a900'
-        });
-        return;
+        // Intentar obtener el ID de todas las posibles propiedades
+        reportId = item._id || item.Id || item.id;
       }
       
       if (!reportId) {
-        console.error("ID de informe no encontrado");
+        console.error("ID de informe no encontrado:", item);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'ID de informe no encontrado',
+          text: 'No se pudo identificar el ID del informe',
           confirmButtonColor: '#39a900'
         });
         return;
       }
       
+      // Guardar ID en cookie
       Cookies.set("Id_INF", String(reportId));
       console.log("ID guardado en cookie:", reportId);
       
+      // Limpiar cookie de orden si existe
       Cookies.remove("OrdenId");
       
+      // Establecer modo de edición
       Cookies.set("EditMode", "true");
       
+      // Navegar a la página de edición
       router.push(`/RealizarInforme`);
     };
 

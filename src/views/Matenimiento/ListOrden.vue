@@ -185,27 +185,7 @@ const handleDelete = async (row) => {
   }
 };
 
-const handleEdit = (row) => {
-  try {
-    const ordenId = row._id?.toString() || row.toString();
-    router.push(`/editar-orden`);
-    Cookies.set("OrdenId", ordenId);
-  } catch (error) {
-    console.error("Error al navegar a la vista de edición:", error);
-    Swal.fire({
-      title: "Error al cargar la vista de edición",
-      text: error.message || "Algo salió mal.",
-      icon: "error",
-      position: "bottom-right",
-      toast: true,
-      timer: 3000,
-      background: "#dc3545",
-      color: "white",
-      iconColor: "white",
-      showConfirmButton: false,
-    });
-  }
-};
+
 
 const handlConsultar = (row) => {
   try {
@@ -232,7 +212,6 @@ const handlConsultar = (row) => {
 const icons = ref([
   { class: "fas fa-check", method: handleView },
   { class: "fas fa-trash", method: handleDelete },
-  { class: "fas fa-edit", method: handleEdit },
   { class: "fas fa-search", method: handlConsultar },
 ]);
 

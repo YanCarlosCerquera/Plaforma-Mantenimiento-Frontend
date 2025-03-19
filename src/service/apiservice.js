@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 const jwt_decode = require("jwt-decode");
 
 const apiClient = axios.create({
-    baseURL: " https://2dbb-179-1-219-232.ngrok-free.app", 
+    baseURL: "http://localhost:3000", 
     headers: {
         "Content-Type": "application/json",
     },

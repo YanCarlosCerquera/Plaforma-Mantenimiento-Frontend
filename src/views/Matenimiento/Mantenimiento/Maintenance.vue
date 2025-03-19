@@ -7,7 +7,31 @@
       <div class="loading-spinner"></div>
     </div>
     
-    <div class="form-section top-section">
+    <!-- Progress tracker -->
+    <div class="progress-tracker" v-if="selectedRadicado && !isLoading">
+      <div class="progress-step" :class="{ 'active': currentStep >= 1, 'completed': currentStep > 1 }">
+        <div class="step-number">1</div>
+        <div class="step-label">Selección</div>
+      </div>
+      <div class="progress-line" :class="{ 'active': currentStep >= 2 }"></div>
+      <div class="progress-step" :class="{ 'active': currentStep >= 2, 'completed': currentStep > 2 }">
+        <div class="step-number">2</div>
+        <div class="step-label">Mantenimiento</div>
+      </div>
+      <div class="progress-line" :class="{ 'active': currentStep >= 3 }"></div>
+      <div class="progress-step" :class="{ 'active': currentStep >= 3, 'completed': currentStep > 3 }">
+        <div class="step-number">3</div>
+        <div class="step-label">Firma</div>
+      </div>
+      <div class="progress-line" :class="{ 'active': currentStep >= 4 }"></div>
+      <div class="progress-step" :class="{ 'active': currentStep >= 4 }">
+        <div class="step-number">4</div>
+        <div class="step-label">Finalizar</div>
+      </div>
+    </div>
+    
+    <!-- Paso 1: Selección de orden -->
+    <div class="form-section top-section" v-if="currentStep === 1">
       <div class="header-row">
         <div class="search-container" v-if="!autoSelectedOrder">
           <ArgonAutocomplete 
@@ -30,10 +54,40 @@
         <div class="title-actions">
           <h2 class="main-title">Orden de Trabajo</h2>
           
-          <button class="action-button" @click="generatePdfReport" :disabled="!selectedRadicado">
-            <span>Realizar informe</span>
-            <i class="fas fa-file-pdf"></i>
-          </button>
+          <div class="action-buttons">
+            <button class="action-button secondary" @click="showAssetDetails = !showAssetDetails" v-if="selectedRadicado">
+              <span>{{ showAssetDetails ? 'Ocultar detalles' : 'Ver detalles' }}</span>
+              <i :class="showAssetDetails ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+            <button class="action-button" @click="generatePdfReport" :disabled="!selectedRadicado">
+              <span>Realizar informe</span>
+              <i class="fas fa-file-pdf"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="asset-details" v-if="showAssetDetails && selectedRadicado">
+        <h3 class="details-title"><i class="fas fa-info-circle"></i> Detalles del activo</h3>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Marca:</span>
+            <span class="detail-value">{{ assetInfo?.brand || 'No disponible' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Modelo:</span>
+            <span class="detail-value">{{ assetInfo?.modelo || 'No disponible' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Tipo:</span>
+            <span class="detail-value">{{ assetInfo?.equipmentType || 'No disponible' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Estado:</span>
+            <span class="detail-value status-badge">
+              {{ assetInfo?.status || 'No disponible' }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -75,9 +129,19 @@
           <input type="text" id="prioridad" v-model="formData.prioridad" class="form-input" readonly>
         </div>
       </div>
+      
+      <div class="form-actions">
+        <button class="cancel-button" @click="confirmReset">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+        <button class="next-button" @click="goToNextStep">
+          <i class="fas fa-arrow-right"></i> Siguiente
+        </button>
+      </div>
     </div>
 
-    <div class="form-section bottom-section">
+    <!-- Paso 2: Trabajo realizado -->
+    <div class="form-section bottom-section" v-if="currentStep === 2">
       <h2 class="section-title">Trabajo realizado</h2>
 
       <div class="two-columns">
@@ -91,14 +155,24 @@
                 <span class="tooltip-text">Seleccione el tipo de mantenimiento realizado</span>
               </div>
             </label>
-            <div class="checkbox-group">
-              <label class="checkbox-label" :class="{ 'selected': maintenanceType === 'Preventivo' }">
+            <div class="maintenance-type-selector">
+              <label 
+                class="maintenance-type-option" 
+                :class="{ 'selected': maintenanceType === 'Preventivo' }"
+                @click="maintenanceType = 'Preventivo'; validationErrors.maintenanceType = ''"
+              >
                 <input type="radio" name="maintenanceType" value="Preventivo" v-model="maintenanceType">
-                <span>Preventivo</span>
+                <div class="option-icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="option-text">Preventivo</div>
               </label>
-              <label class="checkbox-label" :class="{ 'selected': maintenanceType === 'Correctivo' }">
+              <label 
+                class="maintenance-type-option" 
+                :class="{ 'selected': maintenanceType === 'Correctivo' }"
+                @click="maintenanceType = 'Correctivo'; validationErrors.maintenanceType = ''"
+              >
                 <input type="radio" name="maintenanceType" value="Correctivo" v-model="maintenanceType">
-                <span>Correctivo</span>
+                <div class="option-icon"><i class="fas fa-tools"></i></div>
+                <div class="option-text">Correctivo</div>
               </label>
             </div>
             <span v-if="validationErrors.maintenanceType" class="error-message">
@@ -111,14 +185,20 @@
               Descripción del trabajo y/o servicio solicitado 
               <span class="required">*</span>
             </label>
-            <textarea 
-              id="workDescription" 
-              v-model="formData.workDescription" 
-              class="form-textarea" 
-              rows="4"
-              placeholder="Describa el trabajo realizado..."
-              :class="{ 'error': validationErrors.workDescription }"
-            ></textarea>
+            <div class="textarea-container">
+              <textarea 
+                id="workDescription" 
+                v-model="formData.workDescription" 
+                class="form-textarea" 
+                rows="4"
+                placeholder="Describa el trabajo realizado..."
+                :class="{ 'error': validationErrors.workDescription }"
+                @input="validationErrors.workDescription = ''"
+              ></textarea>
+              <div class="character-counter" :class="{ 'warning': formData.workDescription.length > 400 }">
+                {{ formData.workDescription.length }}/500
+              </div>
+            </div>
             <span v-if="validationErrors.workDescription" class="error-message">
               {{ validationErrors.workDescription }}
             </span>
@@ -129,14 +209,20 @@
               Observaciones 
               <span class="required">*</span>
             </label>
-            <textarea 
-              id="observations" 
-              v-model="formData.observations" 
-              class="form-textarea" 
-              rows="3"
-              placeholder="Ingrese observaciones adicionales..."
-              :class="{ 'error': validationErrors.observations }"
-            ></textarea>
+            <div class="textarea-container">
+              <textarea 
+                id="observations" 
+                v-model="formData.observations" 
+                class="form-textarea" 
+                rows="3"
+                placeholder="Ingrese observaciones adicionales..."
+                :class="{ 'error': validationErrors.observations }"
+                @input="validationErrors.observations = ''"
+              ></textarea>
+              <div class="character-counter" :class="{ 'warning': formData.observations.length > 300 }">
+                {{ formData.observations.length }}/400
+              </div>
+            </div>
             <span v-if="validationErrors.observations" class="error-message">
               {{ validationErrors.observations }}
             </span>
@@ -153,18 +239,33 @@
                 <span class="tooltip-text">Indique si se requirieron repuestos para el mantenimiento</span>
               </div>
             </label>
-            <div class="checkbox-group">
-              <label class="checkbox-label" :class="{ 'selected': sparePartsStatus === 'Si' }">
+            <div class="spare-parts-selector">
+              <label 
+                class="spare-parts-option" 
+                :class="{ 'selected': sparePartsStatus === 'Si' }"
+                @click="sparePartsStatus = 'Si'"
+              >
                 <input type="radio" name="sparePartsStatus" value="Si" v-model="sparePartsStatus">
-                <span>Si</span>
+                <div class="option-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="option-text">Si</div>
               </label>
-              <label class="checkbox-label" :class="{ 'selected': sparePartsStatus === 'No' }">
+              <label 
+                class="spare-parts-option" 
+                :class="{ 'selected': sparePartsStatus === 'No' }"
+                @click="sparePartsStatus = 'No'"
+              >
                 <input type="radio" name="sparePartsStatus" value="No" v-model="sparePartsStatus">
-                <span>No</span>
+                <div class="option-icon"><i class="fas fa-times-circle"></i></div>
+                <div class="option-text">No</div>
               </label>
-              <label class="checkbox-label" :class="{ 'selected': sparePartsStatus === 'No aplica' }">
+              <label 
+                class="spare-parts-option" 
+                :class="{ 'selected': sparePartsStatus === 'No aplica' }"
+                @click="sparePartsStatus = 'No aplica'"
+              >
                 <input type="radio" name="sparePartsStatus" value="No aplica" v-model="sparePartsStatus">
-                <span>No aplica</span>
+                <div class="option-icon"><i class="fas fa-minus-circle"></i></div>
+                <div class="option-text">No aplica</div>
               </label>
             </div>
           </div>
@@ -174,18 +275,47 @@
               Detalle de repuestos 
               <span v-if="sparePartsStatus === 'Si'" class="required">*</span>
             </label>
-            <textarea 
-              id="partsDetails" 
-              v-model="formData.partsDetails" 
-              class="form-textarea" 
-              rows="4"
-              placeholder="Detalle los repuestos utilizados..."
-              :disabled="sparePartsStatus === 'No' || sparePartsStatus === 'No aplica'"
-              :class="{ 'error': validationErrors.partsDetails }"
-            ></textarea>
+            <div class="textarea-container">
+              <textarea 
+                id="partsDetails" 
+                v-model="formData.partsDetails" 
+                class="form-textarea" 
+                rows="4"
+                placeholder="Detalle los repuestos utilizados..."
+                :disabled="sparePartsStatus === 'No' || sparePartsStatus === 'No aplica'"
+                :class="{ 'error': validationErrors.partsDetails }"
+                @input="validationErrors.partsDetails = ''"
+              ></textarea>
+              <div v-if="sparePartsStatus === 'Si'" class="character-counter" :class="{ 'warning': formData.partsDetails.length > 300 }">
+                {{ formData.partsDetails.length }}/400
+              </div>
+            </div>
             <span v-if="validationErrors.partsDetails" class="error-message">
               {{ validationErrors.partsDetails }}
             </span>
+          </div>
+          
+          <div class="form-group">
+            <label class="label-text">Tiempo estimado de mantenimiento</label>
+            <div class="time-estimate-container">
+              <div class="time-display">{{ formattedTimeEstimate }}</div>
+              <div class="time-controls">
+                <button type="button" class="time-button" @click="decreaseTime">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <input 
+                  type="range" 
+                  v-model="timeEstimate" 
+                  min="1" 
+                  max="24" 
+                  step="0.5" 
+                  class="time-slider"
+                >
+                <button type="button" class="time-button" @click="increaseTime">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -200,14 +330,24 @@
               <span class="tooltip-text">Indique si la orden ha sido ejecutada o está pendiente</span>
             </div>
           </label>
-          <div class="checkbox-group">
-            <label class="checkbox-label" :class="{ 'selected': orderState }">
+          <div class="order-state-selector">
+            <label 
+              class="order-state-option" 
+              :class="{ 'selected': orderState }"
+              @click="orderState = true"
+            >
               <input type="radio" name="orderState" :value="true" v-model="orderState">
-              <span>Ejecutado</span>
+              <div class="option-icon"><i class="fas fa-check"></i></div>
+              <div class="option-text">Ejecutado</div>
             </label>
-            <label class="checkbox-label" :class="{ 'selected': orderState === false }">
+            <label 
+              class="order-state-option" 
+              :class="{ 'selected': orderState === false }"
+              @click="orderState = false"
+            >
               <input type="radio" name="orderState" :value="false" v-model="orderState">
-              <span>Pendiente</span>
+              <div class="option-icon"><i class="fas fa-clock"></i></div>
+              <div class="option-text">Pendiente</div>
             </label>
           </div>
         </div>
@@ -215,78 +355,148 @@
           <label for="executedBy">Ejecutado por:</label>
           <input type="text" id="executedBy" v-model="formData.executedBy" class="form-input" readonly>
         </div>
-        
-        <!-- Componente de firma digital con opción de carga de imagen -->
-        <div class="form-group">
-          <label for="techSignature">
-            Firma técnico 
-            <span class="required">*</span>
-            <div class="tooltip">
-              <i class="fas fa-info-circle"></i>
-              <span class="tooltip-text">Dibuje o cargue una imagen de su firma</span>
-            </div>
-          </label>
-          <div class="signature-container" :class="{ 'error-container': validationErrors.techSignature }">
-            <div v-if="formData.techSignature" class="signature-preview">
-              <img :src="formData.techSignature" alt="Firma" class="signature-image" />
-              <button type="button" @click="removeSignature" class="remove-signature-btn">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-            <div v-else class="signature-buttons">
-              <button 
-                type="button" 
-                @click="openSignatureModal" 
-                class="signature-button"
-              >
-                <i class="fas fa-pen"></i> Dibujar firma
-              </button>
-              <div class="or-divider">o</div>
-              <label class="upload-button">
-                <i class="fas fa-upload"></i> Subir imagen
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  @change="handleImageUpload" 
-                  class="file-input"
-                />
-              </label>
-            </div>
-            <span v-if="validationErrors.techSignature" class="error-message">
-              {{ validationErrors.techSignature }}
-            </span>
+      </div>
+      
+      <div class="form-actions">
+        <button class="cancel-button" @click="confirmReset">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+        <button class="prev-button" @click="currentStep = 1">
+          <i class="fas fa-arrow-left"></i> Anterior
+        </button>
+        <button class="next-button" @click="goToNextStep">
+          <i class="fas fa-arrow-right"></i> Siguiente
+        </button>
+      </div>
+    </div>
+    
+    <!-- Paso 3: Firma -->
+    <div class="form-section bottom-section" v-if="currentStep === 3">
+      <h2 class="section-title">Firma del técnico</h2>
+      
+      <div class="form-group">
+        <label for="techSignature">
+          Firma técnico 
+          <span class="required">*</span>
+          <div class="tooltip">
+            <i class="fas fa-info-circle"></i>
+            <span class="tooltip-text">Dibuje o cargue una imagen de su firma</span>
           </div>
+        </label>
+        <div class="signature-container" :class="{ 'error-container': validationErrors.techSignature }">
+          <div v-if="formData.techSignature" class="signature-preview">
+            <img :src="formData.techSignature" alt="Firma" class="signature-image" />
+            <button type="button" @click="removeSignature" class="remove-signature-btn">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div v-else class="signature-buttons">
+            <button 
+              type="button" 
+              @click="openSignatureModal" 
+              class="signature-button"
+            >
+              <i class="fas fa-pen"></i> Dibujar firma
+            </button>
+            <div class="or-divider">o</div>
+            <label class="upload-button">
+              <i class="fas fa-upload"></i> Subir imagen
+              <input 
+                type="file" 
+                accept="image/*" 
+                @change="handleImageUpload" 
+                class="file-input"
+              />
+            </label>
+          </div>
+          <span v-if="validationErrors.techSignature" class="error-message">
+            {{ validationErrors.techSignature }}
+          </span>
         </div>
       </div>
       
-      <!-- Modal de firma -->
-      <div v-if="showSignatureModal" class="signature-modal-backdrop" @click.self="cancelSignature">
-        <div class="signature-modal">
-          <div class="signature-modal-header">
-            <h3>Firma Digital</h3>
-            <button type="button" class="close-button" @click="cancelSignature">&times;</button>
+      <div class="form-actions">
+        <button class="cancel-button" @click="confirmReset">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+        <button class="prev-button" @click="currentStep = 2">
+          <i class="fas fa-arrow-left"></i> Anterior
+        </button>
+        <button class="next-button" @click="goToNextStep">
+          <i class="fas fa-arrow-right"></i> Siguiente
+        </button>
+      </div>
+    </div>
+    
+    <!-- Paso 4: Finalizar -->
+    <div class="form-section bottom-section" v-if="currentStep === 4">
+      <h2 class="section-title">Resumen y confirmación</h2>
+      
+      <div class="summary-container">
+        <div class="summary-section">
+          <h3 class="summary-title">Información de la orden</h3>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="summary-label">Radicado:</span>
+              <span class="summary-value">{{ selectedRadicado }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Serie:</span>
+              <span class="summary-value">{{ formData.serialNumber }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Ubicación:</span>
+              <span class="summary-value">{{ formData.location }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Estado:</span>
+              <span class="summary-value">{{ orderState ? 'Ejecutado' : 'Pendiente' }}</span>
+            </div>
           </div>
-          
-          <div class="signature-modal-body">
-            <VueSignaturePad
-              ref="signaturePad"
-              :width="modalWidth"
-              :height="300"
-              :options="{ penColor: 'rgb(57, 169, 0)' }"
-            />
-            <p class="signature-instructions">Dibuje su firma en el área de arriba</p>
+        </div>
+        
+        <div class="summary-section">
+          <h3 class="summary-title">Detalles del mantenimiento</h3>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="summary-label">Tipo:</span>
+              <span class="summary-value">{{ maintenanceType }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Tiempo estimado:</span>
+              <span class="summary-value">{{ formattedTimeEstimate }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Repuestos:</span>
+              <span class="summary-value">{{ sparePartsStatus }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Técnico:</span>
+              <span class="summary-value">{{ formData.executedBy }}</span>
+            </div>
           </div>
-          
-          <div class="signature-modal-footer">
-            <button type="button" class="cancel-button" @click="cancelSignature">
-              <i class="fas fa-times"></i> Cancelar
-            </button>
-            <button type="button" class="clear-button" @click="clearSignature">
-              <i class="fas fa-eraser"></i> Limpiar
-            </button>
-            <button type="button" class="save-button" @click="saveSignature">
-              <i class="fas fa-save"></i> Guardar Firma
-            </button>
+        </div>
+        
+        <div class="summary-section">
+          <h3 class="summary-title">Descripción del trabajo</h3>
+          <div class="summary-text">{{ formData.workDescription }}</div>
+        </div>
+        
+        <div class="summary-section">
+          <h3 class="summary-title">Observaciones</h3>
+          <div class="summary-text">{{ formData.observations }}</div>
+        </div>
+        
+        <div class="summary-section" v-if="sparePartsStatus === 'Si'">
+          <h3 class="summary-title">Detalle de repuestos</h3>
+          <div class="summary-text">{{ formData.partsDetails }}</div>
+        </div>
+        
+        <div class="summary-section">
+          <h3 class="summary-title">Firma</h3>
+          <div class="signature-summary">
+            <img v-if="formData.techSignature" :src="formData.techSignature" alt="Firma" class="signature-image-small" />
+            <div v-else class="no-signature">No se ha proporcionado firma</div>
           </div>
         </div>
       </div>
@@ -295,9 +505,69 @@
         <button class="cancel-button" @click="confirmReset">
           <i class="fas fa-times"></i> Cancelar
         </button>
+        <button class="prev-button" @click="currentStep = 3">
+          <i class="fas fa-arrow-left"></i> Anterior
+        </button>
         <button class="submit-button" @click="validateAndSave" :disabled="isLoading">
           <i class="fas fa-save"></i> Guardar
         </button>
+      </div>
+    </div>
+    
+    <!-- Modal de firma -->
+    <div v-if="showSignatureModal" class="signature-modal-backdrop" @click.self="cancelSignature">
+      <div class="signature-modal">
+        <div class="signature-modal-header">
+          <h3>Firma Digital</h3>
+          <button type="button" class="close-button" @click="cancelSignature">&times;</button>
+        </div>
+        
+        <div class="signature-modal-body">
+          <VueSignaturePad
+            ref="signaturePad"
+            :width="modalWidth"
+            :height="300"
+            :options="{ penColor: 'rgb(57, 169, 0)' }"
+          />
+          <div class="signature-controls">
+            <div class="pen-color-selector">
+              <span>Color: </span>
+              <button 
+                v-for="color in penColors" 
+                :key="color.value" 
+                class="color-option" 
+                :style="{ backgroundColor: color.value }"
+                :class="{ 'selected': currentPenColor === color.value }"
+                @click="changePenColor(color.value)"
+              ></button>
+            </div>
+            <div class="pen-size-selector">
+              <span>Grosor: </span>
+              <input 
+                type="range" 
+                v-model="penSize" 
+                min="1" 
+                max="5" 
+                step="0.5" 
+                class="pen-size-slider"
+                @input="changePenSize"
+              >
+            </div>
+          </div>
+          <p class="signature-instructions">Dibuje su firma en el área de arriba</p>
+        </div>
+        
+        <div class="signature-modal-footer">
+          <button type="button" class="cancel-button" @click="cancelSignature">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button type="button" class="clear-button" @click="clearSignature">
+            <i class="fas fa-eraser"></i> Limpiar
+          </button>
+          <button type="button" class="save-button" @click="saveSignature">
+            <i class="fas fa-save"></i> Guardar Firma
+          </button>
+        </div>
       </div>
     </div>
     
@@ -305,6 +575,28 @@
     <div v-if="showNoOrdersMessage" class="no-orders-message">
       <i class="fas fa-info-circle"></i>
       <p>No hay órdenes de trabajo disponibles. Contacte al administrador.</p>
+    </div>
+    
+    <!-- Notificación de guardado exitoso -->
+    <div v-if="showSuccessNotification" class="success-notification">
+      <div class="notification-content">
+        <i class="fas fa-check-circle"></i>
+        <div class="notification-text">
+          <h4>¡Guardado exitoso!</h4>
+          <p>Los datos se han guardado correctamente.</p>
+        </div>
+        <button @click="showSuccessNotification = false" class="close-notification">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="notification-actions">
+        <button @click="realizarInformeInstante" class="notification-button">
+          <i class="fas fa-file-alt"></i> Desear realizar el Informe al instante
+        </button>
+        <button @click="resetForm(); showSuccessNotification = false" class="notification-button">
+          <i class="fas fa-plus"></i> Nuevo mantenimiento
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -318,6 +610,7 @@ import 'jspdf-autotable'
 import ArgonAutocomplete from '../../../components/ArgonAutocomplete.vue'
 import { VueSignaturePad } from 'vue-signature-pad'
 import { debounce } from 'lodash'
+import { useRouter } from 'vue-router'
 
 // Solución para el error de ResizeObserver
 const originalConsoleError = console.error;
@@ -333,6 +626,10 @@ export default {
   components: {
     ArgonAutocomplete,
     VueSignaturePad
+  },
+  setup() {
+    const router = useRouter();
+    return { router };
   },
   data() {
     return {
@@ -377,7 +674,46 @@ export default {
         executedBy: '',
         techSignature: '',
         radicado: ''
+      },
+      // Nuevas propiedades
+      currentStep: 1,
+      showAssetDetails: false,
+      timeEstimate: 2, // Horas estimadas por defecto
+      showSuccessNotification: false,
+      penColors: [
+        { name: 'Verde', value: 'rgb(57, 169, 0)' },
+        { name: 'Azul', value: 'rgb(0, 123, 255)' },
+        { name: 'Negro', value: 'rgb(0, 0, 0)' }
+      ],
+      currentPenColor: 'rgb(57, 169, 0)',
+      penSize: 2
+    }
+  },
+  computed: {
+    formattedTimeEstimate() {
+      const hours = Math.floor(this.timeEstimate);
+      const minutes = (this.timeEstimate - hours) * 60;
+      
+      if (minutes === 0) {
+        return `${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+      } else {
+        return `${hours} ${hours === 1 ? 'hora' : 'horas'} y ${minutes} minutos`;
       }
+    },
+    // Reemplaza tu función getStatusClass actual con esta versión:
+    getStatusClass(status) {
+      if (!status || typeof status !== 'string') return ''; // Verifica que status sea una cadena
+
+      const statusLower = status.toLowerCase();
+      if (statusLower.includes('activo') || statusLower.includes('bueno')) {
+        return 'status-active';
+      } else if (statusLower.includes('reparación') || statusLower.includes('mantenimiento')) {
+        return 'status-maintenance';
+      } else if (statusLower.includes('baja') || statusLower.includes('malo')) {
+        return 'status-inactive';
+      }
+
+      return '';
     }
   },
   watch: {
@@ -386,6 +722,11 @@ export default {
         this.formData.partsDetails = '';
         this.validationErrors.partsDetails = '';
       }
+    },
+    selectedRadicado(newValue) {
+      if (newValue) {
+        this.currentStep = 1;
+      }
     }
   },
   created() {
@@ -393,6 +734,83 @@ export default {
     this.debouncedSearch = debounce(this.performSearch, 300);
   },
   methods: {
+    // Nuevos métodos
+    goToNextStep() {
+      // Validar el paso actual antes de avanzar
+      if (this.currentStep === 1) {
+        if (!this.selectedRadicado) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Selección requerida',
+            text: 'Debe seleccionar una orden de trabajo para continuar',
+            confirmButtonColor: '#39a900'
+          });
+          return;
+        }
+        this.currentStep = 2;
+      } else if (this.currentStep === 2) {
+        // Validar campos de mantenimiento
+        if (!this.maintenanceType) {
+          this.validationErrors.maintenanceType = 'Seleccione un tipo de mantenimiento';
+          return;
+        }
+        if (!this.formData.workDescription.trim()) {
+          this.validationErrors.workDescription = 'La descripción es obligatoria';
+          return;
+        }
+        if (!this.formData.observations.trim()) {
+          this.validationErrors.observations = 'Las observaciones son obligatorias';
+          return;
+        }
+        if (this.sparePartsStatus === 'Si' && !this.formData.partsDetails.trim()) {
+          this.validationErrors.partsDetails = 'El detalle de repuestos es obligatorio';
+          return;
+        }
+        
+        this.currentStep = 3;
+      } else if (this.currentStep === 3) {
+        // Validar firma
+        if (!this.formData.techSignature) {
+          this.validationErrors.techSignature = 'La firma es obligatoria';
+          return;
+        }
+        
+        this.currentStep = 4;
+      }
+    },
+    
+    decreaseTime() {
+      if (this.timeEstimate > 1) {
+        this.timeEstimate -= 0.5;
+      }
+    },
+    
+    increaseTime() {
+      if (this.timeEstimate < 24) {
+        this.timeEstimate += 0.5;
+      }
+    },
+    
+    changePenColor(color) {
+      this.currentPenColor = color;
+      if (this.$refs.signaturePad) {
+        this.$refs.signaturePad.options.penColor = color;
+      }
+    },
+    
+    changePenSize() {
+      if (this.$refs.signaturePad) {
+        this.$refs.signaturePad.options.minWidth = this.penSize;
+        this.$refs.signaturePad.options.maxWidth = this.penSize * 2;
+      }
+    },
+    
+    realizarInformeInstante() {
+      // Guardar ID de la orden en cookie y redirigir a la página de informes
+      Cookies.set('OrdenId', this.wordOrdenId, { expires: 1 });
+      this.router.push('/RealizarInforme');
+    },
+    
     // Método para manejar la entrada de búsqueda
     handleSearchInput(event) {
       this.searchQuery = event.target.value;
@@ -492,6 +910,8 @@ export default {
       setTimeout(() => {
         if (this.$refs.signaturePad) {
           this.$refs.signaturePad.clearSignature();
+          this.changePenColor(this.currentPenColor);
+          this.changePenSize();
         }
       }, 100);
     },
@@ -905,13 +1325,14 @@ export default {
           technicalId: this.userId,
           wordOrdenId: this.wordOrdenId,
           technicalSignature: this.formData.techSignature,
-          state: this.orderState
+          state: this.orderState,
+          timeEstimate: this.timeEstimate // Nuevo campo para tiempo estimado
         };
         
         // Log the data being sent for debugging
         console.log('Enviando datos de mantenimiento:', JSON.stringify(maintenanceData, null, 2));
         
-         await apiService.post('/maintenance', maintenanceData);
+        await apiService.post('/maintenance', maintenanceData);
         
         // Actualizar datos locales para reflejar el cambio
         const updatedOrder = this.allOrders.find(order => order._id === this.wordOrdenId);
@@ -924,21 +1345,13 @@ export default {
           Cookies.remove('OrdenId');
         }
         
-        Swal.fire({
-          icon: 'success',
-          title: '¡Guardado exitoso!',
-          text: 'Los datos se han guardado correctamente',
-          confirmButtonColor: '#39a900'
-        });
+        this.setLoading(false);
         
-        // Resetear formulario después de guardar exitosamente
-        this.resetForm();
+        // Mostrar notificación de éxito
+        this.showSuccessNotification = true;
         
-        // Si la orden fue seleccionada automáticamente, resetear también esa selección
-        if (this.autoSelectedOrder) {
-          this.autoSelectedOrder = false;
-          this.selectedRadicado = '';
-        }
+        // Preparar cookie para informe si se desea crear uno
+        Cookies.set('LastMaintenanceId', this.wordOrdenId, { expires: 1 });
         
       } catch (error) {
         this.handleApiError(error, 'No se pudieron guardar los datos');
@@ -987,7 +1400,8 @@ export default {
             ['Repuestos requeridos', this.sparePartsStatus],
             ['Detalle de repuestos', this.formData.partsDetails],
             ['Estado', this.orderState ? 'Ejecutado' : 'Pendiente'],
-            ['Ejecutado por', this.formData.executedBy]
+            ['Ejecutado por', this.formData.executedBy],
+            ['Tiempo estimado', this.formattedTimeEstimate]
           ]
         });
         
@@ -1008,11 +1422,22 @@ export default {
         
         this.setLoading(false);
         
+        // Preguntar si desea crear un informe completo
         Swal.fire({
           icon: 'success',
           title: 'PDF Generado',
-          text: 'El informe se ha generado correctamente',
-          confirmButtonColor: '#39a900'
+          text: 'El informe básico se ha generado correctamente. ¿Desea crear un informe completo?',
+          showCancelButton: true,
+          confirmButtonColor: '#39a900',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Crear informe completo',
+          cancelButtonText: 'No, gracias'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Guardar ID de la orden en cookie y redirigir a la página de informes
+            Cookies.set('OrdenId', this.wordOrdenId, { expires: 1 });
+            this.router.push('/RealizarInforme');
+          }
         });
         
       } catch (error) {
@@ -1051,6 +1476,8 @@ export default {
       this.formData.techSignature = '';
       this.maintenanceType = 'Preventivo';
       this.sparePartsStatus = 'No';
+      this.timeEstimate = 2;
+      this.currentStep = 1;
       
       // Limpiar errores
       Object.keys(this.validationErrors).forEach(key => this.validationErrors[key] = '');
@@ -1092,6 +1519,71 @@ export default {
   background-size: 80% 80%;
   pointer-events: none;
   z-index: -1;
+}
+
+/* Progress tracker */
+.progress-tracker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20px 0 30px;
+  padding: 0 20px;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.step-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+}
+
+.step-label {
+  font-size: 14px;
+  color: #6c757d;
+  transition: all 0.3s;
+}
+
+.progress-line {
+  flex: 1;
+  height: 3px;
+  background-color: #e9ecef;
+  margin: 0 10px;
+  position: relative;
+  top: -18px;
+  transition: all 0.3s;
+}
+
+.progress-step.active .step-number {
+  background-color: #39a900;
+  color: white;
+}
+
+.progress-step.active .step-label {
+  color: #39a900;
+  font-weight: 500;
+}
+
+.progress-step.completed .step-number {
+  background-color: #28a745;
+  color: white;
+}
+
+.progress-line.active {
+  background-color: #39a900;
 }
 
 /* Loading overlay */
@@ -1178,19 +1670,15 @@ export default {
   text-decoration: underline;
 }
 
-.order-number {
-  font-size: 14px;
-  color: #555;
-  background-color: #f8f9fa;
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
-}
-
 .title-actions {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
 }
 
 .main-title {
@@ -1214,13 +1702,85 @@ export default {
   transition: all 0.2s;
 }
 
+.action-button.secondary {
+  background: transparent;
+  border: 1px solid #39A900;
+  color: #39A900;
+}
+
 .action-button:hover {
   background: #2d8000;
+}
+
+.action-button.secondary:hover {
+  background: #e8f5e9;
 }
 
 .action-button:disabled {
   background: #a0d8a0;
   cursor: not-allowed;
+}
+
+/* Detalles del activo */
+.asset-details {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.details-title {
+  font-size: 16px;
+  color: #39A900;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.status-active {
+  background-color: #e8f5e9;
+  color: #28a745;
+}
+
+.status-maintenance {
+  background-color: #fff3e0;
+  color: #fd7e14;
+}
+
+.status-inactive {
+  background-color: #ffebee;
+  color: #dc3545;
 }
 
 .form-grid {
@@ -1266,13 +1826,33 @@ export default {
   cursor: not-allowed;
 }
 
+.textarea-container {
+  position: relative;
+}
+
+.character-counter {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  font-size: 12px;
+  color: #6c757d;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.character-counter.warning {
+  color: #fd7e14;
+}
+
 .form-textarea {
   resize: vertical;
   min-height: 80px;
+  padding-bottom: 25px;
 }
 
 .error {
-  border-color: #dc3545;
+  border-color: #dc3545 !important;
 }
 
 .error-container {
@@ -1300,29 +1880,198 @@ export default {
   margin-bottom: 24px;
 }
 
-.checkbox-group {
+/* Selector de tipo de mantenimiento */
+.maintenance-type-selector {
   display: flex;
   gap: 16px;
   margin-top: 8px;
 }
 
-.checkbox-label {
+.maintenance-type-option {
+  flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  color: #555;
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 12px;
+  border-radius: 6px;
   border: 1px solid #ced4da;
+  cursor: pointer;
   transition: all 0.2s;
 }
 
-.checkbox-label.selected {
+.maintenance-type-option input {
+  display: none;
+}
+
+.maintenance-type-option .option-icon {
+  font-size: 20px;
+  color: #6c757d;
+}
+
+.maintenance-type-option .option-text {
+  font-size: 14px;
+  color: #555;
+}
+
+.maintenance-type-option.selected {
   background-color: #e8f5e9;
-  color: #39A900;
   border-color: #39A900;
+}
+
+.maintenance-type-option.selected .option-icon,
+.maintenance-type-option.selected .option-text {
+  color: #39A900;
+}
+
+/* Selector de repuestos */
+.spare-parts-selector {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.spare-parts-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.spare-parts-option input {
+  display: none;
+}
+
+.spare-parts-option .option-icon {
+  font-size: 20px;
+  color: #6c757d;
+}
+
+.spare-parts-option .option-text {
+  font-size: 14px;
+  color: #555;
+}
+
+.spare-parts-option.selected {
+  background-color: #e8f5e9;
+  border-color: #39A900;
+}
+
+.spare-parts-option.selected .option-icon,
+.spare-parts-option.selected .option-text {
+  color: #39A900;
+}
+
+/* Selector de estado de orden */
+.order-state-selector {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.order-state-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.order-state-option input {
+  display: none;
+}
+
+.order-state-option .option-icon {
+  font-size: 20px;
+  color: #6c757d;
+}
+
+.order-state-option .option-text {
+  font-size: 14px;
+  color: #555;
+}
+
+.order-state-option.selected {
+  background-color: #e8f5e9;
+  border-color: #39A900;
+}
+
+.order-state-option.selected .option-icon,
+.order-state-option.selected .option-text {
+  color: #39A900;
+}
+
+/* Estimador de tiempo */
+.time-estimate-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  background-color: #f8f9fa;
+}
+
+.time-display {
+  font-size: 16px;
+  font-weight: 500;
+  color: #39A900;
+  text-align: center;
+}
+
+.time-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.time-slider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ced4da;
+  border-radius: 3px;
+  outline: none;
+}
+
+.time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #39A900;
+  cursor: pointer;
+}
+
+.time-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #ced4da;
+  background-color: white;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.time-button:hover {
+  background-color: #e9ecef;
 }
 
 .bottom-row {
@@ -1341,8 +2090,8 @@ export default {
   margin-top: 24px;
 }
 
-.cancel-button, .submit-button {
-  padding: 8px 16px;
+.cancel-button, .prev-button, .next-button, .submit-button {
+  padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
@@ -1358,6 +2107,18 @@ export default {
   color: #555;
 }
 
+.prev-button {
+  border: 1px solid #39A900;
+  background-color: white;
+  color: #39A900;
+}
+
+.next-button {
+  border: none;
+  background-color: #39A900;
+  color: white;
+}
+
 .submit-button {
   border: none;
   background-color: #39A900;
@@ -1368,7 +2129,11 @@ export default {
   background-color: #f8f9fa;
 }
 
-.submit-button:hover {
+.prev-button:hover {
+  background-color: #e8f5e9;
+}
+
+.next-button:hover, .submit-button:hover {
   background-color: #2d8000;
 }
 
@@ -1541,6 +2306,61 @@ export default {
   align-items: center;
 }
 
+.signature-controls {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.pen-color-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-option {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.color-option.selected {
+  border-color: #333;
+}
+
+.pen-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pen-size-slider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ced4da;
+  border-radius: 3px;
+  outline: none;
+}
+
+.pen-size-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #39A900;
+  cursor: pointer;
+}
+
 .signature-instructions {
   margin-top: 12px;
   color: #6c757d;
@@ -1591,6 +2411,86 @@ export default {
   background-color: #2d8500;
 }
 
+/* Estilos para el resumen */
+.summary-container {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.summary-section {
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 16px;
+}
+
+.summary-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.summary-title {
+  font-size: 16px;
+  color: #39a900;
+  margin: 0 0 16px 0;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.summary-text {
+  background-color: white;
+  border-radius: 4px;
+  padding: 12px;
+  font-size: 14px;
+  color: #333;
+  border: 1px solid #e9ecef;
+  white-space: pre-wrap;
+}
+
+.signature-summary {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.signature-image-small {
+  max-width: 100%;
+  max-height: 100px;
+  object-fit: contain;
+}
+
+.no-signature {
+  color: #6c757d;
+  font-style: italic;
+  padding: 16px;
+}
+
 /* Mensaje de no hay órdenes */
 .no-orders-message {
   background-color: #f8f9fa;
@@ -1613,13 +2513,110 @@ export default {
   margin: 0;
 }
 
+/* Notificación de éxito */
+.success-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 300px;
+  overflow: hidden;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-content {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.notification-content i {
+  font-size: 24px;
+  color: #28a745;
+  margin-right: 12px;
+}
+
+.notification-text {
+  flex: 1;
+}
+
+.notification-text h4 {
+  margin: 0 0 4px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.notification-text p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.close-notification {
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.notification-actions {
+  display: flex;
+  padding: 12px;
+  gap: 8px;
+}
+
+.notification-button {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+  color: #555;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.notification-button:hover {
+  background-color: #f8f9fa;
+}
+
 @media (max-width: 992px) {
   .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .details-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
+  .progress-tracker {
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+  
   .search-container {
     width: 100%;
   }
@@ -1648,7 +2645,8 @@ export default {
     margin-top: 10px;
   }
   
-  .checkbox-group {
+  .maintenance-type-selector,
+  .spare-parts-selector {
     flex-direction: column;
     gap: 8px;
   }
@@ -1667,7 +2665,16 @@ export default {
     flex-direction: column;
   }
   
-  .cancel-button, .submit-button {
+  .cancel-button, .prev-button, .next-button, .submit-button {
+    width: 100%;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .action-button {
     width: 100%;
   }
 }
