@@ -133,9 +133,6 @@ const getUserData = () => {
       // Intentar obtener el rol del usuario desde el token
       userRole.value = payload.role || null;
       
-      console.log('ID del usuario desde token:', userIdFromToken);
-      console.log('Rol del usuario:', userRole.value);
-      
       if (userIdFromToken) {
         userId.value = userIdFromToken;
         fetchUserData(userIdFromToken);
@@ -153,11 +150,9 @@ const fetchUserData = async (userId) => {
   error.value = null;
   
   try {
-    console.log('Obteniendo datos para el usuario ID:', userId);
     
     // La misma API ahora devuelve datos diferentes según el rol
     const data = await apiService.get(`/word-orden/tecnico/${userId}`);
-    console.log('Datos recibidos:', data);
     
     if (data) {
       // Determinar el rol basado en la respuesta
@@ -182,29 +177,24 @@ const fetchUserData = async (userId) => {
 
 // Procesar la respuesta para almacenista
 const processAlmacenistaResponse = (data) => {
-  console.log('Procesando datos de almacenista:', data);
   
   // Guardar datos del usuario
   tecnico.value = data.usuario;
   
   // Guardar los activos
   activos.value = data.activos || [];
-  console.log('Activos:', activos.value);
   
   // Las estadísticas se calculan en el computed almacenistaStats
 };
 
 // Procesar la respuesta de la API para técnicos y otros roles
 const processResponse = (data) => {
-  console.log('Procesando datos de técnico:', data);
   
   // Guardar datos del técnico
   tecnico.value = data.usuario;
-  console.log('Técnico:', tecnico.value);
   
   // Guardar las órdenes de trabajo
   ordenes.value = data.ordenes || [];
-  console.log('Órdenes:', ordenes.value);
   
   // Calcular órdenes ejecutadas y pendientes
   const ejecutadas = ordenes.value.filter(orden => orden.estado).length;
@@ -219,7 +209,6 @@ const processResponse = (data) => {
     pendientes
   };
   
-  console.log('Estadísticas:', stats.value);
 };
 
 // Formatear fecha para mostrar en la tabla
@@ -269,7 +258,6 @@ const paginatedOrdenes = computed(() => {
 });
 
 onMounted(() => {
-  console.log('Componente montado');
   getUserData();
 });
 </script>

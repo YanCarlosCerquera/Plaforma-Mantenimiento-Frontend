@@ -15,10 +15,10 @@
           <div class="details-info">
             <div class="info-group">
               <div class="info-item">
-                <label>Centro de formación</label>
+                <label>Ambiente</label>
                 <p>
                   {{
-                    requestData.assetInfo?.trainingCenterId.name ||
+                    requestData.assetInfo?.environmentId.name ||
                     "No disponible"
                   }}
                 </p>
@@ -240,11 +240,9 @@ const loadMaintenanceHistory = async (serialNumber) => {
   }
 
   try {
-    console.log("Cargando historial para número de serie:", serialNumber);
     const response = await apiService.get(
       `/work-report/maintenanceHistory/${serialNumber}`
     );
-    console.log("Historial de mantenimiento recibido:", response);
 
     if (Array.isArray(response)) {
       return response.map((item) => ({
@@ -276,7 +274,6 @@ const loadAssetData = async () => {
   isLoading.value = true;
   try {
     const assetResponse = await apiService.get(`/assets/${assetId}`);
-    console.log("Datos del activo recibidos:", assetResponse);
 
     if (!assetResponse) {
       throw new Error("No se recibieron datos del activo");
@@ -340,18 +337,6 @@ const handleSubmit = async () => {
   }
 };
 
-// Función para ver detalles del mantenimiento
-const viewMaintenanceDetail = (maintenance) => {
-  console.log("Detalles del mantenimiento:", {
-    tipo: maintenance?.orderId?.solicitud?.solicitudId?.maintenanceType,
-    radicado: maintenance?.orderId?.radicado,
-    horas: maintenance?.hours,
-    costo: maintenance?.costs,
-    trabajo: maintenance?.workDone,
-    observaciones: maintenance?.observation,
-    fecha: formatDate(maintenance?.createdAt),
-  });
-};
 
 const downloadPDF = () => {
   const doc = new jsPDF();
@@ -362,7 +347,7 @@ const downloadPDF = () => {
 
   // Información del bien
   doc.setFontSize(12);
-  doc.text(`Centro de formación: ${requestData.value.assetInfo?.trainingCenterId.name || "No disponible"}`, 10, 20);
+  doc.text(`Ambiente: ${requestData.value.assetInfo?.environmentId.name || "No disponible"}`, 10, 20);
   doc.text(`Ubicación: ${requestData.value.assetInfo?.location || "No disponible"}`, 10, 30);
   doc.text(`Marca: ${requestData.value.assetInfo?.brand || "No disponible"}`, 10, 40);
   doc.text(`Modelo: ${requestData.value.assetInfo?.modelo || "No disponible"}`, 10, 50);
@@ -390,7 +375,7 @@ const downloadPDF = () => {
 
 const downloadExcel = () => {
   const data = [
-    ['Centro de formación', requestData.value.assetInfo?.trainingCenterId.name || "No disponible"],
+    ['Ambiente', requestData.value.assetInfo?.environmentId.name || "No disponible"],
     ['Ubicación', requestData.value.assetInfo?.location || "No disponible"],
     ['Marca', requestData.value.assetInfo?.brand || "No disponible"],
     ['Modelo', requestData.value.assetInfo?.modelo || "No disponible"],

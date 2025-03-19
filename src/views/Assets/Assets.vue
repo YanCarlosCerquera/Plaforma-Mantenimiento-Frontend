@@ -400,12 +400,9 @@ const loadAssetData = async () => {
   if (assetId) {
     isEditMode.value = true;
     try {
-      console.log("Cargando activo con ID:", assetId);
       const response = await apiService.get(`/assets/${assetId}`);
-      console.log(assetId);
       
       const asset = response.data || response;
-      console.log("Datos del activo:", asset);
 
       // Formatear la fecha para el input date
       const date = asset.acquisitionDate

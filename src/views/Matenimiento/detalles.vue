@@ -297,7 +297,6 @@ const handleView = async () => {
     const id = localStorage.getItem('selectedRequestId');
     const response = await apiService.get(`application-maintenance/Consultar/${id}`);
     requestData.value = Array.isArray(response) ? response[0] : response;
-    console.log('Datos de la API:', requestData.value);
     
     // Generate initial work order number
     generateNewTrackingNumber();
@@ -309,7 +308,6 @@ const handleView = async () => {
 const handleSUser = async () => {
   try {
     const token = Cookies.get('authToken');
-    console.log('Token encontrado:', token);
 
     if (!token) {
       console.error('No se encontró el token de autenticación');
@@ -317,7 +315,6 @@ const handleSUser = async () => {
     }
 
     const decodedToken = jwtDecode(token);
-    console.log('Token decodificado:', decodedToken);
 
     if (!decodedToken.sub) {
       console.error('El token no contiene el ID del usuario');
@@ -351,8 +348,7 @@ const handleSubmit = async () => {
       solicitud: requestData.value._id
     };
 
-    const response = await apiService.post("/word-orden", workOrderData);
-    console.log('Orden de trabajo creada:', response);
+    await apiService.post("/word-orden", workOrderData);
     
     await Swal.fire({
       title: '¡Exitoso!',
@@ -377,11 +373,9 @@ const handleSubmit = async () => {
 
 onMounted(async () => {
   const userData = await handleSUser();
-  if (userData) {
-    console.log('ID del usuario:', userData);
-  } else {
+  if (!userData) {
     console.error('No se pudo obtener el ID del usuario');
-  }
+  } 
   
   await handleView();
   await fetchTenico();

@@ -47,7 +47,6 @@ const fetchData = async () => {
       ...item,
       state: item.state ? 'Activo' : 'Inactivo'
     }));
-    console.log(rows.value);
   } catch (error) {
     console.error("Error fetching asset data:", error);
   }

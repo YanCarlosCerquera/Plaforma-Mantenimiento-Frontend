@@ -120,7 +120,6 @@ export default {
           id: item.Id
         }));
         
-        console.log("Datos cargados:", rows.value);
       } catch (error) {
         console.error("Error al obtener informes:", error);
         Swal.fire({
@@ -278,7 +277,6 @@ const handleDelete = async (item) => {
 };
 
     const handleEdit = async (item) => {
-      console.log("Item recibido para editar:", item);
       
       let reportId;
       
@@ -309,7 +307,6 @@ const handleDelete = async (item) => {
       }
       
       Cookies.set("Id_INF", String(reportId));
-      console.log("ID guardado en cookie:", reportId);
       
       Cookies.remove("OrdenId");
       

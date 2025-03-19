@@ -214,7 +214,6 @@ const handleInfo = async (row) => {
       document.body.removeChild(link);
     }, 0);
   } catch (error) {
-    console.log(error)
     showAlert({
       title: "Error al generar el PDF",
       text: "Algo salió mal al intentar generar el PDF",

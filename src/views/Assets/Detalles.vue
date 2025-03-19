@@ -129,7 +129,6 @@ onMounted(async () => {
       const response = await apiService.get(`/assets/${assetId}`);
       assetData.value = response;
 
-      console.log("Asset Data:", assetData.value);
     } catch (error) {
       console.error("Error fetching asset data:", error);
     }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import AuthorsTable from "./components/AuthorsTable.vue";
 import apiService from "../service/apiservice";
 import Swal from "sweetalert2";
@@ -66,6 +66,7 @@ const rows = ref([]);
 const dialog = ref(false);
 const availableRoles = ref([]);
 const isLoading = ref(false);
+const filtersReady = ref(false);
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -110,6 +111,7 @@ const fetchRoles = async () => {
       value: assignedRol._id,
       label: assignedRol.name,
     }));
+    filtersReady.value = true; // Marca los filtros como listos
   } catch (error) {
     console.error("Error fetching roles:", error);
     alert("Error al cargar los roles");
@@ -325,37 +327,47 @@ const filteredRows = computed(() => {
   });
 });
 
-const filters = ref([
-  {
-    field: "assignedRol.name",
-    options: [
-      { value: "", label: "rol" },
-      { value: "administrador", label: "administrador" },
-      { value: "instructor", label: "instructor" },
-      { value: "supervisor", label: "supervisor" },
-    ],
-    selectedOption: "",
-  },
-  {
-    field: "assignedPosition",
-    options: [
-      { value: "", label: "cargo" },
-      { value: "Contratista", label: "Contratista" },
-      { value: "Planta", label: "Planta" },
-    ],
-    selectedOption: "",
-  },
-  {
-    field: "createdAt", // Campo de fecha en tus datos
-    label: "Fecha",
-    type: "date",
-    selectedOption: "",
-  },
-])
+const filtroRoles = computed(() => {
+   return availableRoles.value.map(role => ({ value: role.label, label: role.label }));
+});
+
+const filters = ref([]);
+
+watch(filtersReady, (newVal) => {
+  if (newVal) {
+    const rolesOptions = [
+      { value: "", label: "Rol" }, // Opción predeterminada
+      ...filtroRoles.value, // Resto de las opciones de roles
+    ];
+
+    filters.value = [
+      {
+        field: "assignedRol.name",
+        options: rolesOptions,
+        selectedOption: "",
+      },
+      {
+        field: "assignedPosition",
+        options: [
+          { value: "", label: "cargo" },
+          { value: "Contratista", label: "Contratista" },
+          { value: "Planta", label: "Planta" },
+        ],
+        selectedOption: "",
+      },
+      {
+        field: "createdAt", // Campo de fecha en tus datos
+        label: "Fecha",
+        type: "date",
+        selectedOption: "",
+      },
+    ];
+  }
+});
 
 onMounted(async () => {
   await fetchData();
-  fetchRoles();
+  await fetchRoles();
 });
 </script>
 

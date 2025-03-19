@@ -156,11 +156,9 @@ export default {
     const fetchData = async () => {
       try {
         const Id = Cookies.get("OrdenId");
-        console.log("OrdenId:", Id);
 
         const response = await apiService.get(`/word-orden/${Id}`);
         workOrder.value = response;
-        console.log("Work Order:", workOrder.value);
 
         // En fetchData, para asignar el texto correcto al botón:
         if (
@@ -183,14 +181,11 @@ export default {
 
     const fetchAssetInfo = async (solicitudId) => {
       try {
-        console.log("Fetching asset info for solicitudId:", solicitudId);
         const response = await apiService.get(
           `/application-maintenance/Consultar/${solicitudId}`
         );
         assetInfo.value = response.data?.assetInfo || response.assetInfo;
         environmentId.value = response.data?.environmentInfo || response.environmentInfo;
-        console.log("Asset Info:", assetInfo.value);
-        console.log("environment infor:", environmentId.value)
       } catch (error) {
         console.error("Error al obtener la información del activo:", error);
       }
