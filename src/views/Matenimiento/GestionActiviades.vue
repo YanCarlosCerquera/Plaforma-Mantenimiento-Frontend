@@ -154,17 +154,13 @@ router.beforeEach((to, from, next) => {
   <div class="py-4 container-fluid">
     <div class="row">
       <div class="col-12">
-        <div v-if="loading" class="text-center">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
-        </div>
         <AuthorsTable
           title="Solicitudes de mantenimiento generales"
           :headers="headers"
           :rows="activities"
           :fields="fields"
           :icons="icons"
+          :loading="loading"
         >
           <template #cell-workOrderStatus="{ value }">
             <span v-html="value"></span>

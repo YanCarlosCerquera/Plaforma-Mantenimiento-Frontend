@@ -51,6 +51,7 @@ const isEditing = ref(false); // Nuevo estado para distinguir entre editar y cre
 const isLoading = ref(false);
 
 const fetchModulos = async () => {
+    isLoading.value=true
     try {
         const response = await apiService.get(
             "/modulos",
@@ -63,10 +64,13 @@ const fetchModulos = async () => {
     } catch (error) {
         console.error("Error fetching modulos:", error);
         alert("Error al cargar los modulos");
+    }finally{
+        isLoading.value=false
     }
 }
 
 const fetchData = async () => {
+    isLoading.value=true
     try {
         const response = await apiService.get(
             "/views",
@@ -79,6 +83,8 @@ const fetchData = async () => {
     } catch (error) {
         console.error("Error fetching rols:", error);
         alert("Error al cargar los usuarios");
+    }finally{
+        isLoading.value=false
     }
 };
 
@@ -249,7 +255,7 @@ onMounted(async () => {
         <div class="row">
             <div class="col-12">
                 <AuthorsTable :title="'Parametrización rutas'" :headers="headers" :rows="rows" :fields="fields"
-                    :icons="icons">
+                    :icons="icons" :loading="isLoading">
                     <template #add-button>
                         <button class="btn btn-custom" @click="openCreateDialog">
                             <i class="fas fa-plus me-2"></i>Agregar Nueva Ruta

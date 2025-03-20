@@ -12,6 +12,7 @@ import AuthorsTable from "../components/AuthorsTable.vue";
 const store = useStore();
 const TABLE_ID = "ordenes-trabajo";
 const jwt_decode = require("jwt-decode");
+const isLoading = ref(false)
 
 const headers = ref([
   "Orden de Trabajo",
@@ -74,6 +75,7 @@ const normalizeText = (text) => {
 };
 
 const fetchData = async () => {
+  isLoading.value=true
   const token = Cookies.get("authToken");
   if (!token) {
     console.error("No se encontró el token de autenticación");
@@ -102,6 +104,7 @@ const fetchData = async () => {
       state: formatWorkOrderStatus,
     },
   });
+  isLoading.value=false
 };
 
 const handleView = (row) => {
@@ -230,6 +233,7 @@ onMounted(async () => {
           :rows="rows"
           :fields="fields"
           :icons="icons"
+          :loading="isLoading"
           @view="handleView"
           @delete="handleDelete"
           @Consultar="handlConsultar"

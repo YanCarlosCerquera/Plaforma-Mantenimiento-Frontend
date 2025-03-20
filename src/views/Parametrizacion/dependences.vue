@@ -44,6 +44,7 @@ const isEditing = ref(false);
 const isLoading = ref(false);
 
 const fetchData = async () => {
+    isLoading.value=true
     try {
         const response = await apiService.get("/dependece");
         rows.value = response.map((dep) => ({
@@ -53,10 +54,13 @@ const fetchData = async () => {
     } catch (error) {
         console.error("Error fetching dependencies:", error);
         alert("Error al cargar las dependencias");
+    }finally{
+        isLoading.value=false
     }
 };
 
 const fetchTrainingCenters = async () => {
+    isLoading.value=true
     try {
         const response = await apiService.get("/training-centers");
         trainingCenters.value = response.map((center) => ({
@@ -66,6 +70,8 @@ const fetchTrainingCenters = async () => {
     } catch (error) {
         console.error("Error fetching training centers:", error);
         alert("Error al cargar los centros de formación");
+    }finally{
+        isLoading.value=false
     }
 };
 
@@ -235,7 +241,7 @@ onMounted(async () => {
         <div class="row">
             <div class="col-12">
                 <AuthorsTable :title="'Dependencias'" :headers="headers" :rows="rows" :fields="fields"
-                    :icons="icons">
+                    :icons="icons" :loading="isLoading">
                     <template #add-button>
                         <button class="btn btn-custom" @click="openCreateDialog">
                             <i class="fas fa-plus me-2"></i>Agregar Nueva Dependencia

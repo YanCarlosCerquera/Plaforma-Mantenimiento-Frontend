@@ -47,6 +47,7 @@ const isEditing = ref(false);
 const isLoading = ref(false);
 
 const fetchData = async () => {
+    isLoading.value=true
     try {
         const response = await apiService.get(
             "/rol",
@@ -59,6 +60,8 @@ const fetchData = async () => {
     } catch (error) {
         console.error("Error fetching rols:", error);
         alert("Error al cargar los usuarios");
+    }finally{
+        isLoading.value=false
     }
 };
 
@@ -227,7 +230,7 @@ onMounted(async () => {
             <div class="col-12">
                 
                 <AuthorsTable :title="'Parametrización roles'" :headers="headers" :rows="rows" :fields="fields"
-                :icons="icons" >
+                :icons="icons" :loading="isLoading">
                     <template #add-button >
                         <button class="btn btn-custom " @click="openCreateDialog">
                             <i class="fas fa-plus me-2"></i>Agregar Nuevo Rol

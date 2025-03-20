@@ -62,6 +62,7 @@ const departamentId = ref("")
 
 // Obtener datos de la API
 const fetchData = async () => {
+    isLoading.value=true
     try {
         const response = await apiService.get("/training-centers");
         rows.value = response.map((center) => ({
@@ -71,6 +72,8 @@ const fetchData = async () => {
     } catch (error) {
         console.error("Error fetching training centers:", error);
         alert("Error al cargar los centros de formación");
+    }finally{
+        isLoading.value=false
     }
 };
 
@@ -296,7 +299,7 @@ onMounted(async () => {
         <div class="row">
             <div class="col-12">
                 <AuthorsTable :title="'Centros de Formación'" :headers="headers" :rows="rows" :fields="fields"
-                    :icons="icons">
+                    :icons="icons" :loading="isLoading">
                     <template #add-button>
                         <button class="btn btn-custom" @click="openCreateDialog">
                             <i class="fas fa-plus me-2"></i>Agregar Nuevo Centro

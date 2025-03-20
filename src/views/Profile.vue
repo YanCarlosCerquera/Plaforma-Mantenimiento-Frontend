@@ -146,7 +146,7 @@ function handleImageChange(event) {
 
         ctx.drawImage(img, 0, 0, width, height);
 
-        const compressedImage = canvas.toDataURL("image/jpeg", 0.8);
+        const compressedImage = canvas.toDataURL("image/webp", 0.8);
 
         userData.value.image = compressedImage;
       };

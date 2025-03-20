@@ -57,6 +57,7 @@ const isLoading = ref(false);
 const originalData = ref(null);
 
 const fetchData = async () => {
+    isLoading.value=true
     try {
         const response = await apiService.get("/rol", {});
         rows.value = response.flatMap(rol => 
@@ -80,10 +81,13 @@ const fetchData = async () => {
     } catch (error) {
         console.error("Error fetching rols:", error);
         alert("Error al cargar los usuarios");
+    }finally{
+        isLoading.value=false
     }
 };
 
 const fetchViews = async () => {
+    isLoading.value=true
     try {
         const response = await apiService.get(
             "/views",
@@ -97,6 +101,8 @@ const fetchViews = async () => {
     } catch (error) {
         console.error("Error fetching views:", error);
         alert("Error al cargar las vistas");
+    }finally{
+        isLoading.value=false
     }
 }
 
@@ -349,7 +355,7 @@ onMounted(async () => {
         <div class="row">
             <div class="col-12">
                 <AuthorsTable :title="'Asignación de permisos'" :headers="headers" :rows="rows" :fields="fields"
-                :icons="icons" >
+                :icons="icons" :loading="isLoading" >
                     <template #add-button >
                         <button class="btn btn-custom " @click="openCreateDialog">
                             <i class="fas fa-plus me-2"></i>Asignar permiso

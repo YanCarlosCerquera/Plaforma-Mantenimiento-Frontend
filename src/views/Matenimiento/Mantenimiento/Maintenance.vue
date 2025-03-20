@@ -958,58 +958,93 @@ export default {
       this.formData.techSignature = '';
     },
     
-    // Método para manejar la carga de imágenes con optimización
-    async handleImageUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      // Verificar que sea una imagen
-      if (!file.type.match('image.*')) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Tipo de archivo no válido',
-          text: 'Por favor, seleccione un archivo de imagen',
-          confirmButtonColor: '#39a900'
-        });
-        return;
-      }
-      
-      // Verificar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Archivo demasiado grande',
-          text: 'La imagen debe ser menor a 5MB',
-          confirmButtonColor: '#39a900'
-        });
-        return;
-      }
-      
+handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Verificar que sea una imagen
+  if (!file.type.match('image.*')) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Tipo de archivo no válido',
+      text: 'Por favor, seleccione un archivo de imagen',
+      confirmButtonColor: '#39a900',
+    });
+    return;
+  }
+
+  // Verificar tamaño (máximo 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Archivo demasiado grande',
+      text: 'La imagen debe ser menor a 5MB',
+      confirmButtonColor: '#39a900',
+    });
+    return;
+  }
+
+  try {
+    this.setLoading(true);
+
+    // Leer el archivo como DataURL
+    const reader = new FileReader();
+    reader.onload = async (e) => {
       try {
-        this.setLoading(true);
-        
-        // Leer el archivo como DataURL
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          try {
-            // Optimizar la imagen antes de guardarla
-            const optimizedImage = await this.optimizeImage(e.target.result);
-            this.formData.techSignature = optimizedImage;
-            this.validationErrors.techSignature = '';
-            
-            this.setLoading(false);
-          } catch (error) {
-            this.handleApiError(error, 'Error al optimizar la imagen');
+        const img = new Image();
+        img.src = e.target.result;
+
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          // Dimensiones máximas
+          const maxWidth = 800;
+          const maxHeight = 800;
+
+          let width = img.width;
+          let height = img.height;
+
+          // Redimensionar la imagen manteniendo la relación de aspecto
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
           }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          // Dibujar la imagen redimensionada en el canvas
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Convertir la imagen a WebP con calidad del 80%
+          const compressedImage = canvas.toDataURL('image/webp', 0.8);
+
+          // Asignar la imagen comprimida al estado
+          this.formData.techSignature = compressedImage;
+          this.validationErrors.techSignature = '';
+
+          this.setLoading(false);
         };
-        reader.readAsDataURL(file);
       } catch (error) {
-        this.handleApiError(error, 'Error al leer el archivo');
-      } finally {
-        // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
-        event.target.value = '';
+        this.handleApiError(error, 'Error al optimizar la imagen');
       }
-    },
+    };
+    reader.readAsDataURL(file);
+  } catch (error) {
+    this.handleApiError(error, 'Error al leer el archivo');
+  } finally {
+    // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+    event.target.value = '';
+  }
+},
     
     // Método para resetear la orden seleccionada automáticamente
     resetAutoSelectedOrder() {

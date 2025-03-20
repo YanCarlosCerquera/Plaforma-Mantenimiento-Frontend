@@ -211,17 +211,13 @@ onMounted(() => {
   <div class="py-4 container-fluid">
     <div class="row">
       <div class="col-12">
-        <div v-if="loading" class="text-center">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
-        </div>
         <AuthorsTable
           title="Maquinas y Equipos"
           :headers="headers"
           :rows="assets"
           :fields="fields"
           :icons="icons"
+          :loading="loading"
         >
           <template #cell-status="{ value }">
             <span :class="value === 'Activo' ? 'text-success' : 'text-danger'">{{ value }}</span>

@@ -39,14 +39,17 @@ const fields = ref({
 });
 
 const rows = ref([]);
+const isLoading = ref(false)
 
 const fetchData = async () => {
+  isLoading.value= true
   try {
     const response = await apiService.get('/Categorias');
     rows.value = response.map(item => ({
       ...item,
       state: item.state ? 'Activo' : 'Inactivo'
     }));
+    isLoading.value=false
   } catch (error) {
     console.error("Error fetching asset data:", error);
   }
@@ -177,6 +180,7 @@ onMounted(() => {
           :fields="fields"
           :icons="icons"
           :filters="filters"
+          :loading="isLoading"
         />
       </div>
     </div>

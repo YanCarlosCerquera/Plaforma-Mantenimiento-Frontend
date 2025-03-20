@@ -520,10 +520,50 @@ const handleImageUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
+
     reader.onload = (e) => {
-      imagePreview.value = e.target.result;
-      formData.value.image = e.target.result;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Dimensiones máximas
+        const maxWidth = 800;
+        const maxHeight = 800;
+
+        let width = img.width;
+        let height = img.height;
+
+        // Redimensionar la imagen manteniendo la relación de aspecto
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Dibujar la imagen redimensionada en el canvas
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convertir la imagen a WebP con calidad del 80%
+        const compressedImage = canvas.toDataURL("image/webp", 0.8);
+
+        // Asignar la imagen comprimida al estado
+        imagePreview.value = compressedImage;
+        formData.value.image = compressedImage;
+      };
+
+      img.src = e.target.result;
     };
+
     reader.readAsDataURL(file);
   }
 };

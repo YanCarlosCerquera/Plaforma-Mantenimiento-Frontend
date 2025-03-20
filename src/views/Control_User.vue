@@ -77,6 +77,7 @@ const formatDate = (dateString) => {
 };
 
 const fetchData = async () => {
+  isLoading.value = true; // Activar el estado de carga
   try {
     const response = await apiService.get(
       "/users?state=true",
@@ -97,10 +98,13 @@ const fetchData = async () => {
   } catch (error) {
     console.error("Error fetching users:", error);
     alert("Error al cargar los usuarios");
+  } finally {
+    isLoading.value = false; // Desactivar el estado de carga
   }
 };
 
 const fetchRoles = async () => {
+  isLoading.value = true; // Activar el estado de carga
   try {
     const response = await apiService.get(
       "/rol",
@@ -115,6 +119,8 @@ const fetchRoles = async () => {
   } catch (error) {
     console.error("Error fetching roles:", error);
     alert("Error al cargar los roles");
+  } finally {
+    isLoading.value = false; // Desactivar el estado de carga
   }
 };
 
@@ -382,6 +388,7 @@ onMounted(async () => {
           :fields="fields"
           :icons="icons"
           :filters="filters"
+          :loading="isLoading"
         />
       </div>
     </div>

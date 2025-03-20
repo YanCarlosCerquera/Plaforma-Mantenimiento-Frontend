@@ -42,6 +42,10 @@ export default {
     exportOption: {
       type: Boolean,
       default: true
+    },
+    loading: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -253,8 +257,14 @@ export default {
         </div>
       </div>
       <div class="card-body px-0 pt-0 pb-2">
+        <!-- Loading state -->
+        <div v-if="loading" class="loading-container">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Cargando datos</p>
+        </div>
+        
         <!-- Vista de tabla para pantallas medianas y grandes -->
-        <div class="table-responsive p-0 d-none d-md-block">
+        <div v-else class="table-responsive p-0 d-none d-md-block">
           <v-data-table v-model:items-per-page="itemsPerPage" v-model:page="page" :headers="allHeaders" :items="rows"
             :items-per-page-options="[5, 10, 25]" :search="search" :custom-filter="customFilter" class="elevation-1">
             <!-- Custom item slot -->
@@ -321,7 +331,7 @@ export default {
         </div>
 
         <!-- Vista de acordeón para pantallas pequeñas -->
-        <div class="accordion-container d-md-none">
+        <div v-if="!loading" class="accordion-container d-md-none">
           <div v-if="filteredRows.length === 0" class="text-center p-3">
             La tabla no tiene datos para mostrar
           </div>
@@ -469,7 +479,6 @@ export default {
   object-fit: cover;
 }
 
-/* Hover effect for table rows */
 :deep(tbody tr:hover) {
   background-color: #f9fafb;
 }
@@ -629,6 +638,38 @@ export default {
 
 .accordion-content.active {
   max-height: 1000px;
+}
+
+/* Loading styles */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  width: 100%;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(57, 169, 0, 0.2);
+  border-radius: 50%;
+  border-top-color: #39A900;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loading-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #39A900;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {

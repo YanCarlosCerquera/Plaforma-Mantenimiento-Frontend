@@ -70,6 +70,7 @@ const formatDate = (dateString) => {
 };
 
 const fetchData = async () => {
+  isLoading.value=true;
   try {
     const response = await apiService.get(
       "/users",
@@ -86,6 +87,7 @@ const fetchData = async () => {
         ? user.photoUrl.replace("http://localhost:3000", "")
         : defaultImage, 
       }));
+  isLoading.value=false;
   } catch (error) {
     console.error("Error fetching users:", error);
     alert("Error al cargar los usuarios");
@@ -93,6 +95,8 @@ const fetchData = async () => {
 };
 
 const fetchRoles = async () => {
+  isLoading.value=true;
+
   try {
     const response = await apiService.get(
       "/rol",
@@ -103,9 +107,12 @@ const fetchRoles = async () => {
       value: role._id,
       label: role.name,
     }));
+  isLoading.value=false;
+
   } catch (error) {
     console.error("Error fetching roles:", error);
     alert("Error al cargar los roles");
+  isLoading.value=false;
   }
 };
 
@@ -289,6 +296,7 @@ onMounted(async () => {
           :fields="fields"
           :icons="icons"
           :filters="filters"
+          :loading="isLoading"
         />
       </div>
     </div>

@@ -8,6 +8,7 @@
             :rows="rows"
             :fields="fields"
             :icons="icons"
+            :loading="isLoading"
           />
         </div>
       </div>

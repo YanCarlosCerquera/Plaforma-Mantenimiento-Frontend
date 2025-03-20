@@ -286,7 +286,7 @@ onMounted(() => {
             :rows="rows" 
             :fields="fields"
             :icons="icons"
-            :isLoading="isLoading"
+            :loading="isLoading"
           >
             <template #add-button>
               <button class="btn btn-custom" @click="handleCreate">

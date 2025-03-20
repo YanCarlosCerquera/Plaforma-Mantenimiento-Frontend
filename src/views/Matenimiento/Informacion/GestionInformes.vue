@@ -2,19 +2,14 @@
   <div class="py-4 container-fluid">
     <div class="row">
       <div class="col-12">
-        <div v-if="isLoading" class="text-center my-4">
-          <i
-            class="fa-solid fa-spinner fa-spin-pulse fa-spin-reverse text-primary text-3xl"
-          ></i>
-          <p class="mt-2 text-lg font-semibold">Cargando datos...</p>
-        </div>
-        <div v-else>
+        <div>
           <AuthorsTable
             title="Gestión de Informes"
             :headers="headers"
             :rows="rows"
             :fields="fields"
             :icons="icons"
+            :loading="isLoading"
             @edit="handleEdit"
             @delete="handleDelete"
             @check="handleDownloadPDF"

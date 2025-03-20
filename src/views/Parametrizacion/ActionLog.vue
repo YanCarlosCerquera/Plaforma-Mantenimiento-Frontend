@@ -47,6 +47,7 @@ const fields = ref({
 });
 
 const rows = ref([]);
+const loading = ref(false)
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -116,6 +117,7 @@ const handleDelete = async (row) => {
 };
 
 const fetchData = async () => {
+    loading.value=true
     try {
         const response = await apiService.get(
             "/action-log",
@@ -126,9 +128,11 @@ const fetchData = async () => {
             date: formatDate(action.dateTime),
             time: formatTime(action.dateTime),
         }));
+        loading.value=false
     } catch (error) {
         console.error("Error fetching rols:", error);
         alert("Error al cargar los usuarios");
+        loading.value=false
     }
 };
 
@@ -146,7 +150,7 @@ onMounted(async () => {
         <div class="row">
             <div class="col-12">
                 <AuthorsTable :title="'Historial de acciones'" :headers="headers" :rows="rows" :fields="fields"
-                :icons="icons" />
+                :icons="icons" :loading="loading" />
             </div>
         </div>
     </div>
