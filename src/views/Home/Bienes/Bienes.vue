@@ -1,39 +1,35 @@
 <template>
   <main class="main-content mt-0">
-
-   
-      
-
     <!-- Hero / Encabezado -->
     <div class="page-header align-items-start min-vh-50 pb-11 md:h-60 position-relative" :style="backgroundStyle">
-    <!-- Overlay mask -->
-    <span class="mask bg-gradient-dark opacity-6 md:h-60"></span>
-    
-    <!-- Home button positioned in top-left corner -->
-    <div class="position-absolute top-0 left-0 p-3 z-index-2">
-      <ArgonButton color="success" size="sm" class="rounded-none shadow-lg p-2" title="Inicio"   @click="handleIndex">
-        Regresar <i class="fa-solid fa-house"></i>
-      </ArgonButton>
-    </div>
-    
-    <div class="container row">
-      <div class="row justify-content-center mt-8 md:mt-16">
-        <div class="col-lg-12 text-left mx-auto mt-8 md:mt-16">
-          <h1 class="text-white mb-2 mt-1 md:mt-12 md:text-4xl lg:text-4xl sm:text-xs">
-            Bienvenidos al sistema de gestión de inventarios de la regional Huila
-          </h1>
+      <!-- Overlay mask -->
+      <span class="mask bg-gradient-dark opacity-6 md:h-60"></span>
+      
+      <!-- Home button positioned in top-left corner -->
+      <div class="position-absolute top-0 left-0 p-3 z-index-2">
+        <ArgonButton color="success" size="sm" class="rounded-none shadow-lg p-2" title="Inicio" @click="handleIndex">
+          Regresar <i class="fa-solid fa-house"></i>
+        </ArgonButton>
+      </div>
+      
+      <div class="container row">
+        <div class="row justify-content-center mt-8 md:mt-16">
+          <div class="col-lg-12 text-left mx-auto mt-8 md:mt-16">
+            <h1 class="text-white mb-2 mt-1 md:mt-12 md:text-4xl lg:text-4xl sm:text-xs">
+              Bienvenidos al sistema de gestión de inventarios de la regional Huila
+            </h1>
+          </div>
         </div>
       </div>
-    </div>
-    
-    <div class="container row d-flex justify-content-end flex-wrap">
-      <div class="d-flex flex-column flex-md-row justify-content-end w-100">
-        <ArgonButton color="success" class="my-2 md:my-4 mb-2 w-100 w-md-25 md:w-1/4 lg:w-1/5" @click="handleLoginClick">
-          Ingresar
-        </ArgonButton>
-        <ArgonButton color="success" class="my-2 md:my-4 mb-2 w-100 w-md-25 md:w-1/4 lg:w-1/5 mx-md-3" @click="handleSignup">
-          Registrarse
-        </ArgonButton>
+      
+      <div class="container row d-flex justify-content-end flex-wrap">
+        <div class="d-flex flex-column flex-md-row justify-content-end w-100">
+          <ArgonButton color="success" class="my-2 md:my-4 mb-2 w-100 w-md-25 md:w-1/4 lg:w-1/5" @click="handleLoginClick">
+            Ingresar
+          </ArgonButton>
+          <ArgonButton color="success" class="my-2 md:my-4 mb-2 w-100 w-md-25 md:w-1/4 lg:w-1/5 mx-md-3" @click="handleSignup">
+            Registrarse
+          </ArgonButton>
         </div>
       </div>
     </div>
@@ -49,31 +45,33 @@
       </p>
 
       <div class="search-container">
-      <div class="search-group mb-4">
-        <div class="search-input-wrapper">
-          <Search class="search-icon" size="18" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Número de serie, cédula o placa..."
-            class="search-input"
-          />
+        <div class="search-group mb-4">
+          <div class="search-input-wrapper">
+            <Search class="search-icon" size="18" />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Número de serie, cédula o placa..."
+              class="search-input"
+              @keyup.enter="handleSearch"
+            />
+          </div>
+          
+          <select v-model="searchType" class="search-type">
+            <option value="serialNumber">Número de serie</option>
+            <option value="cedula">Cédula</option>
+            <option value="placa">Placa</option>
+          </select>
+          
+          <button 
+            class="consultar-btn"
+            @click="handleSearch"
+          >
+            Consultar
+          </button>
         </div>
-        
-        <select v-model="searchType" class="search-type">
-          <option value="serialNumber">Número de serie</option>
-          <option value="cedula">Cédula</option>
-          <option value="placa">Placa</option>
-        </select>
-        
-        <button 
-          class="consultar-btn"
-          @click="handleSearch"
-        >
-          Consultar
-        </button>
       </div>
-    </div>
+      
       <!-- Fecha y hora del reporte a la derecha -->
       <div class="report-date">
         <span>
@@ -111,8 +109,8 @@
           </thead>
           <tbody>
             <tr
-              v-for="asset in paginatedAssets"
-              :key="asset.id"
+              v-for="asset in assets"
+              :key="asset.id || asset._id"
             >
               <td>{{ asset.name }}</td>
               <td>{{ asset.location }}</td>
@@ -133,7 +131,7 @@
               </td>
               <td>
                 <div class="actions-cell">
-                  <router-link :to="`/assets/detail`" class="action-btn" title="Ver detalle">
+                  <router-link :to="`/assets/detail`" class="action-btn" title="Ver detalle" @click="setAssetId(asset._id)">
                     <Eye size="18" />
                   </router-link>
                 </div>
@@ -143,7 +141,7 @@
         </table>
       </div>
       
-      <div v-if="!loading && !error && paginatedAssets.length === 0" class="text-center my-4 text-gray-600">
+      <div v-if="!loading && !error && assets.length === 0" class="text-center my-4 text-gray-600">
         <FileSearch class="inline-block mb-2" size="32" />
         <p>No se encontraron activos que coincidan con tu búsqueda.</p>
       </div>
@@ -172,7 +170,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onBeforeMount, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeMount, onBeforeUnmount, watch } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import ArgonButton from "@/components/ArgonButton.vue";
@@ -190,6 +188,7 @@ import {
 } from 'lucide-vue-next';
 import apiService from "../../../service/apiservice";
 import AppFooter from "../../../examples/PageLayout/Footer.vue";
+import Cookies from "js-cookie";
 
 export default {
   name: "ConsultaActivos",
@@ -213,59 +212,81 @@ export default {
     
     // Estado reactivo
     const currentPage = ref(1);
-    const itemsPerPage = 5;
+    const totalPages = ref(1);
+    const itemsPerPage = 5; // Número de elementos por página
     const searchQuery = ref('');
     const searchType = ref('serialNumber');
     const currentDateTime = ref('');
     const assets = ref([]);
     const loading = ref(false);
     const error = ref(null);
+    const isSearchActive = ref(false);
 
-    // Función para obtener los activos de la API
-    const fetchAssets = async () => {
+    // Función para obtener los activos de la API con paginación del servidor
+    const fetchAssets = async (page = 1) => {
       loading.value = true;
       error.value = null;
+      
       try {
-        const response = await apiService.get("/assets");
-        assets.value = response || [];
+        // Construir la URL base con parámetros de paginación
+        let url = `/assets?limit=${itemsPerPage}&page=${page}`;
+        
+        // Si hay una búsqueda activa, añadir los parámetros de búsqueda
+        if (isSearchActive.value && searchQuery.value) {
+          // Implementación de dos enfoques para la búsqueda:
+          
+          // 1. Enfoque específico por tipo de búsqueda
+          if (searchType.value === 'serialNumber') {
+            url += `&serialNumber=${encodeURIComponent(searchQuery.value)}`;
+          } else if (searchType.value === 'cedula') {
+            url += `&accountHolder=${encodeURIComponent(searchQuery.value)}`;
+          } else if (searchType.value === 'placa') {
+            url += `&inventoryCode=${encodeURIComponent(searchQuery.value)}`;
+          }
+          
+          // 2. Enfoque alternativo: búsqueda general
+          // url += `&search=${encodeURIComponent(searchQuery.value)}&searchField=${searchType.value}`;
+        }
+        
+        console.log("Fetching assets with URL:", url);
+        const response = await apiService.get(url);
+        
+        // Verificar si la respuesta tiene la estructura esperada con data y meta
+        if (response && response.data && response.meta) {
+          assets.value = response.data;
+          totalPages.value = response.meta.totalPages || 1;
+          currentPage.value = response.meta.page || 1;
+        } else {
+          // Fallback para compatibilidad con versiones anteriores
+          assets.value = response || [];
+          
+          // Si no hay metadatos, calcular la paginación manualmente
+          if (Array.isArray(assets.value)) {
+            totalPages.value = Math.ceil(assets.value.length / itemsPerPage);
+            
+            // Si estamos en modo de búsqueda y hay resultados, aplicar paginación manual
+            if (isSearchActive.value && searchQuery.value) {
+              const start = (page - 1) * itemsPerPage;
+              const end = start + itemsPerPage;
+              assets.value = assets.value.slice(start, end);
+            }
+          } else {
+            totalPages.value = 1;
+          }
+          currentPage.value = page;
+        }
       } catch (err) {
         console.error("Error fetching assets:", err);
         error.value = "Error al cargar los activos. Por favor, intente de nuevo.";
         assets.value = []; // Asegurarse de que assets sea un array vacío en caso de error
+        totalPages.value = 1;
       } finally {
         loading.value = false;
       }
     };
 
-    // Computed properties para el manejo de datos y paginación
-    const filteredAssets = computed(() => {
-      if (!assets.value || assets.value.length === 0) return [];
-      
-      if (!searchQuery.value) return assets.value;
-      
-      return assets.value.filter(asset => {
-        const query = searchQuery.value.toLowerCase();
-        
-        if (searchType.value === 'serialNumber') {
-          return asset.serialNumber && asset.serialNumber.toLowerCase().includes(query);
-        } else if (searchType.value === 'cedula') {
-          return asset.accountHolder && asset.accountHolder.toLowerCase().includes(query);
-        } else if (searchType.value === 'placa') {
-          return asset.inventoryCode && asset.inventoryCode.toLowerCase().includes(query);
-        }
-        
-        return false;
-      });
-    });
 
-    const totalPages = computed(() => Math.max(1, Math.ceil(filteredAssets.value.length / itemsPerPage)));
-
-    const paginatedAssets = computed(() => {
-      const start = (currentPage.value - 1) * itemsPerPage;
-      const end = start + itemsPerPage;
-      return filteredAssets.value.slice(start, end);
-    });
-
+    // Computed property para las páginas a mostrar en la paginación
     const displayedPages = computed(() => {
       const range = 2;
       let start = Math.max(1, currentPage.value - range);
@@ -302,28 +323,36 @@ export default {
     // Funciones de navegación
     const prevPage = () => {
       if (currentPage.value > 1) {
-        currentPage.value--;
+        goToPage(currentPage.value - 1);
       }
     };
 
     const nextPage = () => {
       if (currentPage.value < totalPages.value) {
-        currentPage.value++;
+        goToPage(currentPage.value + 1);
       }
     };
 
     const goToPage = (page) => {
       if (typeof page === 'number') {
         currentPage.value = page;
+        fetchAssets(page);
       }
     };
 
     const handleSearch = () => {
+      // Activar el modo de búsqueda si hay un término de búsqueda
+      isSearchActive.value = !!searchQuery.value;
+      
+      // Reiniciar a la primera página al realizar una nueva búsqueda
       currentPage.value = 1;
+      fetchAssets(1);
     };
 
-    const viewAssetDetail = (assetId) => {
-      router.push(`/activos/detalle/${assetId}`);
+    const setAssetId = (assetId) => {
+      if (assetId) {
+        Cookies.set('editAssetId', assetId, { expires: 1/24 });
+      }
     };
 
     // Actualización de fecha y hora
@@ -333,11 +362,19 @@ export default {
       currentDateTime.value = now.toLocaleDateString('es-ES', options);
     };
 
+    // Observar cambios en los parámetros de búsqueda
+    watch([searchType], () => {
+      // Si cambia el tipo de búsqueda y hay una búsqueda activa, actualizar los resultados
+      if (isSearchActive.value && searchQuery.value) {
+        handleSearch();
+      }
+    });
+
     // Hooks del ciclo de vida
     onMounted(() => {
       updateDateTime();
       setInterval(updateDateTime, 60000); // Actualizar cada minuto
-      fetchAssets(); // Cargar los activos al montar el componente
+      fetchAssets(1); // Cargar los activos al montar el componente
     });
 
     onBeforeMount(() => {
@@ -365,19 +402,19 @@ export default {
 
     // Funciones de manejo de eventos
     const handleLoginClick = () => {
-      router.push("/sign-in")
+      router.push("/sign-in");
     };
 
     const handleSignup = () => {
-      router.push("/sign-up")
+      router.push("/sign-up");
     };
+    
     const handleIndex = () => {
-      router.push("/")
+      router.push("/");
     };
 
     return {
       assets,
-      paginatedAssets,
       currentPage,
       totalPages,
       displayedPages,
@@ -394,14 +431,13 @@ export default {
       handleIndex,
       loading,
       error,
-      viewAssetDetail
+      setAssetId
     };
   }
 };
 </script>
 
 <style scoped>
-
 .position-relative {
   position: relative;
 }
@@ -470,7 +506,6 @@ h1 {
   border-radius: 4px;
 }
 
-
 /* Estilos para la fecha del reporte */
 .report-date {
   display: flex;
@@ -536,6 +571,25 @@ tr:last-child td {
 .action-btn:hover {
   background-color: #39A900;
   color: white;
+}
+
+/* Estilos para los badges de estado */
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-good {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-damaged {
+  background-color: #ffebee;
+  color: #c62828;
 }
 
 /* Estilos de paginación */

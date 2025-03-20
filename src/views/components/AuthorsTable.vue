@@ -1,8 +1,8 @@
 <script>
+import Pagination from "./Pagination.vue";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import Pagination from "./Pagination.vue";
 import ArgonInput from "../../components/ArgonInput.vue";
 
 export default {
@@ -46,6 +46,15 @@ export default {
     loading: {
       type: Boolean,
       default: false
+    },
+    // New prop for pagination data
+    paginationData: {
+      type: Object,
+      default: () => ({
+        totalPages: 0,
+        currentPage: 1,
+        isServerPaginated: false
+      })
     }
   },
   data() {
@@ -58,11 +67,11 @@ export default {
   },
   computed: {
     shouldShowSearch() {
-    return this.searchOption;
-  },
-  shouldShowExport() {
-    return this.exportOption;
-  },
+      return this.searchOption;
+    },
+    shouldShowExport() {
+      return this.exportOption;
+    },
     tableHeaders()  {
       return this.headers.map((header, index) => ({
         title: header.text || header,
@@ -96,9 +105,31 @@ export default {
       });
     },
     paginatedRows() {
+      // If server pagination is enabled, don't paginate client-side
+      if (this.paginationData.isServerPaginated) {
+        return this.filteredRows;
+      }
+      
+      // Otherwise, use client-side pagination
       const start = (this.page - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
       return this.filteredRows.slice(start, end);
+    },
+    // Calculate total pages for client-side pagination
+    calculatedTotalPages() {
+      return Math.ceil(this.filteredRows.length / this.itemsPerPage);
+    },
+    // Use server-provided total pages or calculated ones
+    effectiveTotalPages() {
+      return this.paginationData.isServerPaginated 
+        ? this.paginationData.totalPages 
+        : this.calculatedTotalPages;
+    },
+    // Use server-provided current page or local page
+    effectiveCurrentPage() {
+      return this.paginationData.isServerPaginated 
+        ? this.paginationData.currentPage 
+        : this.page;
     }
   },
   methods: {
@@ -196,6 +227,16 @@ export default {
     getMainField() {
       const mainField = Object.keys(this.fields).find(key => this.fields[key].main);
       return mainField || Object.keys(this.fields)[0];
+    },
+    // Handle page change from pagination component
+    handlePageChange(page) {
+      if (this.paginationData.isServerPaginated) {
+        // For server-side pagination, emit the event to parent
+        this.$emit('page-change', page);
+      } else {
+        // For client-side pagination, update local page
+        this.page = page;
+      }
     }
   }
 }
@@ -204,7 +245,7 @@ export default {
 <template>
   <div class="row justify-content-space-between py-2" style="border-radius: 8px; padding: 10px;">
     <div class="justify-content-space-between py-2">
-      <h2 v-if="title" class=" font-semibold" style="color: #fff;">{{ title }}</h2>
+      <h2 v-if="title" class="font-semibold" style="color: #fff;">{{ title }}</h2>
       <div class="py-2">
         <!-- Contenedor flex para alinear botones y filtros -->
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between w-100 gap-2">
@@ -323,9 +364,13 @@ export default {
               <p class="text-center p-3">La tabla no tiene datos para mostrar</p>
             </template>
 
-            <template v-slot:bottom="bottomProps">
-              <Pagination class="py-2" :totalPages="bottomProps.pageCount" :currentPage="bottomProps.page"
-                @page-change="page = $event" />
+            <!-- Custom pagination -->
+            <template v-slot:bottom>
+              <Pagination 
+                :totalPages="effectiveTotalPages" 
+                :currentPage="effectiveCurrentPage"
+                @page-change="handlePageChange" 
+              />
             </template>
           </v-data-table>
         </div>
@@ -399,8 +444,11 @@ export default {
             </div>
             
             <!-- Paginación para el acordeón -->
-            <Pagination class="py-2" :totalPages="Math.ceil(filteredRows.length / itemsPerPage)" :currentPage="page"
-              @page-change="page = $event" />
+            <Pagination 
+              :totalPages="effectiveTotalPages" 
+              :currentPage="effectiveCurrentPage"
+              @page-change="handlePageChange" 
+            />
           </div>
         </div>
       </div>
@@ -469,7 +517,7 @@ export default {
 }
 
 :deep(.v-pagination__item--active) {
-  background: #000 !important;
+  background: #39A900 !important;
   color: #fff !important;
 }
 

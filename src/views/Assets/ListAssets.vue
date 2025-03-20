@@ -1,6 +1,6 @@
 <script setup>
 import Swal from "sweetalert2";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, } from "vue";
 import router from "../../router";
 import apiService from "../../service/apiservice";
 import AuthorsTable from "../components/AuthorsTable.vue";
@@ -9,15 +9,18 @@ import jsPDF from "jspdf";
 
 const loading = ref(false);
 const assets = ref([]);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const itemsPerPage = 10; // Always 10 as requested
 
 const headers = ref([
-  "Código",
+  "Código",
   "Nombre",
   "Marca",
   "Modelo",
   "Serial",
   "Estado",
-  "Ubicación",
+  "Ubicación",
 ]);
 
 const fields = ref({
@@ -50,6 +53,9 @@ const fields = ref({
     value: "status",
     class: "align-middle",
     textClass: "text-xs font-weight-bold",
+    formatter: (value) => {
+      return value ? '<span class="text-success">Activo</span>' : '<span class="text-danger">Inactivo</span>';
+    }
   },
   location: {
     value: "location",
@@ -58,11 +64,23 @@ const fields = ref({
   },
 });
 
-const fetchData = async () => {
+const fetchData = async (page = 1) => {
   try {
     loading.value = true;
-    const data = await apiService.get("/assets");
-    assets.value = data;
+    const response = await apiService.get(`/assets?limit=${itemsPerPage}&page=${page}`);
+    
+    // Check if the response has the expected structure with data and meta
+    if (response && response.data && response.meta) {
+      assets.value = response.data;
+      totalPages.value = response.meta.totalPages;
+      currentPage.value = response.meta.page;
+    } else {
+      // Fallback for backward compatibility
+      assets.value = response;
+      // If no meta data, assume single page
+      totalPages.value = 1;
+      currentPage.value = 1;
+    }
   } catch (error) {
     console.error("Error fetching assets:", error);
     showAlert({
@@ -73,6 +91,11 @@ const fetchData = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  fetchData(page);
 };
 
 const showAlert = ({ title, text, icon }) => {
@@ -91,29 +114,27 @@ const showAlert = ({ title, text, icon }) => {
 };
 
 const handleView = (row) => {
-
-try {
-  Cookies.set('editAssetId', row._id, { expires: 1/24 });
-  router.push("/assets/detail");
-} catch (error) {
-  showAlert({
-    title: "Error",
-    text: "No se pudo navegar a la vista de detalles del equipo",
-    icon: "error"
-  });
-} 
+  try {
+    Cookies.set('editAssetId', row._id, { expires: 1/24 });
+    router.push("/assets/detail");
+  } catch (error) {
+    showAlert({
+      title: "Error",
+      text: "No se pudo navegar a la vista de detalles del equipo",
+      icon: "error"
+    });
+  }
 };
-;
 
 const handleEdit = (row) => {
   try {
-    // Guardar ID en cookie con expiración de 1 hora
+    // Guardar ID en cookie con expiración de 1 hora
     Cookies.set('editAssetId', row._id, { expires: 1/24 });
     router.push("/assets/edit");
   } catch (error) {
     showAlert({
       title: "Error",
-      text: "No se pudo iniciar la edición del equipo",
+      text: "No se pudo iniciar la edición del equipo",
       icon: "error"
     });
   }
@@ -121,8 +142,8 @@ const handleEdit = (row) => {
 
 const handleDelete = async (row) => {
   const result = await Swal.fire({
-    title: "¿Estás seguro de que quieres eliminar este equipo?",
-    text: "Esta acción no puede deshacerse.",
+    title: "¿Estás seguro de que quieres eliminar este equipo?",
+    text: "Esta acción no puede deshacerse.",
     showCancelButton: true,
     confirmButtonText: "Confirmar",
     cancelButtonText: "Cancelar",
@@ -138,7 +159,7 @@ const handleDelete = async (row) => {
 
   try {
     await apiService.delete(`/assets/${row._id}`);
-    await fetchData();
+    await fetchData(currentPage.value);
     showAlert({
       title: "Equipo eliminado correctamente",
       text: "El equipo ha sido eliminado de la base de datos",
@@ -147,11 +168,12 @@ const handleDelete = async (row) => {
   } catch (error) {
     showAlert({
       title: "Error al eliminar el equipo",
-      text: "Algo salió mal al intentar eliminar el equipo",
+      text: "Algo salió mal al intentar eliminar el equipo",
       icon: "error",
     });
   }
 };
+
 const handleInfo = async (row) => {
   try {
     const response = await apiService.get(`/assets/${row._id}`);
@@ -167,7 +189,7 @@ const handleInfo = async (row) => {
 
     const pdf = new jsPDF();
     pdf.setFontSize(16);
-    pdf.text("Informaci n del Equipo", 15, 15);
+    pdf.text("Información del Equipo", 15, 15);
 
     pdf.setFontSize(12);
     Object.keys(pdfData).forEach((key, index) => {
@@ -188,7 +210,7 @@ const handleInfo = async (row) => {
   } catch (error) {
     showAlert({
       title: "Error al generar el PDF",
-      text: "Algo salió mal al intentar generar el PDF",
+      text: "Algo salió mal al intentar generar el PDF",
       icon: "error",
     });
   }
@@ -202,9 +224,8 @@ const icons = ref([
 ]);
 
 onMounted(() => {
-  fetchData();
+  fetchData(1);
 });
-
 </script>
 
 <template>
@@ -218,9 +239,17 @@ onMounted(() => {
           :fields="fields"
           :icons="icons"
           :loading="loading"
+          @page-change="handlePageChange"
+          :paginationData="{
+            totalPages: totalPages,
+            currentPage: currentPage,
+            isServerPaginated: true
+          }"
         >
-          <template #cell-status="{ value }">
-            <span :class="value === 'Activo' ? 'text-success' : 'text-danger'">{{ value }}</span>
+          <template #add-button>
+            <button class="btn btn-sm btn-success" @click="() => router.push('/assets/add')">
+              <i class="fas fa-plus"></i> Añadir Equipo
+            </button>
           </template>
         </AuthorsTable>
       </div>
