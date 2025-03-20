@@ -13,6 +13,12 @@
             @edit="handleEdit"
             @delete="handleDelete"
             @check="handleDownloadPDF"
+            @page-change="handlePageChange"
+            :paginationData="{
+              totalPages: totalPages,
+              currentPage: currentPage,
+              isServerPaginated: true
+            }"
           />
         </div>
       </div>
@@ -38,6 +44,9 @@ export default {
     const rows = ref([]);
     const router = useRouter();
     const jwt_decode = require("jwt-decode");
+    const currentPage = ref(1);
+    const totalPages = ref(1);
+    const itemsPerPage = 10; // Número de elementos por página
 
     const headers = ref([
       "Informe",
@@ -85,7 +94,7 @@ export default {
       return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     };
 
-    const fetchData = async () => {
+    const fetchData = async (page = 1) => {
       isLoading.value = true;
       try {
         const token = Cookies.get("authToken");
@@ -100,20 +109,36 @@ export default {
         const menu = menuCookie ? JSON.parse(menuCookie) : null; 
         const role = menu ? menu.role : null; 
 
-        let url = '/work-report';
+        // Añadir parámetros de paginación a la URL
+        let url = `/work-report?limit=${itemsPerPage}&page=${page}`;
 
         if (role === 'instructor' || role === 'técnico') {
           const normalizedRole = normalizeText(role); 
-          url += `?${normalizedRole}Id=${userId}`;
+          url += `&${normalizedRole}Id=${userId}`;
         }
 
         const response = await apiService.get(url);
         
-        // Asegurarse de que cada elemento tenga un ID accesible
-        rows.value = response.map((item) => ({
-          ...item,
-          id: item._id || item.Id || item.id
-        }));
+        // Verificar si la respuesta tiene la estructura esperada con data y meta
+        if (response && response.data && response.meta) {
+          // Formato para respuestas con estructura {data, meta}
+          rows.value = response.data.map((item) => ({
+            ...item,
+            id: item._id || item.Id || item.id
+          }));
+          totalPages.value = response.meta.totalPages;
+          currentPage.value = response.meta.page;
+        } else {
+          // Fallback para compatibilidad con versiones anteriores
+          rows.value = response.map((item) => ({
+            ...item,
+            id: item._id || item.Id || item.id
+          }));
+          // Si no hay meta data, calcular el total de páginas basado en la longitud del array
+          // Esto es solo una aproximación y funcionará mejor con paginación del servidor
+          totalPages.value = 1;
+          currentPage.value = 1;
+        }
         
       } catch (error) {
         console.error("Error al obtener informes:", error);
@@ -123,9 +148,16 @@ export default {
           text: 'No se pudieron cargar los informes',
           confirmButtonColor: '#39a900'
         });
+        rows.value = [];
       } finally {
         isLoading.value = false;
       }
+    };
+
+    // Manejador para cambios de página
+    const handlePageChange = (page) => {
+      currentPage.value = page;
+      fetchData(page);
     };
 
     const handleDownloadPDF = async (item) => {
@@ -264,7 +296,7 @@ export default {
           });
 
           // Actualizar la lista de informes
-          await fetchData(); 
+          await fetchData(currentPage.value); 
         } catch (error) {
           console.error("Error al eliminar el informe:", error);
           Swal.fire({
@@ -320,7 +352,9 @@ export default {
       { class: "fas fa-edit", method: handleEdit },
     ]);
 
-    onMounted(fetchData);
+    onMounted(() => {
+      fetchData(1);
+    });
 
     return {
       headers,
@@ -328,10 +362,13 @@ export default {
       icons,
       rows,
       isLoading,
+      currentPage,
+      totalPages,
       fetchData,
       handleEdit,
       handleDelete,
-      handleDownloadPDF
+      handleDownloadPDF,
+      handlePageChange
     };
   },
 };

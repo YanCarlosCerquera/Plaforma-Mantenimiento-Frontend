@@ -1,26 +1,20 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, } from "vue";
 import Swal from "sweetalert2";
-import { useStore } from "vuex";
+import apiService from "../../service/apiservice";
+import AuthorsTable from "../components/AuthorsTable.vue";
 import router from "../../router";
 import Cookies from "js-cookie";
-import AuthorsTable from "../components/AuthorsTable.vue";
 
-// Definición de formateadores local (sin export)
-
-
-const store = useStore();
-const TABLE_ID = "ordenes-trabajo";
 const jwt_decode = require("jwt-decode");
-const isLoading = ref(false)
 
 const headers = ref([
-  "Orden de Trabajo",
-  "Tenico Ejecutor",
-  "Fecha de asignación",
-  "Fecha de Terminacion",
-  "Prioridad",
-  "Estado"
+  { text: "Orden de Trabajo", value: "radicado" },
+  { text: "Tenico Ejecutor", value: "tecnicoId.name" },
+  { text: "Fecha de asignación", value: "fechaInicio" },
+  { text: "Fecha de Terminacion", value: "fechaFin" },
+  { text: "Prioridad", value: "prioridad" },
+  { text: "Estado", value: "state" }
 ]);
 
 const fields = ref({
@@ -56,7 +50,11 @@ const fields = ref({
   }
 });
 
-const rows = computed(() => store.getters["tables/getTableData"](TABLE_ID));
+const rows = ref([]);
+const loading = ref(false);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const itemsPerPage = 10; // Número de elementos por página
 
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -74,37 +72,81 @@ const normalizeText = (text) => {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 };
 
-const fetchData = async () => {
-  isLoading.value=true
-  const token = Cookies.get("authToken");
-  if (!token) {
-    console.error("No se encontró el token de autenticación");
-    return;
-  }
-  const decodedToken = jwt_decode.jwtDecode(token);
-  const userId = decodedToken.sub;
+const fetchData = async (page = 1) => {
+  loading.value = true;
+  try {
+    const token = Cookies.get("authToken");
+    if (!token) {
+      console.error("No se encontró el token de autenticación");
+      loading.value = false;
+      return;
+    }
+    
+    const decodedToken = jwt_decode.jwtDecode(token);
+    const userId = decodedToken.sub;
 
-  const menuCookie = Cookies.get("menu"); 
-  const menu = menuCookie ? JSON.parse(menuCookie) : null; 
-  const role = menu ? menu.role : null; 
+    const menuCookie = Cookies.get("menu"); 
+    const menu = menuCookie ? JSON.parse(menuCookie) : null; 
+    const role = menu ? menu.role : null; 
 
-  let url = '/word-orden';
+    // Construir URL base con paginación
+    let url = `/word-orden?limit=${itemsPerPage}&page=${page}`;
 
-  if (role === 'instructor' || role === 'técnico') {
+    // Añadir filtro por rol si es necesario
+    if (role === 'instructor' || role === 'técnico') {
       const normalizedRole = normalizeText(role); 
-      url += `?${normalizedRole}Id=${userId}`;
+      url += `&${normalizedRole}Id=${userId}`;
     }
 
-  await store.dispatch("tables/fetchTableData", {
-    tableId: TABLE_ID,
-    endpoint: url,
-    formatters: {
-      fechaInicio: formatDate,
-      fechaFin: formatDate,
-      state: formatWorkOrderStatus,
-    },
-  });
-  isLoading.value=false
+    const response = await apiService.get(url, {});
+    
+    // Verificar si la respuesta tiene la estructura esperada con data y meta
+    if (response && response.data && response.meta) {
+      // Formato para respuestas con estructura {data, meta}
+      rows.value = response.data.map((orden) => ({
+        ...orden,
+        fechaInicio: formatDate(orden.fechaInicio),
+        fechaFin: formatDate(orden.fechaFin),
+        state: formatWorkOrderStatus(orden.state),
+      }));
+      totalPages.value = response.meta.totalPages;
+      currentPage.value = response.meta.page;
+    } else {
+      // Fallback para compatibilidad con versiones anteriores
+      rows.value = response.map((orden) => ({
+        ...orden,
+        fechaInicio: formatDate(orden.fechaInicio),
+        fechaFin: formatDate(orden.fechaFin),
+        state: formatWorkOrderStatus(orden.state),
+      }));
+      // Si no hay meta data, calcular el total de páginas basado en la longitud del array
+      totalPages.value = 1;
+      currentPage.value = 1;
+    }
+  } catch (error) {
+    console.error("Error fetching work orders:", error);
+    Swal.fire({
+      title: "Error al cargar las órdenes de trabajo",
+      text: error.response?.data?.message || "Algo salió mal.",
+      icon: "error",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#dc3545",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+    });
+    rows.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Manejador para cambios de página
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  fetchData(page);
 };
 
 const handleView = (row) => {
@@ -150,27 +192,24 @@ const handleDelete = async (row) => {
 
   try {
     const ordenId = row._id?.toString() || row.toString();
-    const result = await store.dispatch("tables/deleteTableItem", {
-      tableId: TABLE_ID,
-      endpoint: "/word-orden",
-      itemId: ordenId,
+    await apiService.delete(`word-orden/${ordenId}`);
+    
+    Swal.fire({
+      title: "Orden de trabajo eliminada correctamente",
+      icon: "success",
+      position: "bottom-right",
+      toast: true,
+      timer: 3000,
+      background: "#28a745",
+      color: "white",
+      iconColor: "white",
+      showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
     });
-
-    if (result.success) {
-      Swal.fire({
-        title: "Orden de trabajo eliminada correctamente",
-        icon: "success",
-        position: "bottom-right",
-        toast: true,
-        timer: 3000,
-        background: "#28a745",
-        color: "white",
-        iconColor: "white",
-        showConfirmButton: false,
-      });
-    } else {
-      throw new Error(result.error);
-    }
+    
+    await fetchData(currentPage.value);
   } catch (error) {
     console.error("Error al eliminar la orden:", error);
     Swal.fire({
@@ -184,11 +223,12 @@ const handleDelete = async (row) => {
       color: "white",
       iconColor: "white",
       showConfirmButton: false,
+      customClass: {
+        title: "swal-title-white",
+      },
     });
   }
 };
-
-
 
 const handlConsultar = (row) => {
   try {
@@ -219,7 +259,7 @@ const icons = ref([
 ]);
 
 onMounted(async () => {
-  await fetchData();
+  await fetchData(1);
 });
 </script>
 
@@ -233,10 +273,13 @@ onMounted(async () => {
           :rows="rows"
           :fields="fields"
           :icons="icons"
-          :loading="isLoading"
-          @view="handleView"
-          @delete="handleDelete"
-          @Consultar="handlConsultar"
+          :loading="loading"
+          @page-change="handlePageChange"
+          :paginationData="{
+            totalPages: totalPages,
+            currentPage: currentPage,
+            isServerPaginated: true
+          }"
         />
       </div>
     </div>

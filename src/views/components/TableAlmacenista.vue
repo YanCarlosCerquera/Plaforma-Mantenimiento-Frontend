@@ -9,13 +9,16 @@ import jsPDF from "jspdf";
 
 const loading = ref(false);
 const assets = ref([]);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const itemsPerPage = 10; // Número de elementos por página
 
 const headers = ref([
-  "Código inventario",
+  "Código inventario",
   "Serial",
   "Nombre",
-  "Ubicación",
-  "Fecha adquisición",
+  "Ubicación",
+  "Fecha adquisición",
   "Último mantenimiento",
   "Categoría",
   "Estado",
@@ -86,11 +89,26 @@ const formattedAssets = computed(() =>
   }))
 );
 
-const fetchData = async () => {
+const fetchData = async (page = 1) => {
   try {
     loading.value = true;
-    const data = await apiService.get("/assets");
-    assets.value = data;
+    // Añadir parámetros de paginación a la URL
+    const response = await apiService.get(`/assets?limit=${itemsPerPage}&page=${page}`);
+    
+    // Verificar si la respuesta tiene la estructura esperada con data y meta
+    if (response && response.data && response.meta) {
+      // Formato para respuestas con estructura {data, meta}
+      assets.value = response.data;
+      totalPages.value = response.meta.totalPages;
+      currentPage.value = response.meta.page;
+    } else {
+      // Fallback para compatibilidad con versiones anteriores
+      assets.value = response;
+      // Si no hay meta data, calcular el total de páginas basado en la longitud del array
+      // Esto es solo una aproximación y funcionará mejor con paginación del servidor
+      totalPages.value = 1;
+      currentPage.value = 1;
+    }
   } catch (error) {
     console.error("Error fetching assets:", error);
     showAlert({
@@ -98,9 +116,16 @@ const fetchData = async () => {
       text: "Hubo un problema al obtener la lista de equipos",
       icon: "error",
     });
+    assets.value = [];
   } finally {
     loading.value = false;
   }
+};
+
+// Manejador para cambios de página
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  fetchData(page);
 };
 
 const showAlert = ({ title, text, icon }) => {
@@ -163,7 +188,7 @@ const handleDelete = async (row) => {
 
   try {
     await apiService.delete(`/assets/${row._id}`);
-    await fetchData();
+    await fetchData(currentPage.value);
     showAlert({
       title: "Equipo eliminado correctamente",
       text: "El equipo ha sido eliminado de la base de datos",
@@ -230,7 +255,7 @@ const icons = ref([
 ]);
 
 onMounted(() => {
-  fetchData();
+  fetchData(1);
 });
 </script>
 
@@ -250,6 +275,13 @@ onMounted(() => {
           :icons="icons"
           :searchOption="false"
           :exportOption="false"
+          :loading="loading"
+          @page-change="handlePageChange"
+          :paginationData="{
+            totalPages: totalPages,
+            currentPage: currentPage,
+            isServerPaginated: true
+          }"
         >
             <template #add-button>
                 <h2 class="text-succes">Bienes</h2>
@@ -265,5 +297,4 @@ onMounted(() => {
 .table th {
   white-space: nowrap;
 }
-
 </style>

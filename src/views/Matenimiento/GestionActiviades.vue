@@ -9,6 +9,11 @@ import { commonFormatters } from "../../store/modules/tables";
 const loading = ref(false);
 const activities = ref([]);
 
+// Estados para paginación
+const currentPage = ref(1);
+const totalPages = ref(1);
+const itemsPerPage = 10; // Número de elementos por página
+
 const headers = ref([
   "Radicado de Solicitud",
   "Solicitante",
@@ -53,11 +58,32 @@ const fields = ref({
   },
 });
 
-const fetchData = async () => {
+const fetchData = async (page = 1) => {
   try {
     loading.value = true;
-    const data = await apiService.get("/application-maintenance");
-    activities.value = data;
+    // Añadir parámetros de paginación a la URL
+    const response = await apiService.get(
+      `/application-maintenance?limit=${itemsPerPage}&page=${page}`
+    );
+    
+    // Verificar si la respuesta tiene la estructura esperada con data y meta
+    if (response && response.data && response.meta) {
+      // Formato para respuestas con estructura {data, meta}
+      activities.value = response.data;
+      totalPages.value = response.meta.totalPages;
+      currentPage.value = response.meta.page;
+    } else if (Array.isArray(response)) {
+      // Fallback para compatibilidad con versiones anteriores
+      activities.value = response;
+      // Si no hay meta data, calcular el total de páginas basado en la longitud del array
+      totalPages.value = Math.ceil(response.length / itemsPerPage);
+      currentPage.value = 1;
+    } else {
+      console.error('Respuesta de API inesperada:', response);
+      activities.value = [];
+      totalPages.value = 1;
+      currentPage.value = 1;
+    }
   } catch (error) {
     console.error("Error fetching data:", error);
     Swal.fire({
@@ -72,15 +98,24 @@ const fetchData = async () => {
       iconColor: "white",
       showConfirmButton: false,
     });
+    activities.value = [];
+    totalPages.value = 1;
+    currentPage.value = 1;
   } finally {
     loading.value = false;
   }
 };
 
+// Manejador para cambios de página
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  fetchData(page);
+};
+
 const handleDelete = async (row) => {
   const result = await Swal.fire({
-    title: "¿Estás seguro de que quieres eliminar esta solicitud?",
-    text: "Esta acción no puede deshacerse.",
+    title: "¿Estás seguro de que quieres eliminar esta solicitud?",
+    text: "Esta acción no puede deshacerse.",
     showCancelButton: true,
     confirmButtonText: "Confirmar",
     cancelButtonText: "Cancelar",
@@ -96,7 +131,8 @@ const handleDelete = async (row) => {
 
   try {
     await apiService.delete(`/application-maintenance/${row._id}`);
-    await fetchData();
+    // Actualizar los datos manteniendo la página actual
+    await fetchData(currentPage.value);
     Swal.fire({
       title: "Solicitud eliminada correctamente",
       icon: "success",
@@ -111,7 +147,7 @@ const handleDelete = async (row) => {
   } catch (error) {
     Swal.fire({
       title: "Error al eliminar la Solicitud",
-      text: "Algo salió mal al intentar eliminar la solicitud.",
+      text: "Algo salió mal al intentar eliminar la solicitud.",
       icon: "error",
       position: "bottom-right",
       toast: true,
@@ -135,16 +171,16 @@ const icons = ref([
 ]);
 
 onMounted(() => {
-  fetchData();
+  fetchData(1);
 });
 
-// Recargar datos cuando se regresa a la página
+// Recargar datos cuando se regresa a la página
 router.beforeEach((to, from, next) => {
   if (
     to.path === "/maintenance/requests" &&
     from.path.startsWith("/maintenance/requests/")
   ) {
-    fetchData();
+    fetchData(currentPage.value);
   }
   next();
 });
@@ -161,6 +197,12 @@ router.beforeEach((to, from, next) => {
           :fields="fields"
           :icons="icons"
           :loading="loading"
+          @page-change="handlePageChange"
+          :paginationData="{
+            totalPages: totalPages,
+            currentPage: currentPage,
+            isServerPaginated: true
+          }"
         >
           <template #cell-workOrderStatus="{ value }">
             <span v-html="value"></span>

@@ -10,6 +10,15 @@ const word_ordens = ref([]);
 const word_informes = ref([]);
 const activeTab = ref('ordenes');
 
+// Paginación para órdenes
+const currentPageOrdens = ref(1);
+const totalPagesOrdens = ref(1);
+const itemsPerPage = 10; // Número de elementos por página
+
+// Paginación para informes
+const currentPageInformes = ref(1);
+const totalPagesInformes = ref(1);
+
 const props = defineProps({
     userData: {
         type: Object,
@@ -131,46 +140,108 @@ const normalizeText = (text) => {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 };
 
-const fetchWordOrdens = async () => {
+const fetchWordOrdens = async (page = 1) => {
     try {
         loading.value = true;
         const { userId, role } = props.userData;
-        let url = '/word-orden';
+        let url = `/word-orden?limit=${itemsPerPage}&page=${page}`;
         
         if (role === 'Instructor' || role === 'técnico') {
             const normalizedRole = normalizeText(role); // Normalizar el rol
-            url += `?${normalizedRole}Id=${userId}`;
+            url += `&${normalizedRole}Id=${userId}`;
         }
 
-        const data = await apiService.get(url);
-        word_ordens.value = data;
+        const response = await apiService.get(url);
+        
+        // Verificar si la respuesta tiene la estructura esperada con data y meta
+        if (response && response.data && response.meta) {
+            word_ordens.value = response.data;
+            totalPagesOrdens.value = response.meta.totalPages;
+            currentPageOrdens.value = response.meta.page;
+        } else {
+            // Fallback para compatibilidad con versiones anteriores
+            word_ordens.value = response;
+            // Si no hay meta data, calcular el total de páginas basado en la longitud del array
+            totalPagesOrdens.value = 1;
+            currentPageOrdens.value = 1;
+        }
+        
         loading.value = false;
     } catch (error) {
         console.error('Error fetching ordens:', error);
-        alert('Error al cargar las ordenes');
+        Swal.fire({
+            title: "Error al cargar las ordenes",
+            text: error.response?.data?.message || "Algo salió mal.",
+            icon: "error",
+            position: "bottom-right",
+            toast: true,
+            timer: 3000,
+            background: "#dc3545",
+            color: "white",
+            iconColor: "white",
+            showConfirmButton: false,
+        });
+        word_ordens.value = [];
         loading.value = false;
     }
 };
 
-const fetchWorkReports = async () => {
+const fetchWorkReports = async (page = 1) => {
     try {
         loading.value = true;
         const { userId, role } = props.userData;
-        let url = '/work-report';
+        let url = `/work-report?limit=${itemsPerPage}&page=${page}`;
         
         if (role === 'Instructor' || role === 'técnico') {
             const normalizedRole = normalizeText(role); // Normalizar el rol
-            url += `?${normalizedRole}Id=${userId}`;
+            url += `&${normalizedRole}Id=${userId}`;
         }
 
-        const data = await apiService.get(url);
-        word_informes.value = data;
+        const response = await apiService.get(url);
+        
+        // Verificar si la respuesta tiene la estructura esperada con data y meta
+        if (response && response.data && response.meta) {
+            word_informes.value = response.data;
+            totalPagesInformes.value = response.meta.totalPages;
+            currentPageInformes.value = response.meta.page;
+        } else {
+            // Fallback para compatibilidad con versiones anteriores
+            word_informes.value = response;
+            // Si no hay meta data, calcular el total de páginas basado en la longitud del array
+            totalPagesInformes.value = 1;
+            currentPageInformes.value = 1;
+        }
+        
         loading.value = false;
     } catch (error) {
         console.error('Error fetching work reports:', error);
-        alert('Error al cargar los informes');
+        Swal.fire({
+            title: "Error al cargar los informes",
+            text: error.response?.data?.message || "Algo salió mal.",
+            icon: "error",
+            position: "bottom-right",
+            toast: true,
+            timer: 3000,
+            background: "#dc3545",
+            color: "white",
+            iconColor: "white",
+            showConfirmButton: false,
+        });
+        word_informes.value = [];
         loading.value = false;
     }
+};
+
+// Manejador para cambios de página en órdenes
+const handlePageChangeOrdens = (page) => {
+    currentPageOrdens.value = page;
+    fetchWordOrdens(page);
+};
+
+// Manejador para cambios de página en informes
+const handlePageChangeInformes = (page) => {
+    currentPageInformes.value = page;
+    fetchWorkReports(page);
 };
 
 const changeTab = (tab) => {
@@ -220,7 +291,7 @@ const handleDeleteReporte = async (row) => {
         if (result.isConfirmed) {
             try {
                 await apiService.delete(`/work-report/${row._id}`);
-                await fetchWorkReports();
+                await fetchWorkReports(currentPageInformes.value);
                 Swal.fire({
                     title: "Reporte eliminado",
                     text: "El informe ha sido eliminado correctamente.",
@@ -238,7 +309,18 @@ const handleDeleteReporte = async (row) => {
                 });
             } catch (error) {
                 console.error('Error deleting report:', error);
-                alert('Error al eliminar el reporte');
+                Swal.fire({
+                    title: "Error al eliminar el reporte",
+                    text: error.response?.data?.message || "Algo salió mal.",
+                    icon: "error",
+                    position: "bottom-right",
+                    toast: true,
+                    timer: 3000,
+                    background: "#dc3545",
+                    color: "white",
+                    iconColor: "white",
+                    showConfirmButton: false,
+                });
             }
         }
     });
@@ -263,7 +345,7 @@ const handeUpdateState = async (row) => {
                 });
 
                 // Actualizar la lista de órdenes
-                await fetchWordOrdens();
+                await fetchWordOrdens(currentPageOrdens.value);
 
                 Swal.fire({
                     title: "Estado cambiado",
@@ -282,7 +364,18 @@ const handeUpdateState = async (row) => {
                 });
             } catch (error) {
                 console.error('Error updating order state:', error);
-                alert('Error al cambiar el estado de la orden');
+                Swal.fire({
+                    title: "Error al cambiar el estado de la orden",
+                    text: error.response?.data?.message || "Algo salió mal.",
+                    icon: "error",
+                    position: "bottom-right",
+                    toast: true,
+                    timer: 3000,
+                    background: "#dc3545",
+                    color: "white",
+                    iconColor: "white",
+                    showConfirmButton: false,
+                });
             }
         }
     });
@@ -299,8 +392,8 @@ const icons_reportes = ref([
 ]);
 
 onMounted(async () => {
-    await fetchWordOrdens();
-    await fetchWorkReports();
+    await fetchWordOrdens(1);
+    await fetchWorkReports(1);
 });
 </script>
 
@@ -334,6 +427,13 @@ onMounted(async () => {
                     :icons="icons_ordens"
                     :searchOption="false"
                     :exportOption="false"
+                    :loading="loading"
+                    @page-change="handlePageChangeOrdens"
+                    :paginationData="{
+                        totalPages: totalPagesOrdens,
+                        currentPage: currentPageOrdens,
+                        isServerPaginated: true
+                    }"
                 />
             </div>
             <div v-else>
@@ -344,6 +444,13 @@ onMounted(async () => {
                     :icons="icons_reportes"
                     :searchOption="false"
                     :exportOption="false"
+                    :loading="loading"
+                    @page-change="handlePageChangeInformes"
+                    :paginationData="{
+                        totalPages: totalPagesInformes,
+                        currentPage: currentPageInformes,
+                        isServerPaginated: true
+                    }"
                 />
             </div>
         </div>

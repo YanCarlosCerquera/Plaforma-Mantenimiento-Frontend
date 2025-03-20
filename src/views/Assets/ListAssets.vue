@@ -246,11 +246,6 @@ onMounted(() => {
             isServerPaginated: true
           }"
         >
-          <template #add-button>
-            <button class="btn btn-sm btn-success" @click="() => router.push('/assets/add')">
-              <i class="fas fa-plus"></i> Añadir Equipo
-            </button>
-          </template>
         </AuthorsTable>
       </div>
     </div>

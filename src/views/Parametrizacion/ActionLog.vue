@@ -47,7 +47,10 @@ const fields = ref({
 });
 
 const rows = ref([]);
-const loading = ref(false)
+const loading = ref(false);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const itemsPerPage = 10; // Número de elementos por página
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -96,7 +99,7 @@ const handleDelete = async (row) => {
                 title: "swal-title-white",
             },
         });
-        await fetchData();
+        await fetchData(currentPage.value);
     } catch (error) {
         Swal.fire({
             title: "Error al eliminar rol.",
@@ -116,32 +119,69 @@ const handleDelete = async (row) => {
     }
 };
 
-const fetchData = async () => {
-    loading.value=true
+const fetchData = async (page = 1) => {
+    loading.value = true;
     try {
+        // Añadir parámetros de paginación a la URL
         const response = await apiService.get(
-            "/action-log",
+            `/action-log?limit=${itemsPerPage}&page=${page}`,
             {},
         );
-        rows.value = response.map((action) => ({
-            ...action,
-            date: formatDate(action.dateTime),
-            time: formatTime(action.dateTime),
-        }));
-        loading.value=false
+        
+        // Verificar si la respuesta tiene la estructura esperada con data y meta
+        if (response && response.data && response.meta) {
+            // Formato para respuestas con estructura {data, meta}
+            rows.value = response.data.map((action) => ({
+                ...action,
+                date: formatDate(action.dateTime),
+                time: formatTime(action.dateTime),
+            }));
+            totalPages.value = response.meta.totalPages;
+            currentPage.value = response.meta.page;
+        } else {
+            // Fallback para compatibilidad con versiones anteriores
+            rows.value = response.map((action) => ({
+                ...action,
+                date: formatDate(action.dateTime),
+                time: formatTime(action.dateTime),
+            }));
+            // Si no hay meta data, calcular el total de páginas basado en la longitud del array
+            // Esto es solo una aproximación y funcionará mejor con paginación del servidor
+            totalPages.value = 1;
+            currentPage.value = 1;
+        }
     } catch (error) {
-        console.error("Error fetching rols:", error);
-        alert("Error al cargar los usuarios");
-        loading.value=false
+        console.error("Error fetching action logs:", error);
+        Swal.fire({
+            title: "Error al cargar el historial de acciones",
+            text: error.response?.data?.message || "Algo salió mal.",
+            icon: "error",
+            position: "bottom-right",
+            toast: true,
+            timer: 3000,
+            background: "#dc3545",
+            color: "white",
+            iconColor: "white",
+            showConfirmButton: false,
+        });
+        rows.value = [];
+    } finally {
+        loading.value = false;
     }
 };
 
+// Manejador para cambios de página
+const handlePageChange = (page) => {
+    currentPage.value = page;
+    fetchData(page);
+};
+
 const icons = ref([
-{ class: 'fas fa-trash', method: handleDelete },
+    { class: 'fas fa-trash', method: handleDelete },
 ]);
 
 onMounted(async () => {
-    await fetchData();
+    await fetchData(1);
 });
 </script>
 
@@ -149,15 +189,26 @@ onMounted(async () => {
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <AuthorsTable :title="'Historial de acciones'" :headers="headers" :rows="rows" :fields="fields"
-                :icons="icons" :loading="loading" />
+                <AuthorsTable 
+                    title="Historial de acciones" 
+                    :headers="headers" 
+                    :rows="rows" 
+                    :fields="fields"
+                    :icons="icons" 
+                    :loading="loading"
+                    @page-change="handlePageChange"
+                    :paginationData="{
+                        totalPages: totalPages,
+                        currentPage: currentPage,
+                        isServerPaginated: true
+                    }"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-
 .btn-custom {
     background-color: white; 
     color: #39A900; 
