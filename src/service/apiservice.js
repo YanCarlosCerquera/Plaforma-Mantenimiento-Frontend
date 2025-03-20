@@ -3,8 +3,12 @@ import Cookies from "js-cookie";
 
 const jwt_decode = require("jwt-decode");
 
+// Acceder a la variable de entorno de Vue
+const API_BASE_URL = process.env.VUE_APP_API_URL || "https://oyster-app-2qclt.ondigitalocean.app";
+
+// Crear cliente API
 const apiClient = axios.create({
-    baseURL: "http://localhost:3000", 
+    baseURL: API_BASE_URL,
     headers: {
         "Content-Type": "application/json",
     },
@@ -27,7 +31,7 @@ apiClient.interceptors.request.use(
         if (token) {
             if (isTokenExpired(token)) {
                 try {
-                    const response = await axios.post(`${config.baseURL}/auth/refresh-access-token`, {
+                    const response = await axios.post(`${API_BASE_URL}/auth/refresh-access-token`, {
                         access_token: token,
                     });
                     const newToken = response.data.access_token; 
@@ -53,10 +57,13 @@ apiClient.interceptors.request.use(
     }
 );
 
+// Log para depuración
+console.log("API Service inicializado con URL base:", API_BASE_URL);
+
 const apiService = {
     // Método para obtener la URL base
     getBaseUrl: () => {
-        return process.env.Url || "http://localhost:3000";
+        return API_BASE_URL;
     },
 
     get: async (route, params = {}) => {
@@ -69,7 +76,7 @@ const apiService = {
         }
     },
 
-    // Nuevo método para obtener archivos binarios como PDFs
+    // Método para obtener archivos binarios como PDFs
     getBlob: async (route, params = {}) => {
         try {
             const response = await apiClient.get(route, { 
