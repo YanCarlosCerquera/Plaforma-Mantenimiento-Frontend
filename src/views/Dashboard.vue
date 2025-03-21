@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import Cookies from 'js-cookie';
 import MiniStatisticsCard from "@/examples/Cards/MiniStatisticsCard.vue";
 import GradientLineChart from "@/examples/Charts/GradientLineChart.vue";
@@ -22,6 +22,8 @@ const stats = ref({
 });
 const loading = ref(false);
 const error = ref(null);
+const chartReady = ref(false); // Estado para saber si el gráfico está listo
+const chartError = ref(null); // Error específico del gráfico
 
 // Datos para el gráfico
 const chartData = computed(() => {
@@ -148,9 +150,9 @@ const getUserData = () => {
 const fetchUserData = async (userId) => {
   loading.value = true;
   error.value = null;
+  chartReady.value = false; // Resetear el estado del gráfico
   
   try {
-    
     // La misma API ahora devuelve datos diferentes según el rol
     const data = await apiService.get(`/word-orden/tecnico/${userId}`);
     
@@ -172,12 +174,12 @@ const fetchUserData = async (userId) => {
     error.value = `Error: ${err.message || 'Error desconocido'}`;
   } finally {
     loading.value = false;
+    // No marcamos chartReady como true aquí porque esperamos el evento del componente
   }
 };
 
 // Procesar la respuesta para almacenista
 const processAlmacenistaResponse = (data) => {
-  
   // Guardar datos del usuario
   tecnico.value = data.usuario;
   
@@ -189,7 +191,6 @@ const processAlmacenistaResponse = (data) => {
 
 // Procesar la respuesta de la API para técnicos y otros roles
 const processResponse = (data) => {
-  
   // Guardar datos del técnico
   tecnico.value = data.usuario;
   
@@ -208,7 +209,6 @@ const processResponse = (data) => {
     ejecutadas,
     pendientes
   };
-  
 };
 
 // Formatear fecha para mostrar en la tabla
@@ -235,11 +235,32 @@ const getActivoStatusText = (estado) => {
 
 // Recargar datos
 const reloadData = () => {
+  chartReady.value = false; // Reset del estado de carga del gráfico
+  chartError.value = null;
+  
   if (userId.value) {
     fetchUserData(userId.value);
   } else {
     getUserData();
   }
+};
+
+// Manejadores de eventos del gráfico
+const handleChartReady = (event) => {
+  console.log(`Gráfico ${event.id} cargado correctamente`);
+  chartReady.value = true;
+  chartError.value = null;
+};
+
+const handleChartError = (event) => {
+  console.error(`Error en el gráfico: ${event.message}`);
+  chartError.value = event.message;
+  // Intentamos recargar el gráfico automáticamente una vez
+  setTimeout(() => {
+    if (chartError.value) {
+      reloadData();
+    }
+  }, 2000);
 };
 
 const page = ref(1);
@@ -256,6 +277,11 @@ const paginatedOrdenes = computed(() => {
   const end = start + itemsPerPage.value;
   return ordenes.value.slice(start, end);
 });
+
+// Observar los cambios en los datos para recargar el gráfico si es necesario
+watch([userRole, activos, ordenes], () => {
+  chartReady.value = false; // Indicar que el gráfico necesita recargarse
+}, { deep: true });
 
 onMounted(() => {
   getUserData();
@@ -374,14 +400,29 @@ onMounted(() => {
           </div>
         </div>
         
-        <!-- Gráfico -->
+        <!-- Gráfico con estado de carga y manejo de errores -->
         <div class="row mt-4">
           <div class="col-lg-12 mb-lg">
-            <gradient-line-chart
-              id="chart-line"
-              :title="userRole === 'almacenista' ? 'Activos por categoría' : 'Ordenes de trabajo por mes'"
-              :chart="chartData"
-            />
+            <div class="chart-container position-relative">
+              <!-- Error específico del gráfico -->
+              <div v-if="chartError" class="chart-error-overlay">
+                <div class="chart-error-message">
+                  <i class="ni ni-fat-remove text-danger"></i>
+                  Error al cargar el gráfico: {{ chartError }}
+                  <button class="btn btn-sm btn-outline-primary ms-2" @click="reloadData">
+                    Reintentar
+                  </button>
+                </div>
+              </div>
+              
+              <gradient-line-chart
+                id="chart-line"
+                :title="userRole === 'almacenista' ? 'Activos por categoría' : 'Ordenes de trabajo por mes'"
+                :chart="chartData"
+                @chart-ready="handleChartReady"
+                @chart-error="handleChartError"
+              />
+            </div>
           </div>
         </div>
         
@@ -510,9 +551,35 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
-.pagination{
+.pagination {
   margin-bottom: 20px;
 }
 
+/* Estilos para el contenedor del gráfico y su capa de error */
+.chart-container {
+  position: relative;
+}
+
+.chart-error-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  border-radius: 8px;
+}
+
+.chart-error-message {
+  background-color: #fef1f1;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 80%;
+}
 </style>
