@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 const jwt_decode = require("jwt-decode");
 
 // Acceder a la variable de entorno de Vue
-const API_BASE_URL = process.env.VUE_APP_API_URL || "https://king-prawn-app-2u9tk.ondigitalocean.app";
+const API_BASE_URL = process.env.VUE_APP_API_URL || "https://stingray-app-e496q.ondigitalocean.app";
 
 // Crear cliente API
 const apiClient = axios.create({
