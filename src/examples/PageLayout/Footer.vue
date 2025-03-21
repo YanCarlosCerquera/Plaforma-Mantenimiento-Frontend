@@ -8,35 +8,35 @@
         </div>
         <div class="mx-auto mt-2 mb-4 text-center col-lg-8">
           <a
-            href="javascript:;"
+            href="https://www.facebook.com/SENA/"
             target="_blank"
             class="text-secondary me-xl-4 me-4"
           >
             <span class="text-lg fab fa-facebook"></span>
           </a>
           <a
-            href="javascript:;"
+            href="https://x.com/SENAComunica"
             target="_blank"
             class="text-secondary me-xl-4 me-4"
           >
             <span class="text-lg fab fa-x-twitter"></span>
           </a>
           <a
-            href="javascript:;"
+            href="https://www.instagram.com/senacomunica/"
             target="_blank"
             class="text-secondary me-xl-4 me-4"
           >
             <span class="text-lg fab fa-instagram"></span>
           </a>
           <a
-            href="https://www.youtube.com/watch?v=bgenxqy0NQ0"
+            href="https://www.youtube.com/@SENAComunica"
             target="_blank"
             class="text-secondary me-xl-4 me-4"
           >
             <span class="text-lg fab fa-youtube"></span>
           </a>
           <a
-            href="javascript:;"
+            href="https://www.linkedin.com/school/servicio-nacional-de-aprendizaje-sena-/?originalSubdomain=co"
             target="_blank"
             class="text-secondary me-xl-4 me-4"
           >
